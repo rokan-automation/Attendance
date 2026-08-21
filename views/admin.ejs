@@ -4,11 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Attendance Summary - Bochaganj</title>
+    <!-- Favicon / App Icon -->
+    <link rel="icon" type="image/png" href="/icon.png">
+    <link rel="apple-touch-icon" href="/icon.png">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body style="background-color: #f3f4f6; padding: 20px;">
     <div class="app-container" style="max-width: 750px; margin: 0 auto;">
-        <!-- Header bar -->
         <header class="app-header">
             <div>
                 <h3>Bochaganj Upazila Primary Education</h3>
@@ -27,10 +29,9 @@
             let totalAbsentWithoutLeave = 0;
             let actualTotalTeachers = 0;
 
-            // ডাটাবেজের সাবমিট করা রেকর্ড থেকে সঠিক হিসাব বের করা হচ্ছে
             records.forEach(rec => {
                 if (rec.attendance && Array.isArray(rec.attendance)) {
-                    actualTotalTeachers += rec.attendance.length; // এই স্কুলের মোট শিক্ষক সংখ্যা যোগ হলো
+                    actualTotalTeachers += rec.attendance.length;
                     rec.attendance.forEach(item => {
                         if (item.status === 'Present') totalPresent++;
                         else if (item.status === 'Leave') totalLeave++;
@@ -39,7 +40,6 @@
                 }
             });
 
-            // সঠিক পার্সেন্টেজ হিসাব
             let rateTotalTeachers = actualTotalTeachers > 0 ? ((totalPresent / actualTotalTeachers) * 100).toFixed(1) : 0;
             let effectiveTeachers = actualTotalTeachers - totalLeave;
             let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
@@ -91,7 +91,6 @@
             </div>
         </div>
 
-        <!-- Submitted Reports Cards with Clickable Edit Feature -->
         <h4 style="font-size: 14px; margin-bottom: 10px; color: #374155;">Submitted Reports List (<%= submittedCount %> / <%= totalSchools %>)</h4>
         <% if(records.length === 0) { %>
             <p style="font-size: 12px; color: #6b7280;">No attendance submitted yet today.</p>

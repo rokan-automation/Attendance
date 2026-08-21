@@ -11,14 +11,14 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        /* Premium Splash Screen Animation */
+        /* Premium Splash Screen */
         #splashScreen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -34,59 +34,58 @@
         }
 
         .splash-app-title {
-            font-size: 28px;
+            font-size: 30px;
             font-weight: 800;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             margin-bottom: 6px;
-            background: linear-gradient(to right, #a5b4fc, #ffffff);
+            background: linear-gradient(to right, #93c5fd, #c7d2fe, #ffffff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .splash-sub {
             font-size: 13px;
-            color: #cbd5e1;
-            margin-bottom: 25px;
+            color: #94a3b8;
+            margin-bottom: 28px;
         }
 
         .developer-badge {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 22px;
-            border-radius: 30px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: pulseGlow 2s infinite alternate;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 12px 26px;
+            border-radius: 35px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+            animation: pulseGlow 2.5s infinite alternate;
         }
 
         .dev-label {
             display: block;
             font-size: 11px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #93c5fd;
-            margin-bottom: 2px;
+            letter-spacing: 2px;
+            color: #60a5fa;
+            margin-bottom: 3px;
         }
 
         .dev-name {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 700;
             color: #ffffff;
         }
 
         @keyframes zoomFadeIn {
-            0% { opacity: 0; transform: scale(0.85); }
+            0% { opacity: 0; transform: scale(0.8); }
             100% { opacity: 1; transform: scale(1); }
         }
 
         @keyframes pulseGlow {
-            0% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
-            100% { box-shadow: 0 0 25px rgba(165, 180, 252, 0.6); }
+            0% { box-shadow: 0 0 12px rgba(99, 102, 241, 0.3); }
+            100% { box-shadow: 0 0 30px rgba(147, 197, 253, 0.7); }
         }
     </style>
 </head>
 <body>
-    <!-- Animated Splash Screen -->
     <div id="splashScreen">
         <div class="splash-content">
             <h1 class="splash-app-title">Attendance</h1>
@@ -139,7 +138,7 @@
         </div>
     </div>
 
-    <!-- Custom Searchable School Selector Popup Modal -->
+    <!-- School Selector Popup Modal -->
     <div id="schoolModal" class="school-modal-overlay">
         <div class="school-modal-card">
             <div class="school-modal-header">
@@ -255,7 +254,7 @@
     </div>
 
     <script>
-        // Hide Splash Screen smoothly after 2 seconds
+        // Shows Developer Name for 3.5 seconds nicely
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const splash = document.getElementById('splashScreen');
@@ -263,7 +262,7 @@
                 setTimeout(() => {
                     splash.style.display = 'none';
                 }, 800);
-            }, 1800);
+            }, 3200);
         });
 
         function switchTab(type) {

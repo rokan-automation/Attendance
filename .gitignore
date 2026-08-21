@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Environment variables (Never push this to GitHub)
+.env
+
+# Uploaded attendance register photos
+public/uploads/*
+!public/uploads/.gitkeep
+
+# System files
+.DS_Store
+Thumbs.db

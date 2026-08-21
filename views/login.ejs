@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bochaganj Primary Attendance System</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <div class="brand-header">
+                <h2>Bochaganj Upazila</h2>
+                <p>Primary School Attendance Dashboard</p>
+            </div>
+
+            <% if(typeof error !== 'undefined' && error) { %>
+                <div class="alert-error"><%= error %></div>
+            <% } %>
+
+            <div class="tab-buttons">
+                <button type="button" class="tab-btn active" id="schoolTabBtn" onclick="switchTab('school')">School Login</button>
+                <button type="button" class="tab-btn" id="adminTabBtn" onclick="switchTab('admin')">AEO Portal</button>
+            </div>
+
+            <form action="/login" method="POST" id="schoolForm" class="auth-form">
+                <input type="hidden" name="role" value="school">
+                <div class="input-group">
+                    <label>Select Your Institution</label>
+                    <select name="schoolId" required>
+                        <option value="1">Bochaganj Model Govt. Primary School</option>
+                        <option value="2">Setabganj Upashahar Govt. Primary School</option>
+                        <option value="3">Bochaganj Central Govt. Primary School</option>
+                        <option value="4">Muraripur Govt. Primary School</option>
+                        <option value="5">Chawk Rampur Govt. Primary School</option>
+                        <option value="6">Bogula Govt. Primary School</option>
+                        <option value="7">Chira Govt. Primary School</option>
+                        <option value="8">Gopalpur Govt. Primary School</option>
+                        <option value="9">Ishania Govt. Primary School</option>
+                        <option value="10">Nandigram Govt. Primary School</option>
+                        <option value="11">Shibpur Govt. Primary School</option>
+                        <option value="12">Ratanpur Govt. Primary School</option>
+                        <option value="13">Chak Kalikapur Govt. Primary School</option>
+                        <option value="14">Bara Maheshtpur Govt. Primary School</option>
+                        <option value="15">Chatra Govt. Primary School</option>
+                        <option value="16">Jagannathpur Govt. Primary School</option>
+                        <option value="17">Kashipur Govt. Primary School</option>
+                        <option value="18">Ramnagar Govt. Primary School</option>
+                        <option value="19">Kismat Bogula Govt. Primary School</option>
+                        <option value="20">Bahadurpur Govt. Primary School</option>
+                        <option value="21">Bhatgaon Govt. Primary School</option>
+                        <option value="22">Salandar Govt. Primary School</option>
+                        <option value="23">Nayaghat Govt. Primary School</option>
+                        <option value="24">Sahapur Govt. Primary School</option>
+                        <option value="25">Chakpara Govt. Primary School</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Access School Portal</button>
+            </form>
+
+            <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
+                <input type="hidden" name="role" value="admin">
+                <div class="input-group">
+                    <label>AEO Secure Password</label>
+                    <input type="password" name="password" placeholder="Enter secure password" required>
+                </div>
+                <button type="submit" class="btn-submit">Access AEO Dashboard</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(type) {
+            const schoolBtn = document.getElementById('schoolTabBtn');
+            const adminBtn = document.getElementById('adminTabBtn');
+            const schoolForm = document.getElementById('schoolForm');
+            const adminForm = document.getElementById('adminForm');
+
+            if(type === 'school') {
+                schoolBtn.classList.add('active');
+                adminBtn.classList.remove('active');
+                schoolForm.style.display = 'block';
+                adminForm.style.display = 'none';
+            } else {
+                adminBtn.classList.add('active');
+                schoolBtn.classList.remove('active');
+                adminForm.style.display = 'block';
+                schoolForm.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

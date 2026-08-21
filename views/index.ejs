@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance - <%= school.name %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div>
+                <h3><%= school.name %></h3>
+                <span class="badge">Teacher Attendance Portal</span>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </header>
+
+        <form id="attendanceForm" class="dashboard-form">
+            <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
+            
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Teacher Name & Designation</th>
+                            <th>Daily Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% school.teachers.forEach((teacher, index) => { %>
+                            <tr>
+                                <td class="teacher-name"><%= teacher %></td>
+                                <td>
+                                    <div class="status-options">
+                                        <label class="radio-pill present">
+                                            <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
+                                            <span>Present</span>
+                                        </label>
+                                        <label class="radio-pill leave">
+                                            <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
+                                            <span>On Leave</span>
+                                        </label>
+                                        <label class="radio-pill absent">
+                                            <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
+                                            <span>Absent</span>
+                                        </label>
+                                    </div>
+                                    <div id="leave_div_<%= index %>" style="display:none;" class="leave-dropdown-box">
+                                        <select name="leaveType_<%= index %>" class="form-control-sm">
+                                            <option value="Casual Leave">Casual Leave</option>
+                                            <option value="Medical Leave">Medical Leave</option>
+                                            <option value="Maternity Leave">Maternity Leave</option>
+                                            <option value="Other Leave">Other Leave</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="footer-action-box">
+                <div class="camera-box">
+                    <label for="registerPhoto" class="camera-label">
+                        📷 Capture Attendance Register
+                    </label>
+                    <input type="file" name="registerPhoto" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="updateFileName(this)">
+                    <span id="fileNameDisplay" class="file-name">No photo captured</span>
+                </div>
+
+                <button type="button" onclick="submitData()" class="btn-submit-main">Submit Daily Report</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const teachersList = <%- JSON.stringify(school.teachers) %>;
+
+        function toggleLeaveType(index) {
+            let radios = document.getElementsByName('status_' + index);
+            let leaveDiv = document.getElementById('leave_div_' + index);
+            let selectedValue = '';
+            for(let r of radios) {
+                if(r.checked) selectedValue = r.value;
+            }
+            leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
+        }
+
+        function updateFileName(input) {
+            const display = document.getElementById('fileNameDisplay');
+            if (input.files && input.files[0]) {
+                display.textContent = "✅ " + input.files[0].name;
+                display.style.color = "#28a745";
+            }
+        }
+
+        function submitData() {
+            const photoFile = document.getElementById('registerPhoto').files[0];
+            if (!photoFile) {
+                alert('Please capture/upload the attendance register photo first!');
+                return;
+            }
+
+            const submitBtn = document.querySelector('.btn-submit-main');
+            submitBtn.textContent = "Submitting with GPS...";
+            submitBtn.disabled = true;
+
+            const sendToServer = (lat, lng) => {
+                let formData = new FormData();
+                formData.append('schoolId', document.getElementById('schoolId').value);
+                formData.append('lat', lat);
+                formData.append('lng', lng);
+                formData.append('registerPhoto', photoFile);
+
+                let attendanceArr = [];
+                teachersList.forEach((teacher, index) => {
+                    let status = 'Present';
+                    let radios = document.getElementsByName('status_' + index);
+                    for(let r of radios) { if(r.checked) status = r.value; }
+                    
+                    let leaveType = '';
+                    if(status === 'Leave') {
+                        leaveType = document.querySelector(`[name="leaveType_${index}"]`).value;
+                    }
+                    attendanceArr.push({ teacher, status, leaveType });
+                });
+
+                formData.append('attendance', JSON.stringify(attendanceArr));
+
+                fetch('/submit-attendance', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        alert('Attendance submitted successfully!');
+                        window.location.reload();
+                    } else {
+                        alert('Error submitting attendance.');
+                        submitBtn.textContent = "Submit Daily Report";
+                        submitBtn.disabled = false;
+                    }
+                }).catch(err => {
+                    alert('Network error occurred.');
+                    submitBtn.textContent = "Submit Daily Report";
+                    submitBtn.disabled = false;
+                });
+            };
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        sendToServer(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        sendToServer(25.7360, 88.6080); // Bochaganj Default fallback
+                    },
+                    { timeout: 5000 }
+                );
+            } else {
+                sendToServer(25.7360, 88.6080);
+            }
+        }
+    </script>
+</body>
+</html>

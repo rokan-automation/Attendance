@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Attendance - <%= record.schoolName %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background-color: #f3f4f6; padding: 20px;">
+    <div class="app-container" style="max-width: 750px; margin: 0 auto;">
+        <header class="app-header">
+            <div>
+                <h3><%= record.schoolName %></h3>
+                <span class="badge">AEO Edit Portal</span>
+            </div>
+            <a href="/admin" class="btn-logout" style="background: #e0e7ff; color: #4f46e5;">← Back to Summary</a>
+        </header>
+
+        <form id="editForm">
+            <input type="hidden" id="recordId" value="<%= record.id %>">
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>Teacher Name & Designation</th>
+                            <th>Attendance Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% record.attendance.forEach((item, index) => { %>
+                            <tr>
+                                <td class="teacher-name"><%= item.teacher %></td>
+                                <td>
+                                    <div class="status-options">
+                                        <label class="radio-pill present">
+                                            <input type="radio" name="status_<%= index %>" value="Present" <%= item.status === 'Present' ? 'checked' : '' %> onchange="toggleLeaveType(<%= index %>)">
+                                            <span>Present</span>
+                                        </label>
+                                        <label class="radio-pill leave">
+                                            <input type="radio" name="status_<%= index %>" value="Leave" <%= item.status === 'Leave' ? 'checked' : '' %> onchange="toggleLeaveType(<%= index %>)">
+                                            <span>On Leave</span>
+                                        </label>
+                                        <label class="radio-pill absent">
+                                            <input type="radio" name="status_<%= index %>" value="Absent" <%= item.status === 'Absent' ? 'checked' : '' %> onchange="toggleLeaveType(<%= index %>)">
+                                            <span>Absent</span>
+                                        </label>
+                                    </div>
+                                    <div id="leave_div_<%= index %>" style="<%= item.status === 'Leave' ? 'display:block;' : 'display:none;' %>" class="leave-dropdown-box">
+                                        <select name="leaveType_<%= index %>" class="form-control-sm">
+                                            <option value="Casual Leave" <%= item.leaveType === 'Casual Leave' ? 'selected' : '' %>>Casual Leave</option>
+                                            <option value="Medical Leave" <%= item.leaveType === 'Medical Leave' ? 'selected' : '' %>>Medical Leave</option>
+                                            <option value="Maternity Leave" <%= item.leaveType === 'Maternity Leave' ? 'selected' : '' %>>Maternity Leave</option>
+                                            <option value="Other Leave" <%= item.leaveType === 'Other Leave' ? 'selected' : '' %>>Other Leave</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+
+            <% if(record.photo) { %>
+                <div style="margin-top: 15px; background: white; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <p style="font-size: 12px; font-weight: 600; margin-bottom: 5px;">Submitted Register Photo:</p>
+                    <img src="<%= record.photo %>" alt="Register" style="max-width: 200px; border-radius: 6px; border: 1px solid #ccc;">
+                </div>
+            <% } %>
+
+            <button type="button" onclick="updateAttendance()" class="btn-submit-main" style="margin-top: 15px;">Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        const totalTeachersCount = <%= record.attendance.length %>;
+
+        function toggleLeaveType(index) {
+            let radios = document.getElementsByName('status_' + index);
+            let leaveDiv = document.getElementById('leave_div_' + index);
+            let selectedValue = '';
+            for(let r of radios) {
+                if(r.checked) selectedValue = r.value;
+            }
+            leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
+        }
+
+        function updateAttendance() {
+            const recordId = document.getElementById('recordId').value;
+            let attendanceArr = [];
+
+            for(let i = 0; i < totalTeachersCount; i++) {
+                let teacherName = document.querySelectorAll('.teacher-name')[i].textContent;
+                let status = 'Present';
+                let radios = document.getElementsByName('status_' + i);
+                for(let r of radios) { if(r.checked) status = r.value; }
+                
+                let leaveType = '';
+                if(status === 'Leave') {
+                    leaveType = document.querySelector(`[name="leaveType_${i}"]`).value;
+                }
+                attendanceArr.push({ teacher: teacherName, status, leaveType });
+            }
+
+            fetch('/admin/school/update/' + recordId, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ attendance: JSON.stringify(attendanceArr) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    alert('Attendance updated successfully!');
+                    window.location.href = '/admin'; // সরাসরি রিডাইরেক্ট
+                } else {
+                    alert('Failed to update: ' + (data.message || 'Unknown error'));
+                }
+            }).catch(err => {
+                alert('Network error occurred.');
+            });
+        }
+    </script>
+</body>
+</html>

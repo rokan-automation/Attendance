@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Attendance Summary - Bochaganj</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background-color: #f3f4f6; padding: 20px;">
+    <div class="app-container" style="max-width: 750px; margin: 0 auto;">
+        <!-- Header bar -->
+        <header class="app-header">
+            <div>
+                <h3>Bochaganj Upazila Primary Education</h3>
+                <span class="badge">AEO Daily Report Summary</span>
+            </div>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </header>
+
+        <% 
+            const totalSchools = 25;
+            let submittedCount = records.length;
+            let pendingCount = totalSchools - submittedCount;
+
+            let totalPresent = 0;
+            let totalLeave = 0;
+            let totalAbsentWithoutLeave = 0;
+            let actualTotalTeachers = 0;
+
+            // ডাটাবেজের সাবমিট করা রেকর্ড থেকে সঠিক হিসাব বের করা হচ্ছে
+            records.forEach(rec => {
+                if (rec.attendance && Array.isArray(rec.attendance)) {
+                    actualTotalTeachers += rec.attendance.length; // এই স্কুলের মোট শিক্ষক সংখ্যা যোগ হলো
+                    rec.attendance.forEach(item => {
+                        if (item.status === 'Present') totalPresent++;
+                        else if (item.status === 'Leave') totalLeave++;
+                        else if (item.status === 'Absent') totalAbsentWithoutLeave++;
+                    });
+                }
+            });
+
+            // সঠিক পার্সেন্টেজ হিসাব
+            let rateTotalTeachers = actualTotalTeachers > 0 ? ((totalPresent / actualTotalTeachers) * 100).toFixed(1) : 0;
+            let effectiveTeachers = actualTotalTeachers - totalLeave;
+            let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
+        %>
+
+        <!-- Executive Summary Card -->
+        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid #f3f4f6; padding-bottom: 12px;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Teacher Attendance Summary Report</h3>
+                <p style="font-size: 12px; color: #6b7280;">Date: <%= new Date().toLocaleDateString() %></p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; text-align: center;">
+                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <span style="display: block; font-size: 16px; font-weight: 700; color: #2563eb;"><%= submittedCount %></span>
+                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Submitted</span>
+                </div>
+                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <span style="display: block; font-size: 16px; font-weight: 700; color: #dc2626;"><%= pendingCount %></span>
+                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Pending</span>
+                </div>
+                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <span style="display: block; font-size: 16px; font-weight: 700; color: #1f2937;"><%= actualTotalTeachers %></span>
+                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Teachers</span>
+                </div>
+                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <span style="display: block; font-size: 16px; font-weight: 700; color: #10b981;"><%= totalPresent %></span>
+                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Present</span>
+                </div>
+                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <span style="display: block; font-size: 16px; font-weight: 700; color: #f59e0b;"><%= totalLeave %></span>
+                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">On Leave</span>
+                </div>
+                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <span style="display: block; font-size: 16px; font-weight: 700; color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
+                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Absent</span>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center;">
+                    <span style="display: block; font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px;">Attendance Rate (Submitted Base)</span>
+                    <span style="font-size: 20px; font-weight: 700; color: #2563eb;"><%= rateTotalTeachers %>%</span>
+                </div>
+                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center;">
+                    <span style="display: block; font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px;">Absence Rate (Excl. Leave)</span>
+                    <span style="font-size: 20px; font-weight: 700; color: #dc2626;"><%= rateEffective %>%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submitted Reports Cards with Clickable Edit Feature -->
+        <h4 style="font-size: 14px; margin-bottom: 10px; color: #374155;">Submitted Reports List (<%= submittedCount %> / <%= totalSchools %>)</h4>
+        <% if(records.length === 0) { %>
+            <p style="font-size: 12px; color: #6b7280;">No attendance submitted yet today.</p>
+        <% } else { %>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <% records.forEach(rec => { %>
+                    <a href="/admin/school/<%= rec.id %>" style="text-decoration: none; color: inherit;">
+                        <div style="background: white; border: 1px solid #e5e7eb; padding: 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: 0.2s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='#e5e7eb'">
+                            <div>
+                                <strong style="font-size: 13px; color: #1f2937;">🏫 <%= rec.schoolName %></strong>
+                                <span style="display: block; font-size: 11px; color: #6b7280; margin-top: 2px;">Submitted at: <%= rec.timestamp %></span>
+                            </div>
+                            <span style="background: #e0e7ff; color: #4f46e5; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 6px;">View & Edit ➔</span>
+                        </div>
+                    </a>
+                <% }) %>
+            </div>
+        <% } %>
+    </div>
+</body>
+</html>

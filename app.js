@@ -13,12 +13,23 @@ const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 // Multer Memory Storage for Vercel
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Middleware & View Configurations (Path Fixed for Vercel)
+// Middleware & View Configurations
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+// Favicon/Icon Direct Serve Route for Vercel
+app.get('/icon.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'icon.png'));
+});
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'icon.png'));
+});
+app.get('/manifest.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'manifest.json'));
+});
 
 // Bochaganj 25 Primary Schools Data with Demo Teachers
 const schoolsData = [

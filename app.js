@@ -10,26 +10,23 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 
-// Multer Memory Storage for Vercel
-const upload = multer({ storage: multer.memoryStorage() });
+// Multer Memory Storage with 10MB limit
+const upload = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }
+});
 
-// Middleware & View Configurations
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+// Middleware & Configurations
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Favicon/Icon Direct Serve Route for Vercel
-app.get('/icon.png', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'icon.png'));
-});
-app.get('/favicon.ico', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'icon.png'));
-});
-app.get('/manifest.json', (req, res) => {
-    res.sendFile(path.join(__dirname, 'manifest.json'));
-});
+// Favicon/Icon Direct Serve Route
+app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
+app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
 // Bochaganj 25 Primary Schools Data with Demo Teachers
 const schoolsData = [
@@ -61,18 +58,13 @@ const schoolsData = [
 ];
 
 // Routes
-app.get('/', (req, res) => {
-    res.render('login', { error: null });
-});
+app.get('/', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     if (role === 'admin') {
-        if (password === AEO_PASSWORD) {
-            return res.redirect('/admin?auth=true');
-        } else {
-            return res.render('login', { error: 'Invalid AEO Password!' });
-        }
+        if (password === AEO_PASSWORD) return res.redirect('/admin?auth=true');
+        return res.render('login', { error: 'Invalid AEO Password!' });
     } else if (role === 'school') {
         return res.redirect(`/index?schoolId=${schoolId}`);
     }
@@ -86,36 +78,21 @@ app.get('/index', (req, res) => {
     res.render('index', { school });
 });
 
-// Submit Attendance to Supabase & Storage Bucket
+// Submit Attendance
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     const { schoolId, attendance, lat, lng } = req.body;
     const school = schoolsData.find(s => s.id == schoolId);
     
-    let photoUrl = null;
-
+    let photoDataUrl = null;
     if (req.file) {
-        const fileName = `${Date.now()}-${req.file.originalname}`;
-        const { error: uploadError } = await supabase.storage
-            .from('attendance-photos')
-            .upload(fileName, req.file.buffer, {
-                contentType: req.file.mimetype,
-                upsert: false
-            });
-
-        if (!uploadError) {
-            const { data: publicUrlData } = supabase.storage
-                .from('attendance-photos')
-                .getPublicUrl(fileName);
-            
-            photoUrl = publicUrlData.publicUrl;
-        }
+        photoDataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     }
     
     const newRecord = {
         school_name: school ? school.name : 'Unknown School',
         attendance_date: new Date().toISOString().split('T')[0],
         attendance_data: JSON.parse(attendance),
-        photo_url: photoUrl,
+        photo_url: photoDataUrl,
         latitude: lat,
         longitude: lng,
         created_at: new Date().toISOString()
@@ -147,7 +124,6 @@ app.get('/admin', async (req, res) => {
         .order('created_at', { ascending: false });
 
     if (error) {
-        console.error('Supabase Fetch Error:', error.message);
         return res.render('admin', { records: [] });
     }
 
@@ -173,9 +149,7 @@ app.get('/admin/school/:id', async (req, res) => {
         .eq('id', recordId)
         .single();
 
-    if (error || !data) {
-        return res.redirect('/admin?auth=true');
-    }
+    if (error || !data) return res.redirect('/admin?auth=true');
 
     const record = {
         id: data.id,
@@ -190,7 +164,7 @@ app.get('/admin/school/:id', async (req, res) => {
     res.render('edit-attendance', { record });
 });
 
-// Update School Attendance by AEO
+// Update Attendance by AEO
 app.post('/admin/school/update/:id', async (req, res) => {
     const recordId = req.params.id;
     const { attendance } = req.body;
@@ -201,22 +175,16 @@ app.post('/admin/school/update/:id', async (req, res) => {
         .eq('id', recordId);
 
     if (error) {
-        console.error('Update Error:', error.message);
         return res.json({ success: false, message: 'Failed to update attendance.' });
     }
 
     res.json({ success: true, redirectUrl: '/admin?auth=true' });
 });
 
-app.get('/logout', (req, res) => {
-    res.redirect('/');
-});
+app.get('/logout', (req, res) => res.redirect('/'));
 
-// Export app for Vercel
 module.exports = app;
 
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server running at http://localhost:${PORT}`);
-    });
+    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }

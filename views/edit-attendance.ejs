@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Attendance - <%= record.schoolName %></title>
+    <link rel="shortcut icon" href="/icon.png?v=3" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=3">
+    <link rel="apple-touch-icon" href="/icon.png?v=3">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body style="background-color: #f3f4f6; padding: 20px;">
@@ -13,7 +18,7 @@
                 <h3><%= record.schoolName %></h3>
                 <span class="badge">AEO Edit Portal</span>
             </div>
-            <a href="/admin" class="btn-logout" style="background: #e0e7ff; color: #4f46e5;">← Back to Summary</a>
+            <a href="/admin?auth=true" class="btn-logout" style="background: #e0e7ff; color: #4f46e5;">← Back to Summary</a>
         </header>
 
         <form id="editForm">
@@ -71,8 +76,48 @@
         </form>
     </div>
 
+    <!-- Animated Custom Modal Popup -->
+    <div id="customModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
+            <h3 id="modalTitle">Updated</h3>
+            <p id="modalMessage">Attendance updated successfully!</p>
+            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
+        </div>
+    </div>
+
     <script>
         const totalTeachersCount = <%= record.attendance.length %>;
+        let redirectTarget = null;
+
+        function showCustomModal(type, title, message, redirectUrl = null) {
+            const modal = document.getElementById('customModal');
+            const icon = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            redirectTarget = redirectUrl;
+
+            if (type === 'success') {
+                icon.className = "modal-icon-wrapper modal-icon-success";
+                icon.innerHTML = "✓";
+            } else {
+                icon.className = "modal-icon-wrapper modal-icon-error";
+                icon.innerHTML = "✕";
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('customModal');
+            modal.classList.remove('active');
+            if (redirectTarget) {
+                window.location.href = redirectTarget;
+            }
+        }
 
         function toggleLeaveType(index) {
             let radios = document.getElementsByName('status_' + index);
@@ -109,13 +154,12 @@
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    alert('Attendance updated successfully!');
-                    window.location.href = '/admin'; // সরাসরি রিডাইরেক্ট
+                    showCustomModal('success', 'Changes Saved', 'Attendance record updated successfully!', data.redirectUrl);
                 } else {
-                    alert('Failed to update: ' + (data.message || 'Unknown error'));
+                    showCustomModal('error', 'Update Failed', data.message || 'Could not update.');
                 }
             }).catch(err => {
-                alert('Network error occurred.');
+                showCustomModal('error', 'Network Error', 'Connection problem occurred.');
             });
         }
     </script>

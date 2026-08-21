@@ -3,17 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance - <%= school.name %></title>
-    <!-- Favicon / App Icon -->
-    <link rel="icon" type="image/png" href="/icon.png">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <title>Attendance - <%= school.id %>. <%= school.name %></title>
+    <link rel="shortcut icon" href="/icon.png?v=3" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=3">
+    <link rel="apple-touch-icon" href="/icon.png?v=3">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
     <div class="app-container">
         <header class="app-header">
             <div>
-                <h3><%= school.name %></h3>
+                <h3><%= school.id %>. <%= school.name %></h3>
                 <span class="badge">Teacher Attendance Portal</span>
             </div>
             <a href="/logout" class="btn-logout">Logout</a>
@@ -78,8 +80,48 @@
         </form>
     </div>
 
+    <!-- Animated Custom Modal Popup -->
+    <div id="customModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
+            <h3 id="modalTitle">Success</h3>
+            <p id="modalMessage">Attendance submitted successfully!</p>
+            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
+        </div>
+    </div>
+
     <script>
         const teachersList = <%- JSON.stringify(school.teachers) %>;
+        let redirectOnClose = false;
+
+        function showCustomModal(type, title, message, shouldReload = false) {
+            const modal = document.getElementById('customModal');
+            const icon = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            redirectOnClose = shouldReload;
+
+            if (type === 'success') {
+                icon.className = "modal-icon-wrapper modal-icon-success";
+                icon.innerHTML = "✓";
+            } else {
+                icon.className = "modal-icon-wrapper modal-icon-error";
+                icon.innerHTML = "✕";
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('customModal');
+            modal.classList.remove('active');
+            if (redirectOnClose) {
+                window.location.reload();
+            }
+        }
 
         function toggleLeaveType(index) {
             let radios = document.getElementsByName('status_' + index);
@@ -102,7 +144,7 @@
         function submitData() {
             const photoFile = document.getElementById('registerPhoto').files[0];
             if (!photoFile) {
-                alert('Please capture/upload the attendance register photo first!');
+                showCustomModal('error', 'Photo Required', 'Please capture or upload the attendance register photo first!');
                 return;
             }
 
@@ -139,15 +181,14 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        alert('Attendance submitted successfully!');
-                        window.location.reload();
+                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully!', true);
                     } else {
-                        alert('Error submitting attendance: ' + data.message);
+                        showCustomModal('error', 'Failed', 'Error submitting attendance: ' + data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }
                 }).catch(err => {
-                    alert('Network error occurred.');
+                    showCustomModal('error', 'Network Error', 'Please check your internet connection and try again.');
                     submitBtn.textContent = "Submit Daily Report";
                     submitBtn.disabled = false;
                 });

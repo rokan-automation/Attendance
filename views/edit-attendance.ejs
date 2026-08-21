@@ -51,6 +51,44 @@
             font-size: 10.5px;
             font-weight: 600;
         }
+
+        /* 2-Column Split for Register Photo & Area Snapshot */
+        .location-photos-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        @media (max-width: 480px) {
+            .location-photos-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .photo-card-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .photo-card-title {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .preview-img-responsive {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+        }
     </style>
 </head>
 <body style="background-color: #f3f4f6; padding: 12px;">
@@ -107,31 +145,48 @@
                 </table>
             </div>
 
-            <!-- Uploaded Register Photo & GPS Map Section -->
+            <!-- Uploaded Register Photo & GPS Location with Area Snapshot -->
             <div class="map-wrapper-box">
-                <div class="map-section-title">📸 Attendance Register & Location</div>
-                
-                <% if(record.photo) { %>
-                    <div style="margin-bottom: 12px; text-align: center;">
-                        <img src="<%= record.photo %>" alt="Register Photo" style="width: 100%; max-width: 320px; border-radius: 8px; border: 1px solid #cbd5e1;">
-                    </div>
-                <% } else { %>
-                    <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">No register photo uploaded.</p>
-                <% } %>
+                <div class="map-section-title">📍 Submission Verification & Area Snapshot</div>
 
                 <% 
                     let lat = (record.location && record.location.lat) ? record.location.lat : '25.736000';
                     let lng = (record.location && record.location.lng) ? record.location.lng : '88.608000';
                 %>
 
+                <div class="location-photos-grid">
+                    <!-- Photo 1: Captured Register -->
+                    <div class="photo-card-box">
+                        <span class="photo-card-title">📷 Attendance Register</span>
+                        <% if(record.photo) { %>
+                            <img src="<%= record.photo %>" alt="Register Photo" class="preview-img-responsive">
+                        <% } else { %>
+                            <div style="height: 140px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8;">No photo</div>
+                        <% } %>
+                    </div>
+
+                    <!-- Photo 2: Live Location Area Satellite Snapshot -->
+                    <div class="photo-card-box">
+                        <span class="photo-card-title">🛰️ Location Area Snapshot</span>
+                        <iframe
+                            width="100%"
+                            height="140"
+                            frameborder="0"
+                            style="border: 1px solid #cbd5e1; border-radius: 6px;"
+                            src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&t=k&z=17&output=embed">
+                        </iframe>
+                    </div>
+                </div>
+
                 <div class="gps-badge-info">
-                    <span>📍 <strong>GPS:</strong> <%= lat %>, <%= lng %></span>
+                    <span>📍 <strong>GPS Coordinates:</strong> <%= lat %>, <%= lng %></span>
                     <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open Maps ↗</a>
                 </div>
 
+                <!-- Interactive Road Map -->
                 <iframe
                     width="100%"
-                    height="200"
+                    height="180"
                     frameborder="0"
                     style="border: 1px solid #cbd5e1; border-radius: 8px;"
                     src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&z=16&output=embed">

@@ -28,41 +28,22 @@
                 <button type="button" class="tab-btn" id="adminTabBtn" onclick="switchTab('admin')">AEO Portal</button>
             </div>
 
+            <!-- School Login Form with Custom Popup Trigger -->
             <form action="/login" method="POST" id="schoolForm" class="auth-form">
                 <input type="hidden" name="role" value="school">
+                <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
+
                 <div class="input-group">
-                    <label>Select Your Institution</label>
-                    <select name="schoolId" required>
-                        <option value="1">1. Bochaganj Model Govt. Primary School</option>
-                        <option value="2">2. Setabganj Upashahar Govt. Primary School</option>
-                        <option value="3">3. Bochaganj Central Govt. Primary School</option>
-                        <option value="4">4. Muraripur Govt. Primary School</option>
-                        <option value="5">5. Chawk Rampur Govt. Primary School</option>
-                        <option value="6">6. Bogula Govt. Primary School</option>
-                        <option value="7">7. Chira Govt. Primary School</option>
-                        <option value="8">8. Gopalpur Govt. Primary School</option>
-                        <option value="9">9. Ishania Govt. Primary School</option>
-                        <option value="10">10. Nandigram Govt. Primary School</option>
-                        <option value="11">11. Shibpur Govt. Primary School</option>
-                        <option value="12">12. Ratanpur Govt. Primary School</option>
-                        <option value="13">13. Chak Kalikapur Govt. Primary School</option>
-                        <option value="14">14. Bara Maheshtpur Govt. Primary School</option>
-                        <option value="15">15. Chatra Govt. Primary School</option>
-                        <option value="16">16. Jagannathpur Govt. Primary School</option>
-                        <option value="17">17. Kashipur Govt. Primary School</option>
-                        <option value="18">18. Ramnagar Govt. Primary School</option>
-                        <option value="19">19. Kismat Bogula Govt. Primary School</option>
-                        <option value="20">20. Bahadurpur Govt. Primary School</option>
-                        <option value="21">21. Bhatgaon Govt. Primary School</option>
-                        <option value="22">22. Salandar Govt. Primary School</option>
-                        <option value="23">23. Nayaghat Govt. Primary School</option>
-                        <option value="24">24. Sahapur Govt. Primary School</option>
-                        <option value="25">25. Chakpara Govt. Primary School</option>
-                    </select>
+                    <label>Select Institution</label>
+                    <div class="custom-select-trigger" onclick="openSchoolModal()">
+                        <span class="trigger-text" id="selectedSchoolText">1. Bochaganj Model Govt. Primary School</span>
+                        <span class="trigger-icon">▼</span>
+                    </div>
                 </div>
                 <button type="submit" class="btn-submit">Access School Portal</button>
             </form>
 
+            <!-- Admin Form -->
             <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
@@ -71,6 +52,122 @@
                 </div>
                 <button type="submit" class="btn-submit">Access AEO Dashboard</button>
             </form>
+        </div>
+    </div>
+
+    <!-- Custom Searchable School Selector Popup Modal -->
+    <div id="schoolModal" class="school-modal-overlay">
+        <div class="school-modal-card">
+            <div class="school-modal-header">
+                <h4>Select Primary School</h4>
+                <button type="button" class="btn-close-modal" onclick="closeSchoolModal()">✕</button>
+            </div>
+            <div class="school-search-box">
+                <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name or serial..." onkeyup="filterSchools()">
+            </div>
+            <div class="school-list-container" id="schoolList">
+                <!-- 25 Schools with Serial and Smaller Font Size -->
+                <button type="button" class="school-item-btn" onclick="selectSchool(1, '1. Bochaganj Model Govt. Primary School')">
+                    <span class="school-serial-tag">1</span>
+                    <span class="school-item-title">Bochaganj Model Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(2, '2. Setabganj Upashahar Govt. Primary School')">
+                    <span class="school-serial-tag">2</span>
+                    <span class="school-item-title">Setabganj Upashahar Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(3, '3. Bochaganj Central Govt. Primary School')">
+                    <span class="school-serial-tag">3</span>
+                    <span class="school-item-title">Bochaganj Central Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(4, '4. Muraripur Govt. Primary School')">
+                    <span class="school-serial-tag">4</span>
+                    <span class="school-item-title">Muraripur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(5, '5. Chawk Rampur Govt. Primary School')">
+                    <span class="school-serial-tag">5</span>
+                    <span class="school-item-title">Chawk Rampur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(6, '6. Bogula Govt. Primary School')">
+                    <span class="school-serial-tag">6</span>
+                    <span class="school-item-title">Bogula Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(7, '7. Chira Govt. Primary School')">
+                    <span class="school-serial-tag">7</span>
+                    <span class="school-item-title">Chira Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(8, '8. Gopalpur Govt. Primary School')">
+                    <span class="school-serial-tag">8</span>
+                    <span class="school-item-title">Gopalpur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(9, '9. Ishania Govt. Primary School')">
+                    <span class="school-serial-tag">9</span>
+                    <span class="school-item-title">Ishania Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(10, '10. Nandigram Govt. Primary School')">
+                    <span class="school-serial-tag">10</span>
+                    <span class="school-item-title">Nandigram Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(11, '11. Shibpur Govt. Primary School')">
+                    <span class="school-serial-tag">11</span>
+                    <span class="school-item-title">Shibpur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(12, '12. Ratanpur Govt. Primary School')">
+                    <span class="school-serial-tag">12</span>
+                    <span class="school-item-title">Ratanpur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(13, '13. Chak Kalikapur Govt. Primary School')">
+                    <span class="school-serial-tag">13</span>
+                    <span class="school-item-title">Chak Kalikapur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(14, '14. Bara Maheshtpur Govt. Primary School')">
+                    <span class="school-serial-tag">14</span>
+                    <span class="school-item-title">Bara Maheshtpur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(15, '15. Chatra Govt. Primary School')">
+                    <span class="school-serial-tag">15</span>
+                    <span class="school-item-title">Chatra Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(16, '16. Jagannathpur Govt. Primary School')">
+                    <span class="school-serial-tag">16</span>
+                    <span class="school-item-title">Jagannathpur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(17, '17. Kashipur Govt. Primary School')">
+                    <span class="school-serial-tag">17</span>
+                    <span class="school-item-title">Kashipur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(18, '18. Ramnagar Govt. Primary School')">
+                    <span class="school-serial-tag">18</span>
+                    <span class="school-item-title">Ramnagar Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(19, '19. Kismat Bogula Govt. Primary School')">
+                    <span class="school-serial-tag">19</span>
+                    <span class="school-item-title">Kismat Bogula Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(20, '20. Bahadurpur Govt. Primary School')">
+                    <span class="school-serial-tag">20</span>
+                    <span class="school-item-title">Bahadurpur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(21, '21. Bhatgaon Govt. Primary School')">
+                    <span class="school-serial-tag">21</span>
+                    <span class="school-item-title">Bhatgaon Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(22, '22. Salandar Govt. Primary School')">
+                    <span class="school-serial-tag">22</span>
+                    <span class="school-item-title">Salandar Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(23, '23. Nayaghat Govt. Primary School')">
+                    <span class="school-serial-tag">23</span>
+                    <span class="school-item-title">Nayaghat Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(24, '24. Sahapur Govt. Primary School')">
+                    <span class="school-serial-tag">24</span>
+                    <span class="school-item-title">Sahapur Govt. Primary School</span>
+                </button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(25, '25. Chakpara Govt. Primary School')">
+                    <span class="school-serial-tag">25</span>
+                    <span class="school-item-title">Chakpara Govt. Primary School</span>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -92,6 +189,30 @@
                 adminForm.style.display = 'block';
                 schoolForm.style.display = 'none';
             }
+        }
+
+        function openSchoolModal() {
+            document.getElementById('schoolModal').classList.add('active');
+            document.getElementById('schoolSearchInput').focus();
+        }
+
+        function closeSchoolModal() {
+            document.getElementById('schoolModal').classList.remove('active');
+        }
+
+        function selectSchool(id, text) {
+            document.getElementById('selectedSchoolId').value = id;
+            document.getElementById('selectedSchoolText').textContent = text;
+            closeSchoolModal();
+        }
+
+        function filterSchools() {
+            const query = document.getElementById('schoolSearchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.school-item-btn');
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                item.style.display = text.includes(query) ? 'flex' : 'none';
+            });
         }
     </script>
 </body>

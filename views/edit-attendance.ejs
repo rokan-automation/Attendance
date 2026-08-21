@@ -4,19 +4,61 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Attendance - <%= record.schoolName %></title>
-    <link rel="shortcut icon" href="/icon.png?v=3" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=3">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=3">
-    <link rel="apple-touch-icon" href="/icon.png?v=3">
+    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
+    <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .map-wrapper-box {
+            margin-top: 15px;
+            background: #ffffff;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .map-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .gps-badge-info {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            color: #334155;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-open-gmaps {
+            background: #2563eb;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            font-weight: 600;
+        }
+    </style>
 </head>
-<body style="background-color: #f3f4f6; padding: 20px;">
-    <div class="app-container" style="max-width: 750px; margin: 0 auto;">
+<body style="background-color: #f3f4f6; padding: 12px;">
+    <div class="app-container" style="max-width: 650px; margin: 0 auto; padding: 12px;">
         <header class="app-header">
             <div>
                 <h3><%= record.schoolName %></h3>
-                <span class="badge">AEO Edit Portal</span>
+                <span class="badge">AEO Verification Portal</span>
             </div>
             <a href="/admin?auth=true" class="btn-logout" style="background: #e0e7ff; color: #4f46e5;">← Back to Summary</a>
         </header>
@@ -65,12 +107,36 @@
                 </table>
             </div>
 
-            <% if(record.photo) { %>
-                <div style="margin-top: 15px; background: white; padding: 12px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                    <p style="font-size: 12px; font-weight: 600; margin-bottom: 5px;">Submitted Register Photo:</p>
-                    <img src="<%= record.photo %>" alt="Register" style="max-width: 200px; border-radius: 6px; border: 1px solid #ccc;">
+            <!-- Uploaded Register Photo & GPS Map Section -->
+            <div class="map-wrapper-box">
+                <div class="map-section-title">📸 Attendance Register & Location</div>
+                
+                <% if(record.photo) { %>
+                    <div style="margin-bottom: 12px; text-align: center;">
+                        <img src="<%= record.photo %>" alt="Register Photo" style="width: 100%; max-width: 320px; border-radius: 8px; border: 1px solid #cbd5e1;">
+                    </div>
+                <% } else { %>
+                    <p style="font-size: 11px; color: #64748b; margin-bottom: 10px;">No register photo uploaded.</p>
+                <% } %>
+
+                <% 
+                    let lat = (record.location && record.location.lat) ? record.location.lat : '25.736000';
+                    let lng = (record.location && record.location.lng) ? record.location.lng : '88.608000';
+                %>
+
+                <div class="gps-badge-info">
+                    <span>📍 <strong>GPS:</strong> <%= lat %>, <%= lng %></span>
+                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open Maps ↗</a>
                 </div>
-            <% } %>
+
+                <iframe
+                    width="100%"
+                    height="200"
+                    frameborder="0"
+                    style="border: 1px solid #cbd5e1; border-radius: 8px;"
+                    src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&z=16&output=embed">
+                </iframe>
+            </div>
 
             <button type="button" onclick="updateAttendance()" class="btn-submit-main" style="margin-top: 15px;">Save Changes</button>
         </form>
@@ -81,7 +147,7 @@
         <div class="custom-modal-box">
             <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
             <h3 id="modalTitle">Updated</h3>
-            <p id="modalMessage">Attendance updated successfully!</p>
+            <p id="modalMessage">Attendance record updated successfully!</p>
             <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
         </div>
     </div>

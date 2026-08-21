@@ -13,10 +13,11 @@ const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 // Multer Memory Storage for Vercel
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Middleware
+// Middleware & View Configurations (Path Fixed for Vercel)
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
 // Bochaganj 25 Primary Schools Data with Demo Teachers

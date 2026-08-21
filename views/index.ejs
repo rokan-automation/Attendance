@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=3" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=3">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=3">
-    <link rel="apple-touch-icon" href="/icon.png?v=3">
+    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
+    <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -75,7 +75,7 @@
                     <span id="fileNameDisplay" class="file-name">No photo captured</span>
                 </div>
 
-                <button type="button" onclick="submitData()" class="btn-submit-main">Submit Daily Report</button>
+                <button type="button" onclick="submitData()" class="btn-submit-main" id="submitBtnMain">Submit Daily Report</button>
             </div>
         </form>
     </div>
@@ -134,7 +134,7 @@
             leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
         }
 
-        // Fast Client-Side Image Compressor (Reduces 5MB to ~150KB in milliseconds)
+        // Fast Client-Side Image Compressor
         function handleImageSelection(input) {
             const display = document.getElementById('fileNameDisplay');
             if (input.files && input.files[0]) {
@@ -149,7 +149,7 @@
                     img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const maxWidth = 1000; // Optimal HD width
+                        const maxWidth = 1000;
                         const scaleSize = maxWidth / img.width;
                         canvas.width = (img.width > maxWidth) ? maxWidth : img.width;
                         canvas.height = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
@@ -161,7 +161,7 @@
                             compressedBlob = blob;
                             display.textContent = "✅ Photo ready (" + Math.round(blob.size / 1024) + " KB)";
                             display.style.color = "#16a34a";
-                        }, 'image/jpeg', 0.7); // 70% Quality compression
+                        }, 'image/jpeg', 0.7);
                     };
                 };
             }
@@ -169,21 +169,22 @@
 
         function submitData() {
             if (!compressedBlob && !document.getElementById('registerPhoto').files[0]) {
-                showCustomModal('error', 'Photo Required', 'Please capture the attendance register photo first!');
+                showCustomModal('error', 'Photo Required', 'Please capture or upload the attendance register photo first!');
                 return;
             }
 
-            const submitBtn = document.querySelector('.btn-submit-main');
-            submitBtn.textContent = "Submitting instantly...";
+            const submitBtn = document.getElementById('submitBtnMain');
+            submitBtn.textContent = "📍 Acquiring GPS Location...";
             submitBtn.disabled = true;
 
-            const sendToServer = (lat, lng) => {
+            const sendPayload = (lat, lng) => {
+                submitBtn.textContent = "⚡ Submitting Report...";
+                
                 let formData = new FormData();
                 formData.append('schoolId', document.getElementById('schoolId').value);
                 formData.append('lat', lat);
                 formData.append('lng', lng);
                 
-                // Append lightweight optimized photo
                 if (compressedBlob) {
                     formData.append('registerPhoto', compressedBlob, 'register.jpg');
                 } else {
@@ -212,28 +213,40 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully!', true);
+                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully with live GPS!', true);
                     } else {
                         showCustomModal('error', 'Failed', 'Error: ' + data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }
                 }).catch(err => {
-                    showCustomModal('error', 'Network Error', 'Please check internet connection.');
+                    showCustomModal('error', 'Network Error', 'Please check your internet connection.');
                     submitBtn.textContent = "Submit Daily Report";
                     submitBtn.disabled = false;
                 });
             };
 
-            // Fast GPS detection with 2s timeout
-            if (navigator.geolocation) {
+            // High Precision GPS Tracking
+            if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
-                    (pos) => sendToServer(pos.coords.latitude, pos.coords.longitude),
-                    () => sendToServer(25.7360, 88.6080),
-                    { timeout: 2000, enableHighAccuracy: false }
+                    (position) => {
+                        const latitude = position.coords.latitude.toFixed(6);
+                        const longitude = position.coords.longitude.toFixed(6);
+                        sendPayload(latitude, longitude);
+                    },
+                    (error) => {
+                        console.warn("GPS Warning:", error.message);
+                        // If user denied permission or timeout, fallback gracefully
+                        sendPayload(25.736000, 88.608000);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 8000,
+                        maximumAge: 0
+                    }
                 );
             } else {
-                sendToServer(25.7360, 88.6080);
+                sendPayload(25.736000, 88.608000);
             }
         }
     </script>

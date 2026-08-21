@@ -56,19 +56,20 @@
             display: block;
         }
 
+        /* Fixed: object-fit contain ensures full uncut photo is visible */
         .register-full-img {
             width: 100%;
-            height: 180px;
-            object-fit: cover;
+            height: 200px;
+            object-fit: contain;
+            background: #0f172a;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
-            transition: 0.2s;
         }
 
         .satellite-360-iframe {
             width: 100%;
-            height: 180px;
+            height: 200px;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
         }
@@ -92,6 +93,26 @@
             border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
+        }
+
+        /* Full Screen Image Modal */
+        #imgViewerModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100000;
+            padding: 10px;
+        }
+        #imgViewerModal img {
+            max-width: 95%;
+            max-height: 90vh;
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -149,7 +170,7 @@
                 </table>
             </div>
 
-            <!-- Visual Verification: Captured Register & 360° Interactive Satellite View -->
+            <!-- Visual Verification: Full Uncut Register & Optimal 360° Satellite View -->
             <div class="map-wrapper-box">
                 <div class="map-section-title">📸 Attendance Verification & 360° Location View</div>
 
@@ -159,23 +180,23 @@
                 %>
 
                 <div class="photos-comparison-grid">
-                    <!-- Photo 1: Captured Register Photo -->
+                    <!-- Photo 1: Captured Register Photo (Full Uncut View) -->
                     <div class="visual-card">
-                        <span class="visual-card-title">📋 Attendance Register Photo</span>
+                        <span class="visual-card-title">📋 Register Photo (Tap to Enlarge)</span>
                         <% if(record.photo) { %>
-                            <img src="<%= record.photo %>" alt="Register Photo" class="register-full-img" onclick="window.open(this.src)">
+                            <img src="<%= record.photo %>" alt="Register Photo" class="register-full-img" onclick="openImageViewer(this.src)">
                         <% } else { %>
-                            <div style="height: 180px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8;">No photo uploaded</div>
+                            <div style="height: 200px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8;">No photo uploaded</div>
                         <% } %>
                     </div>
 
-                    <!-- Photo 2: 360° Interactive High-Res Satellite View -->
+                    <!-- Photo 2: 360° Interactive Optimal Satellite View -->
                     <div class="visual-card">
-                        <span class="visual-card-title">🛰️ 360° Interactive Satellite View</span>
+                        <span class="visual-card-title">🛰️ 360° Area Satellite View</span>
                         <iframe
                             class="satellite-360-iframe"
                             frameborder="0"
-                            src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&t=k&z=18&output=embed">
+                            src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&t=k&z=16&output=embed">
                         </iframe>
                     </div>
                 </div>
@@ -188,6 +209,11 @@
 
             <button type="button" onclick="updateAttendance()" class="btn-submit-main" style="margin-top: 15px;">Save Changes</button>
         </form>
+    </div>
+
+    <!-- Full-Screen Image Viewer Modal -->
+    <div id="imgViewerModal" onclick="this.style.display='none'">
+        <img id="enlargedImg" src="" alt="Enlarged Register">
     </div>
 
     <!-- Custom Modal Popup -->
@@ -203,6 +229,11 @@
     <script>
         const totalTeachersCount = <%= record.attendance.length %>;
         let redirectTarget = null;
+
+        function openImageViewer(src) {
+            document.getElementById('enlargedImg').src = src;
+            document.getElementById('imgViewerModal').style.display = 'flex';
+        }
 
         function showCustomModal(type, title, message, redirectUrl = null) {
             const modal = document.getElementById('customModal');

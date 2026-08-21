@@ -3,116 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance</title>
-    <link rel="shortcut icon" href="/icon.png?v=3" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=3">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=3">
-    <link rel="apple-touch-icon" href="/icon.png?v=3">
+    <title>Attendance - Bochaganj</title>
+    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
+    <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        /* Premium Splash Screen */
-        #splashScreen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+        /* === Premium Gateway & Portal Selection Screen === */
+        .gateway-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            z-index: 99999;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
+            justify-content: space-between;
+            min-height: 85vh;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 20px 10px;
         }
 
-        .splash-content {
+        .gateway-header {
             text-align: center;
-            color: #ffffff;
-            animation: zoomFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
+            margin-top: 15px;
         }
 
-        .splash-app-title {
-            font-size: 30px;
+        .gateway-title {
+            font-size: 26px;
             font-weight: 800;
-            letter-spacing: 1.5px;
-            margin-bottom: 6px;
-            background: linear-gradient(to right, #93c5fd, #c7d2fe, #ffffff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            color: #1e1b4b;
+            animation: softPulseText 3s infinite ease-in-out;
         }
 
-        .splash-sub {
+        .gateway-sub {
             font-size: 13px;
-            color: #94a3b8;
-            margin-bottom: 28px;
+            color: #64748b;
+            margin-top: 4px;
+            font-weight: 500;
         }
 
-        .developer-badge {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            padding: 12px 26px;
-            border-radius: 35px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
-            animation: pulseGlow 2.5s infinite alternate;
+        /* Animated Action Gateway Cards */
+        .role-cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+            margin: 30px 0;
         }
 
-        .dev-label {
-            display: block;
-            font-size: 11px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            color: #60a5fa;
-            margin-bottom: 3px;
+        .role-action-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
         }
 
-        .dev-name {
-            font-size: 17px;
+        .role-action-card:hover, .role-action-card:active {
+            border-color: #4f46e5;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.15);
+        }
+
+        .role-icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .school-icon-bg {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .aeo-icon-bg {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .role-info-title {
+            font-size: 16px;
             font-weight: 700;
-            color: #ffffff;
+            color: #1e293b;
+            display: block;
+            margin-bottom: 2px;
         }
 
-        @keyframes zoomFadeIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+        .role-info-desc {
+            font-size: 11.5px;
+            color: #64748b;
+            display: block;
         }
 
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 12px rgba(99, 102, 241, 0.3); }
-            100% { box-shadow: 0 0 30px rgba(147, 197, 253, 0.7); }
+        .role-arrow {
+            margin-left: auto;
+            font-size: 18px;
+            color: #94a3b8;
+            font-weight: 700;
+        }
+
+        /* Persistent Animated Developer Footer Badge */
+        .developer-footer {
+            text-align: center;
+            padding: 12px 20px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            animation: softGlow 3s infinite alternate;
+        }
+
+        .dev-badge-title {
+            display: block;
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #6366f1;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .dev-badge-name {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: 0.5px;
+        }
+
+        /* Back Button on Login Forms */
+        .btn-back-gateway {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 12px;
+            padding: 0;
+        }
+
+        .btn-back-gateway:hover {
+            color: #4f46e5;
+        }
+
+        @keyframes softPulseText {
+            0%, 100% { transform: scale(1); opacity: 0.95; }
+            50% { transform: scale(1.02); opacity: 1; }
+        }
+
+        @keyframes softGlow {
+            0% { border-color: #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
+            100% { border-color: #a5b4fc; box-shadow: 0 4px 18px rgba(99, 102, 241, 0.15); }
         }
     </style>
 </head>
 <body>
-    <div id="splashScreen">
-        <div class="splash-content">
-            <h1 class="splash-app-title">Attendance</h1>
-            <p class="splash-sub">Bochaganj Primary Education</p>
-            <div class="developer-badge">
-                <span class="dev-label">Developed by</span>
-                <span class="dev-name">Md. Rokanuzzaman Rokan</span>
+    <div class="auth-wrapper">
+        
+        <!-- 1. Gateway Screen (Initial View with Developer Credit) -->
+        <div id="gatewaySection" class="gateway-container">
+            <div class="gateway-header">
+                <h1 class="gateway-title">Attendance Portal</h1>
+                <p class="gateway-sub">Bochaganj Upazila Primary Education</p>
+            </div>
+
+            <!-- Role Selection Cards -->
+            <div class="role-cards-grid">
+                <div class="role-action-card" onclick="openPortal('school')">
+                    <div class="role-icon-box school-icon-bg">🏫</div>
+                    <div>
+                        <span class="role-info-title">School Login</span>
+                        <span class="role-info-desc">Submit daily teacher attendance report</span>
+                    </div>
+                    <span class="role-arrow">➔</span>
+                </div>
+
+                <div class="role-action-card" onclick="openPortal('admin')">
+                    <div class="role-icon-box aeo-icon-bg">👨‍💼</div>
+                    <div>
+                        <span class="role-info-title">AEO Portal</span>
+                        <span class="role-info-desc">Executive summary & attendance verify</span>
+                    </div>
+                    <span class="role-arrow">➔</span>
+                </div>
+            </div>
+
+            <!-- Developer Credit (Permanent on Home Gateway) -->
+            <div class="developer-footer">
+                <span class="dev-badge-title">Developed by</span>
+                <span class="dev-badge-name">Md. Rokanuzzaman Rokan</span>
             </div>
         </div>
-    </div>
 
-    <div class="auth-wrapper">
-        <div class="auth-card">
+        <!-- 2. Actual Login Form Card (Opens on Tap) -->
+        <div class="auth-card" id="formCard" style="display: none;">
+            <button type="button" class="btn-back-gateway" onclick="backToGateway()">← Back to Main Menu</button>
+            
             <div class="brand-header">
-                <h2>Attendance</h2>
-                <p>Bochaganj Primary Education</p>
+                <h2 id="formTitle">Attendance</h2>
+                <p id="formSub">Bochaganj Primary Education</p>
             </div>
 
             <% if(typeof error !== 'undefined' && error) { %>
                 <div class="alert-error"><%= error %></div>
             <% } %>
 
-            <div class="tab-buttons">
-                <button type="button" class="tab-btn active" id="schoolTabBtn" onclick="switchTab('school')">School Login</button>
-                <button type="button" class="tab-btn" id="adminTabBtn" onclick="switchTab('admin')">AEO Portal</button>
-            </div>
-
+            <!-- School Form -->
             <form action="/login" method="POST" id="schoolForm" class="auth-form">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
@@ -127,6 +240,7 @@
                 <button type="submit" class="btn-submit">Access School Portal</button>
             </form>
 
+            <!-- Admin Form -->
             <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
@@ -138,7 +252,7 @@
         </div>
     </div>
 
-    <!-- School Selector Popup Modal -->
+    <!-- Custom Searchable School Selector Popup Modal -->
     <div id="schoolModal" class="school-modal-overlay">
         <div class="school-modal-card">
             <div class="school-modal-header">
@@ -254,34 +368,31 @@
     </div>
 
     <script>
-        // Shows Developer Name for 3.5 seconds nicely
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splashScreen');
-                splash.style.opacity = '0';
-                setTimeout(() => {
-                    splash.style.display = 'none';
-                }, 800);
-            }, 3200);
-        });
+        function openPortal(type) {
+            document.getElementById('gatewaySection').style.display = 'none';
+            document.getElementById('formCard').style.display = 'block';
 
-        function switchTab(type) {
-            const schoolBtn = document.getElementById('schoolTabBtn');
-            const adminBtn = document.getElementById('adminTabBtn');
             const schoolForm = document.getElementById('schoolForm');
             const adminForm = document.getElementById('adminForm');
+            const formTitle = document.getElementById('formTitle');
+            const formSub = document.getElementById('formSub');
 
             if(type === 'school') {
-                schoolBtn.classList.add('active');
-                adminBtn.classList.remove('active');
                 schoolForm.style.display = 'block';
                 adminForm.style.display = 'none';
+                formTitle.textContent = "School Login";
+                formSub.textContent = "Bochaganj Primary Education";
             } else {
-                adminBtn.classList.add('active');
-                schoolBtn.classList.remove('active');
                 adminForm.style.display = 'block';
                 schoolForm.style.display = 'none';
+                formTitle.textContent = "AEO Dashboard";
+                formSub.textContent = "Authorized Access Only";
             }
+        }
+
+        function backToGateway() {
+            document.getElementById('formCard').style.display = 'none';
+            document.getElementById('gatewaySection').style.display = 'flex';
         }
 
         function openSchoolModal() {

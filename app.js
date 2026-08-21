@@ -1,7 +1,8 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 const express = require('express');
 const path = require('path');
-const session = require('express-session');
 const multer = require('multer');
 const supabase = require('./db');
 
@@ -9,7 +10,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 
-// Multer Memory Storage (Required for Serverless/Vercel to handle file uploads)
+// Multer Memory Storage for Vercel
 const upload = multer({ storage: multer.memoryStorage() });
 
 // Middleware
@@ -17,12 +18,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
-
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'bochaganj_primary_secret',
-    resave: false,
-    saveUninitialized: true
-}));
 
 // Bochaganj 25 Primary Schools Data with Demo Teachers
 const schoolsData = [
@@ -62,38 +57,33 @@ app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     if (role === 'admin') {
         if (password === AEO_PASSWORD) {
-            req.session.role = 'admin';
-            return res.redirect('/admin');
+            return res.redirect('/admin?auth=true');
         } else {
             return res.render('login', { error: 'Invalid AEO Password!' });
         }
     } else if (role === 'school') {
-        req.session.role = 'school';
-        req.session.schoolId = schoolId;
-        return res.redirect('/index');
+        return res.redirect(`/index?schoolId=${schoolId}`);
     }
     res.redirect('/');
 });
 
 app.get('/index', (req, res) => {
-    if (!req.session.role || req.session.role !== 'school') return res.redirect('/');
-    const school = schoolsData.find(s => s.id == req.session.schoolId);
+    const schoolId = req.query.schoolId;
+    if (!schoolId) return res.redirect('/');
+    const school = schoolsData.find(s => s.id == schoolId);
     res.render('index', { school });
 });
 
 // Submit Attendance to Supabase & Storage Bucket
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
-    if (!req.session.role || req.session.role !== 'school') return res.redirect('/');
-    
     const { schoolId, attendance, lat, lng } = req.body;
     const school = schoolsData.find(s => s.id == schoolId);
     
     let photoUrl = null;
 
-    // Upload photo to Supabase Storage Bucket if file exists
     if (req.file) {
         const fileName = `${Date.now()}-${req.file.originalname}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
             .from('attendance-photos')
             .upload(fileName, req.file.buffer, {
                 contentType: req.file.mimetype,
@@ -106,8 +96,6 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
                 .getPublicUrl(fileName);
             
             photoUrl = publicUrlData.publicUrl;
-        } else {
-            console.error('Storage Upload Error:', uploadError.message);
         }
     }
     
@@ -133,9 +121,9 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route fetching from Supabase
+// Admin Route
 app.get('/admin', async (req, res) => {
-    if (!req.session.role || req.session.role !== 'admin') return res.redirect('/');
+    if (req.query.auth !== 'true') return res.redirect('/');
 
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
     res.setHeader('Pragma', 'no-cache');
@@ -164,10 +152,8 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { records: formattedRecords });
 });
 
-// View Specific School Attendance Detail & Edit Page for AEO
+// Edit Page for AEO
 app.get('/admin/school/:id', async (req, res) => {
-    if (!req.session.role || req.session.role !== 'admin') return res.redirect('/');
-    
     const recordId = req.params.id;
     const { data, error } = await supabase
         .from('attendance_records')
@@ -176,7 +162,7 @@ app.get('/admin/school/:id', async (req, res) => {
         .single();
 
     if (error || !data) {
-        return res.redirect('/admin');
+        return res.redirect('/admin?auth=true');
     }
 
     const record = {
@@ -194,8 +180,6 @@ app.get('/admin/school/:id', async (req, res) => {
 
 // Update School Attendance by AEO
 app.post('/admin/school/update/:id', async (req, res) => {
-    if (!req.session.role || req.session.role !== 'admin') return res.redirect('/');
-    
     const recordId = req.params.id;
     const { attendance } = req.body;
 
@@ -209,16 +193,14 @@ app.post('/admin/school/update/:id', async (req, res) => {
         return res.json({ success: false, message: 'Failed to update attendance.' });
     }
 
-    res.json({ success: true, redirectUrl: '/admin' });
+    res.json({ success: true, redirectUrl: '/admin?auth=true' });
 });
 
 app.get('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/');
-    });
+    res.redirect('/');
 });
 
-// Export app for Vercel Serverless
+// Export app for Vercel
 module.exports = app;
 
 if (require.main === module) {

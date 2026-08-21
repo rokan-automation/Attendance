@@ -10,8 +10,94 @@
     <link rel="apple-touch-icon" href="/icon.png?v=3">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Premium Splash Screen Animation */
+        #splashScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .splash-content {
+            text-align: center;
+            color: #ffffff;
+            animation: zoomFadeIn 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .splash-app-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+            background: linear-gradient(to right, #a5b4fc, #ffffff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .splash-sub {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 25px;
+        }
+
+        .developer-badge {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 22px;
+            border-radius: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: pulseGlow 2s infinite alternate;
+        }
+
+        .dev-label {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #93c5fd;
+            margin-bottom: 2px;
+        }
+
+        .dev-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        @keyframes zoomFadeIn {
+            0% { opacity: 0; transform: scale(0.85); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 10px rgba(99, 102, 241, 0.3); }
+            100% { box-shadow: 0 0 25px rgba(165, 180, 252, 0.6); }
+        }
+    </style>
 </head>
 <body>
+    <!-- Animated Splash Screen -->
+    <div id="splashScreen">
+        <div class="splash-content">
+            <h1 class="splash-app-title">Attendance</h1>
+            <p class="splash-sub">Bochaganj Primary Education</p>
+            <div class="developer-badge">
+                <span class="dev-label">Developed by</span>
+                <span class="dev-name">Md. Rokanuzzaman Rokan</span>
+            </div>
+        </div>
+    </div>
+
     <div class="auth-wrapper">
         <div class="auth-card">
             <div class="brand-header">
@@ -28,7 +114,6 @@
                 <button type="button" class="tab-btn" id="adminTabBtn" onclick="switchTab('admin')">AEO Portal</button>
             </div>
 
-            <!-- School Login Form with Custom Popup Trigger -->
             <form action="/login" method="POST" id="schoolForm" class="auth-form">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
@@ -43,7 +128,6 @@
                 <button type="submit" class="btn-submit">Access School Portal</button>
             </form>
 
-            <!-- Admin Form -->
             <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
@@ -66,7 +150,6 @@
                 <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name or serial..." onkeyup="filterSchools()">
             </div>
             <div class="school-list-container" id="schoolList">
-                <!-- 25 Schools with Serial and Smaller Font Size -->
                 <button type="button" class="school-item-btn" onclick="selectSchool(1, '1. Bochaganj Model Govt. Primary School')">
                     <span class="school-serial-tag">1</span>
                     <span class="school-item-title">Bochaganj Model Govt. Primary School</span>
@@ -172,6 +255,17 @@
     </div>
 
     <script>
+        // Hide Splash Screen smoothly after 2 seconds
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                splash.style.opacity = '0';
+                setTimeout(() => {
+                    splash.style.display = 'none';
+                }, 800);
+            }, 1800);
+        });
+
         function switchTab(type) {
             const schoolBtn = document.getElementById('schoolTabBtn');
             const adminBtn = document.getElementById('adminTabBtn');

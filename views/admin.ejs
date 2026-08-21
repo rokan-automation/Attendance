@@ -4,17 +4,149 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Attendance Summary - Bochaganj</title>
-    <!-- Favicon / App Icon -->
-    <link rel="icon" type="image/png" href="/icon.png">
-    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="shortcut icon" href="/icon.png?v=3" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=3">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=3">
+    <link rel="apple-touch-icon" href="/icon.png?v=3">
+    <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        /* Mobile-First 2-Row Clean Layout */
+        .summary-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+
+        .summary-header {
+            text-align: center;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 10px;
+        }
+
+        .summary-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+
+        .summary-header p {
+            font-size: 11px;
+            color: #6b7280;
+        }
+
+        /* 2 Rows Grid: 3 items in Row 1, 3 items in Row 2 */
+        .two-row-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .clean-stat-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 6px;
+            text-align: center;
+        }
+
+        .clean-stat-box .num {
+            display: block;
+            font-size: 19px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 3px;
+        }
+
+        .clean-stat-box .lbl {
+            font-size: 10.5px;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .rates-grid-clean {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .clean-rate-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 8px;
+            text-align: center;
+        }
+
+        .clean-rate-box .title {
+            display: block;
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .clean-rate-box .value {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .school-list-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            padding: 12px 14px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: 0.2s;
+            margin-bottom: 8px;
+        }
+
+        .school-list-card:hover {
+            border-color: #4f46e5;
+        }
+
+        .school-info-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1f2937;
+            line-height: 1.3;
+            max-width: 220px;
+        }
+
+        .school-info-time {
+            display: block;
+            font-size: 10px;
+            color: #6b7280;
+            margin-top: 3px;
+        }
+
+        .btn-view-compact {
+            background: #e0e7ff;
+            color: #4f46e5;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            white-space: nowrap;
+        }
+    </style>
 </head>
-<body style="background-color: #f3f4f6; padding: 20px;">
-    <div class="app-container" style="max-width: 750px; margin: 0 auto;">
+<body style="background-color: #f3f4f6; padding: 12px;">
+    <div class="app-container" style="max-width: 650px; margin: 0 auto; padding: 12px;">
         <header class="app-header">
             <div>
-                <h3>Bochaganj Upazila Primary Education</h3>
-                <span class="badge">AEO Daily Report Summary</span>
+                <h3>Bochaganj Upazila</h3>
+                <span class="badge">AEO Daily Summary</span>
             </div>
             <a href="/logout" class="btn-logout">Logout</a>
         </header>
@@ -45,65 +177,73 @@
             let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
         %>
 
-        <!-- Executive Summary Card -->
-        <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
-            <div style="text-align: center; margin-bottom: 20px; border-bottom: 1px solid #f3f4f6; padding-bottom: 12px;">
-                <h3 style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 4px;">Teacher Attendance Summary Report</h3>
-                <p style="font-size: 12px; color: #6b7280;">Date: <%= new Date().toLocaleDateString() %></p>
+        <!-- Executive Summary Card (Clean 2-Row Design) -->
+        <div class="summary-card">
+            <div class="summary-header">
+                <h3>Teacher Attendance Summary Report</h3>
+                <p>Date: <%= new Date().toLocaleDateString() %></p>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 20px; text-align: center;">
-                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="display: block; font-size: 16px; font-weight: 700; color: #2563eb;"><%= submittedCount %></span>
-                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Submitted</span>
+            <!-- Row 1: School & Teacher Counts -->
+            <div class="two-row-grid">
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
+                    <span class="lbl">Submitted</span>
                 </div>
-                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="display: block; font-size: 16px; font-weight: 700; color: #dc2626;"><%= pendingCount %></span>
-                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Pending</span>
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #dc2626;"><%= pendingCount %></span>
+                    <span class="lbl">Pending</span>
                 </div>
-                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="display: block; font-size: 16px; font-weight: 700; color: #1f2937;"><%= actualTotalTeachers %></span>
-                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Teachers</span>
-                </div>
-                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="display: block; font-size: 16px; font-weight: 700; color: #10b981;"><%= totalPresent %></span>
-                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Present</span>
-                </div>
-                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="display: block; font-size: 16px; font-weight: 700; color: #f59e0b;"><%= totalLeave %></span>
-                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">On Leave</span>
-                </div>
-                <div style="background: #f9fafb; padding: 10px 4px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                    <span style="display: block; font-size: 16px; font-weight: 700; color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
-                    <span style="font-size: 10px; color: #6b7280; font-weight: 600;">Absent</span>
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
+                    <span class="lbl">Teachers</span>
                 </div>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center;">
-                    <span style="display: block; font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px;">Attendance Rate (Submitted Base)</span>
-                    <span style="font-size: 20px; font-weight: 700; color: #2563eb;"><%= rateTotalTeachers %>%</span>
+            <!-- Row 2: Attendance Status Breakdown -->
+            <div class="two-row-grid">
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #10b981;"><%= totalPresent %></span>
+                    <span class="lbl">Present</span>
                 </div>
-                <div style="background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center;">
-                    <span style="display: block; font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 4px;">Absence Rate (Excl. Leave)</span>
-                    <span style="font-size: 20px; font-weight: 700; color: #dc2626;"><%= rateEffective %>%</span>
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
+                    <span class="lbl">On Leave</span>
+                </div>
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
+                    <span class="lbl">Absent</span>
+                </div>
+            </div>
+
+            <!-- Rates Grid -->
+            <div class="rates-grid-clean">
+                <div class="clean-rate-box">
+                    <span class="title">Attendance Rate<br><small style="font-weight:400; font-size:9px;">(Submitted Base)</small></span>
+                    <span class="value" style="color: #2563eb;"><%= rateTotalTeachers %>%</span>
+                </div>
+                <div class="clean-rate-box">
+                    <span class="title">Absence Rate<br><small style="font-weight:400; font-size:9px;">(Excl. Leave)</small></span>
+                    <span class="value" style="color: #dc2626;"><%= rateEffective %>%</span>
                 </div>
             </div>
         </div>
 
-        <h4 style="font-size: 14px; margin-bottom: 10px; color: #374155;">Submitted Reports List (<%= submittedCount %> / <%= totalSchools %>)</h4>
+        <!-- Submitted Reports List -->
+        <h4 style="font-size: 13px; font-weight: 700; margin: 15px 0 10px 4px; color: #374155;">Submitted Reports (<%= submittedCount %> / <%= totalSchools %>)</h4>
+        
         <% if(records.length === 0) { %>
-            <p style="font-size: 12px; color: #6b7280;">No attendance submitted yet today.</p>
+            <p style="font-size: 12px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance submitted yet today.</p>
         <% } else { %>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; flex-direction: column;">
                 <% records.forEach(rec => { %>
                     <a href="/admin/school/<%= rec.id %>" style="text-decoration: none; color: inherit;">
-                        <div style="background: white; border: 1px solid #e5e7eb; padding: 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px rgba(0,0,0,0.02); transition: 0.2s;" onmouseover="this.style.borderColor='#4f46e5'" onmouseout="this.style.borderColor='#e5e7eb'">
+                        <div class="school-list-card">
                             <div>
-                                <strong style="font-size: 13px; color: #1f2937;">🏫 <%= rec.schoolName %></strong>
-                                <span style="display: block; font-size: 11px; color: #6b7280; margin-top: 2px;">Submitted at: <%= rec.timestamp %></span>
+                                <div class="school-info-title">🏫 <%= rec.schoolName %></div>
+                                <span class="school-info-time"><%= rec.timestamp %></span>
                             </div>
-                            <span style="background: #e0e7ff; color: #4f46e5; font-size: 11px; font-weight: 600; padding: 5px 10px; border-radius: 6px;">View & Edit ➔</span>
+                            <span class="btn-view-compact">View & Edit ➔</span>
                         </div>
                     </a>
                 <% }) %>

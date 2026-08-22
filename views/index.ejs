@@ -38,22 +38,23 @@
         .top-btn-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
-        .btn-exit-app {
-            background: #f1f5f9;
-            color: #475569;
-            padding: 5px 10px;
+        .btn-exit-colorful {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+            color: #ffffff;
+            padding: 5px 12px;
             font-size: 11px;
-            font-weight: 700;
+            font-weight: 800;
             text-decoration: none;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            transition: 0.2s;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+            border: none;
+            transition: all 0.25s ease;
         }
-        .btn-exit-app:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+        .btn-exit-colorful:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.4);
         }
     </style>
 </head>
@@ -66,7 +67,7 @@
             </div>
             <div class="top-btn-group">
                 <a href="/logout" class="btn-logout">Logout</a>
-                <a href="/" class="btn-exit-app">Exit ✕</a>
+                <a href="/" class="btn-exit-colorful">Exit</a>
             </div>
         </header>
 

@@ -222,28 +222,30 @@
             white-space: nowrap;
         }
 
-        /* Top Action Button Group with Exit */
         .top-btn-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
 
-        .btn-exit-app {
-            background: #f1f5f9;
-            color: #475569;
-            padding: 6px 12px;
+        /* Colorful Vibrant Gradient Exit Button */
+        .btn-exit-colorful {
+            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
+            color: #ffffff;
+            padding: 6px 14px;
             font-size: 12px;
-            font-weight: 700;
+            font-weight: 800;
             text-decoration: none;
-            border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            transition: 0.2s;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+            border: none;
+            transition: all 0.25s ease;
+            letter-spacing: 0.5px;
         }
 
-        .btn-exit-app:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+        .btn-exit-colorful:hover {
+            transform: scale(1.04);
+            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.4);
         }
 
         @media print {
@@ -268,10 +270,10 @@
                 <h3>Bochaganj Upazila</h3>
                 <span class="badge">AEO Executive Portal</span>
             </div>
-            <!-- Logout and Exit Buttons Side-by-Side -->
+            <!-- Logout and Colorful Exit Button -->
             <div class="top-btn-group">
                 <a href="/logout" class="btn-logout">Logout</a>
-                <a href="/" class="btn-exit-app">Exit ✕</a>
+                <a href="/" class="btn-exit-colorful">Exit</a>
             </div>
         </header>
 
@@ -299,19 +301,17 @@
             let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
         %>
 
-        <!-- Summary Card with Mode Tabs (Daily/Monthly/Yearly) -->
+        <!-- Summary Card with Mode Tabs -->
         <div class="summary-card">
             <div class="summary-header">
                 <h3>Attendance Summary Report</h3>
                 
-                <!-- View Mode Tabs -->
                 <div class="filter-mode-tabs">
                     <a href="/admin?auth=true&viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
                     <a href="/admin?auth=true&viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
                     <a href="/admin?auth=true&viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
                 </div>
 
-                <!-- Dynamic Filter Input based on Mode -->
                 <div class="date-filter-bar">
                     <% if (viewType === 'daily') { %>
                         <span style="font-size: 11px; color: #64748b;">Select Date:</span>
@@ -375,7 +375,7 @@
             </div>
         </div>
 
-        <!-- AEO Tools: Emergency Lock, Export Excel, Print & Search -->
+        <!-- AEO Tools -->
         <div class="aeo-tools-bar">
             <button type="button" class="btn-tool btn-unlock-toggle" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
                 <%= isAeoUnlocked ? '🔒 Re-lock Submission' : '🔓 Emergency Unlock' %>
@@ -491,7 +491,6 @@
             });
         }
 
-        // Export to Excel with Exact Picture Columns
         function exportToExcel() {
             if (submittedRecords.length === 0) {
                 showCustomModal('error', 'No Data', 'No submitted data available to export!');

@@ -3,12 +3,16 @@ if (process.env.NODE_ENV !== 'production') {
 }
 const express = require('express');
 const path = require('path');
+const compression = require('compression');
 const multer = require('multer');
 const supabase = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
+
+// High Performance GZIP Compression for Ultra-Fast Mobile Speed
+app.use(compression());
 
 // Multer Storage
 const upload = multer({ 
@@ -19,7 +23,7 @@ const upload = multer({
 // Middleware & View Configurations
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -136,7 +140,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Super-Fast Admin Route (Optimized selective columns query)
+// Super-Fast Admin Route
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
 
@@ -151,7 +155,6 @@ app.get('/admin', async (req, res) => {
     const selectedMonth = req.query.month || todayDate.substring(0, 7);
     const selectedYear = req.query.year || todayDate.substring(0, 4);
 
-    // Optimized: Exclude heavy photo_url from general listing for maximum speed
     let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
 
     if (viewType === 'daily') {
@@ -207,7 +210,7 @@ app.post('/admin/toggle-lock', async (req, res) => {
     res.json({ success: true, isUnlocked: unlock });
 });
 
-// Edit Page for AEO (Loads photo for this specific school only)
+// Edit Page for AEO
 app.get('/admin/school/:id', async (req, res) => {
     const recordId = req.params.id;
     const { data, error } = await supabase

@@ -35,6 +35,26 @@
             color: #475569;
             line-height: 1.4;
         }
+        .top-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-exit-app {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            transition: 0.2s;
+        }
+        .btn-exit-app:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
     </style>
 </head>
 <body>
@@ -44,11 +64,13 @@
                 <h3><%= school.id %>. <%= school.name %></h3>
                 <span class="badge">Teacher Attendance Portal</span>
             </div>
-            <a href="/logout" class="btn-logout">Logout</a>
+            <div class="top-btn-group">
+                <a href="/logout" class="btn-logout">Logout</a>
+                <a href="/" class="btn-exit-app">Exit ✕</a>
+            </div>
         </header>
 
         <% if (!isAllowed) { %>
-            <!-- 10:00 AM Time Lock Screen -->
             <div class="lock-notice-box">
                 <span class="lock-icon">🔒</span>
                 <h4 class="lock-title">Attendance Submission Closed</h4>
@@ -58,7 +80,6 @@
                 </p>
             </div>
         <% } else { %>
-            <!-- Active Attendance Form -->
             <form id="attendanceForm" class="dashboard-form">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 

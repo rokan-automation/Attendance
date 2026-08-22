@@ -136,7 +136,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route with Daily, Monthly & Yearly Filter
+// Super-Fast Admin Route (Optimized selective columns query)
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
 
@@ -145,13 +145,14 @@ app.get('/admin', async (req, res) => {
     res.setHeader('Expires', '0');
 
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-    const viewType = req.query.viewType || 'daily'; // 'daily', 'monthly', 'yearly'
+    const viewType = req.query.viewType || 'daily';
     
     const selectedDate = req.query.date || todayDate;
-    const selectedMonth = req.query.month || todayDate.substring(0, 7); // YYYY-MM
-    const selectedYear = req.query.year || todayDate.substring(0, 4); // YYYY
+    const selectedMonth = req.query.month || todayDate.substring(0, 7);
+    const selectedYear = req.query.year || todayDate.substring(0, 4);
 
-    let query = supabase.from('attendance_records').select('*');
+    // Optimized: Exclude heavy photo_url from general listing for maximum speed
+    let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
 
     if (viewType === 'daily') {
         query = query.eq('attendance_date', selectedDate);
@@ -161,9 +162,9 @@ app.get('/admin', async (req, res) => {
         query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
     }
 
-    const { data: records, error } = await query.order('created_at', { ascending: false });
+    const { data: records } = await query.order('created_at', { ascending: false });
 
-    // Fetch Current Override Status
+    // Fetch Override Status
     const { data: setting } = await supabase
         .from('system_settings')
         .select('*')
@@ -177,7 +178,6 @@ app.get('/admin', async (req, res) => {
         schoolName: rec.school_name,
         date: rec.attendance_date,
         attendance: rec.attendance_data,
-        photo: rec.photo_url,
         location: { lat: rec.latitude, lng: rec.longitude },
         timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
     }));
@@ -192,7 +192,7 @@ app.get('/admin', async (req, res) => {
     });
 });
 
-// AEO Toggle Unlock Permission API
+// AEO Toggle Lock
 app.post('/admin/toggle-lock', async (req, res) => {
     const { unlock } = req.body;
 
@@ -207,7 +207,7 @@ app.post('/admin/toggle-lock', async (req, res) => {
     res.json({ success: true, isUnlocked: unlock });
 });
 
-// Edit Page for AEO
+// Edit Page for AEO (Loads photo for this specific school only)
 app.get('/admin/school/:id', async (req, res) => {
     const recordId = req.params.id;
     const { data, error } = await supabase

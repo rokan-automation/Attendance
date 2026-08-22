@@ -34,7 +34,6 @@
             margin-bottom: 6px;
         }
 
-        /* Filter Selector Tabs */
         .filter-mode-tabs {
             display: flex;
             justify-content: center;
@@ -223,6 +222,30 @@
             white-space: nowrap;
         }
 
+        /* Top Action Button Group with Exit */
+        .top-btn-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-exit-app {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            transition: 0.2s;
+        }
+
+        .btn-exit-app:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
         @media print {
             .app-header, .aeo-tools-bar, .filter-mode-tabs, .date-filter-bar, .btn-view-compact, .custom-modal-overlay {
                 display: none !important;
@@ -245,7 +268,11 @@
                 <h3>Bochaganj Upazila</h3>
                 <span class="badge">AEO Executive Portal</span>
             </div>
-            <a href="/logout" class="btn-logout">Logout</a>
+            <!-- Logout and Exit Buttons Side-by-Side -->
+            <div class="top-btn-group">
+                <a href="/logout" class="btn-logout">Logout</a>
+                <a href="/" class="btn-exit-app">Exit ✕</a>
+            </div>
         </header>
 
         <% 
@@ -471,7 +498,7 @@
                 return;
             }
 
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // UTF-8 BOM for Excel Bengali & Symbols
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
             csvContent += "Date,School Name,Teacher Name,Status,Leave Type,Submission Time,Latitude,Longitude\r\n";
 
             submittedRecords.forEach(rec => {

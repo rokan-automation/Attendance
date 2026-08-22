@@ -11,16 +11,23 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .app-container-fixed {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 8px;
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f3f4f6;
+        }
+
+        .app-container-fullscreen {
+            max-width: 550px;
             height: 100vh;
+            margin: 0 auto;
+            padding: 10px 8px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             box-sizing: border-box;
-            overflow: hidden;
         }
 
         .summary-card-page1 {
@@ -43,7 +50,7 @@
         }
 
         .summary-header h3 {
-            font-size: 15px;
+            font-size: 15.5px;
             font-weight: 800;
             color: #1e293b;
             margin-bottom: 3px;
@@ -92,6 +99,7 @@
             outline: none;
         }
 
+        /* 2-Row Counts Grid with Total Schools */
         .two-row-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -103,24 +111,25 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 8px 3px;
+            padding: 8px 2px;
             text-align: center;
         }
 
         .clean-stat-box .num {
             display: block;
-            font-size: 18px;
+            font-size: 18.5px;
             font-weight: 800;
             line-height: 1.15;
             margin-bottom: 2px;
         }
 
         .clean-stat-box .lbl {
-            font-size: 10px;
+            font-size: 10.5px;
             color: #64748b;
             font-weight: 600;
         }
 
+        /* 3 Rate Cards Grid */
         .three-rates-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -132,20 +141,20 @@
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 6px 3px;
+            padding: 6px 2px;
             text-align: center;
         }
 
         .rate-box-compact .title {
             display: block;
-            font-size: 9.5px;
+            font-size: 10px;
             color: #64748b;
             font-weight: 700;
             margin-bottom: 2px;
         }
 
         .rate-box-compact .value {
-            font-size: 17px;
+            font-size: 17.5px;
             font-weight: 800;
         }
 
@@ -205,8 +214,8 @@
         .btn-logout {
             background: #fee2e2;
             color: #dc2626;
-            padding: 4px 10px;
-            font-size: 11px;
+            padding: 5px 12px;
+            font-size: 11.5px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
@@ -215,8 +224,8 @@
         .btn-exit-colorful {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #ffffff;
-            padding: 4px 12px;
-            font-size: 11px;
+            padding: 5px 14px;
+            font-size: 11.5px;
             font-weight: 800;
             text-decoration: none;
             border-radius: 6px;
@@ -225,8 +234,8 @@
         }
     </style>
 </head>
-<body style="background-color: #f3f4f6;">
-    <div class="app-container-fixed">
+<body>
+    <div class="app-container-fullscreen">
         
         <% 
             const totalSchools = 25;
@@ -254,11 +263,11 @@
             let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
         %>
 
-        <!-- Header without Back Button -->
+        <!-- Header (Only Logout & Exit - Zero Back Button) -->
         <header class="app-header">
             <div>
-                <h3 style="font-size: 14px;">Bochaganj Upazila</h3>
-                <span class="badge">AEO Summary</span>
+                <h3 style="font-size: 14.5px;">Bochaganj Upazila</h3>
+                <span class="badge">AEO Summary Report</span>
             </div>
             <div class="top-btn-group">
                 <a href="/logout" class="btn-logout">Logout</a>
@@ -294,31 +303,31 @@
                 </div>
             </div>
 
-            <!-- Row 1: Counts -->
+            <!-- Row 1: Total Schools, Submitted, Pending -->
             <div class="two-row-grid">
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #4f46e5;"><%= totalSchools %></span>
+                    <span class="lbl">Total Schools</span>
+                </div>
                 <div class="clean-stat-box">
                     <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
                     <span class="lbl"><%= viewType === 'daily' ? 'Submitted' : 'Reports' %></span>
                 </div>
                 <div class="clean-stat-box">
-                    <span class="num" style="color: #dc2626;"><%= viewType === 'daily' ? pendingCount : totalSchools %></span>
-                    <span class="lbl"><%= viewType === 'daily' ? 'Pending' : 'Total Schools' %></span>
+                    <span class="num" style="color: #dc2626;"><%= viewType === 'daily' ? pendingCount : 0 %></span>
+                    <span class="lbl">Pending</span>
                 </div>
+            </div>
+
+            <!-- Row 2: Teachers Breakdown -->
+            <div class="two-row-grid">
                 <div class="clean-stat-box">
                     <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
                     <span class="lbl">Teachers</span>
                 </div>
-            </div>
-
-            <!-- Row 2: Status Breakdown -->
-            <div class="two-row-grid">
                 <div class="clean-stat-box">
                     <span class="num" style="color: #10b981;"><%= totalPresent %></span>
                     <span class="lbl">Present</span>
-                </div>
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
-                    <span class="lbl">On Leave</span>
                 </div>
                 <div class="clean-stat-box">
                     <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
@@ -374,6 +383,12 @@
         const currentView = "<%= viewType %>";
         const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
         let shouldReloadPage = false;
+
+        // Hardware Phone Back Button Intercept - Force Exit to outside/logout
+        window.history.pushState(null, "", window.location.href);
+        window.onpopstate = function () {
+            window.location.href = '/logout';
+        };
 
         function performExit() {
             window.location.href = '/logout';

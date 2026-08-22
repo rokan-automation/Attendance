@@ -104,6 +104,30 @@
             border-radius: 6px;
             border: 1px solid #c7d2fe;
         }
+
+        /* Modal Action Buttons */
+        .modal-btn-confirm-remove {
+            background: #dc2626;
+            color: #fff;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+        }
+        .modal-btn-cancel-remove {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            flex: 1;
+        }
     </style>
 </head>
 <body style="background-color: #f3f4f6;">
@@ -130,7 +154,7 @@
             <h4 id="currentSchoolTitle" style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Teachers List:</h4>
             
             <div id="teachersListInputs">
-                <!-- Inputs injected via JS -->
+                <!-- Injected via JavaScript -->
             </div>
 
             <button type="button" class="btn-add-more-teacher" onclick="addNewTeacherRow()">
@@ -143,7 +167,22 @@
         </div>
     </div>
 
-    <!-- Custom Modal -->
+    <!-- Custom Warning Modal for Teacher Removal -->
+    <div id="removeWarningModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div class="modal-icon-wrapper modal-icon-error">⚠️</div>
+            <h3>Remove Teacher?</h3>
+            <p id="removeWarningText" style="color: #475569; font-size: 12px; line-height: 1.4;">
+                Are you sure you want to remove this teacher? Their past attendance records will remain <strong>100% safe in history</strong>, but they will not appear in future attendance forms.
+            </p>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button type="button" class="modal-btn-cancel-remove" onclick="closeRemoveWarningModal()">Cancel</button>
+                <button type="button" class="modal-btn-confirm-remove" onclick="confirmTeacherRemoval()">Yes, Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Feedback Modal -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
@@ -155,6 +194,7 @@
 
     <script>
         const allSchoolsData = <%- JSON.stringify(schools) %>;
+        let targetRowToDelete = null;
 
         function renderTeachersForSchool() {
             const schoolId = document.getElementById('schoolSelector').value;
@@ -163,12 +203,12 @@
             document.getElementById('currentSchoolTitle').textContent = `Staff of ${school.name}:`;
 
             container.innerHTML = '';
-            school.teachers.forEach((t, idx) => {
+            school.teachers.forEach((t) => {
                 const row = document.createElement('div');
                 row.className = 'teacher-item-row';
                 row.innerHTML = `
                     <input type="text" class="teacher-input-field" value="${t}" placeholder="Name (Designation)">
-                    <button type="button" class="btn-remove-teacher" onclick="this.parentElement.remove()">✕ Remove</button>
+                    <button type="button" class="btn-remove-teacher" onclick="triggerRemoveModal(this, '${t}')">✕ Remove</button>
                 `;
                 container.appendChild(row);
             });
@@ -180,9 +220,29 @@
             row.className = 'teacher-item-row';
             row.innerHTML = `
                 <input type="text" class="teacher-input-field" value="" placeholder="e.g. Md. New Teacher (Assistant)">
-                <button type="button" class="btn-remove-teacher" onclick="this.parentElement.remove()">✕ Remove</button>
+                <button type="button" class="btn-remove-teacher" onclick="triggerRemoveModal(this, 'New Teacher')">✕ Remove</button>
             `;
             container.appendChild(row);
+        }
+
+        // Trigger Custom Warning Modal
+        function triggerRemoveModal(btnElement, teacherName) {
+            targetRowToDelete = btnElement.parentElement;
+            document.getElementById('removeWarningText').innerHTML = `Are you sure you want to remove <strong>"${teacherName}"</strong>?<br><br>Their past attendance records will remain <strong>100% safe in history</strong>, but they will not appear in future forms.`;
+            document.getElementById('removeWarningModal').classList.add('active');
+        }
+
+        function closeRemoveWarningModal() {
+            targetRowToDelete = null;
+            document.getElementById('removeWarningModal').classList.remove('active');
+        }
+
+        function confirmTeacherRemoval() {
+            if (targetRowToDelete) {
+                targetRowToDelete.remove();
+                targetRowToDelete = null;
+            }
+            closeRemoveWarningModal();
         }
 
         function saveTeachersList() {

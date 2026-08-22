@@ -289,9 +289,9 @@
                 <h3>Attendance Summary Report</h3>
                 
                 <div class="filter-mode-tabs">
-                    <a href="/admin?auth=true&viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
-                    <a href="/admin?auth=true&viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
-                    <a href="/admin?auth=true&viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
+                    <a href="/admin?viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
+                    <a href="/admin?viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
+                    <a href="/admin?viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
                 </div>
 
                 <div class="date-filter-bar">
@@ -380,8 +380,8 @@
             </div>
         </div>
 
-        <!-- 2nd Page Button -->
-        <a href="/admin/list?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2-large">
+        <!-- 2nd Page Button (No URL Token) -->
+        <a href="/admin/list?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2-large">
             📋 View All Submitted Schools & Search ➔
         </a>
     </div>
@@ -424,9 +424,9 @@
 
         function changeFilter(type, value) {
             if (value) {
-                if (type === 'daily') window.location.href = `/admin?auth=true&viewType=daily&date=${value}`;
-                else if (type === 'monthly') window.location.href = `/admin?auth=true&viewType=monthly&month=${value}`;
-                else if (type === 'yearly') window.location.href = `/admin?auth=true&viewType=yearly&year=${value}`;
+                if (type === 'daily') window.location.href = `/admin?viewType=daily&date=${value}`;
+                else if (type === 'monthly') window.location.href = `/admin?viewType=monthly&month=${value}`;
+                else if (type === 'yearly') window.location.href = `/admin?viewType=yearly&year=${value}`;
             }
         }
 
@@ -446,7 +446,6 @@
             });
         }
 
-        // On-Demand Dynamic Library Loader for Turbo App Speed
         function loadScript(src) {
             return new Promise((resolve, reject) => {
                 if (document.querySelector(`script[src="${src}"]`)) return resolve();

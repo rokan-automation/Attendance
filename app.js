@@ -4,15 +4,18 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const path = require('path');
 const compression = require('compression');
+const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const supabase = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
+const SCHOOL_PASSWORD = process.env.SCHOOL_PASSWORD || 'School12345';
+const AUTH_SECRET = process.env.SESSION_SECRET || 'bochaganj_super_secure_token_key_2026';
 
-// High-speed Brotli & GZIP compression
 app.use(compression({ level: 6 }));
+app.use(cookieParser(AUTH_SECRET));
 
 const upload = multer({ 
     storage: multer.memoryStorage(), 
@@ -80,20 +83,62 @@ async function isSubmissionAllowed() {
     return { allowed: false, reason: 'time_expired' };
 }
 
-app.get('/', (req, res) => res.render('login', { error: null }));
+// Strict Security Middleware for AEO
+function requireAEOAuth(req, res, next) {
+    const token = req.signedCookies.aeo_auth_token;
+    if (token === 'aeo_authenticated_session_verified') {
+        return next();
+    }
+    return res.redirect('/login');
+}
 
+// Strict Security Middleware for School (Validates password-authenticated cookie for that specific school)
+function requireSchoolAuth(req, res, next) {
+    const schoolId = req.query.schoolId;
+    const schoolToken = req.signedCookies.school_auth_token;
+    
+    if (schoolToken && schoolToken === `school_verified_${schoolId}`) {
+        return next();
+    }
+    return res.redirect('/');
+}
+
+app.get('/', (req, res) => res.render('login', { error: null }));
+app.get('/login', (req, res) => res.render('login', { error: null }));
+
+// Strict Login Handler with Passwords
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
+    
     if (role === 'admin') {
-        if (password === AEO_PASSWORD) return res.redirect('/admin?auth=true');
-        return res.render('login', { error: 'Invalid AEO Password!' });
+        if (password === AEO_PASSWORD) {
+            res.cookie('aeo_auth_token', 'aeo_authenticated_session_verified', {
+                signed: true,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000
+            });
+            return res.redirect('/admin');
+        } else {
+            return res.render('login', { error: 'Invalid AEO Password!' });
+        }
     } else if (role === 'school') {
-        return res.redirect(`/index?schoolId=${schoolId}`);
+        if (password === SCHOOL_PASSWORD) {
+            res.cookie('school_auth_token', `school_verified_${schoolId}`, {
+                signed: true,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000
+            });
+            return res.redirect(`/index?schoolId=${schoolId}`);
+        } else {
+            return res.render('login', { error: 'Invalid School Access Password!' });
+        }
     }
     res.redirect('/');
 });
 
-app.get('/index', async (req, res) => {
+app.get('/index', requireSchoolAuth, async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
     const schools = await getDynamicSchoolsData();
@@ -102,7 +147,7 @@ app.get('/index', async (req, res) => {
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
+app.post('/submit-attendance', requireSchoolAuth, upload.single('registerPhoto'), async (req, res) => {
     const status = await isSubmissionAllowed();
     if (!status.allowed) {
         return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
@@ -145,9 +190,8 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// High Performance Admin Route
-app.get('/admin', async (req, res) => {
-    if (req.query.auth !== 'true') return res.redirect('/');
+// Admin Route
+app.get('/admin', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
@@ -179,8 +223,7 @@ app.get('/admin', async (req, res) => {
 });
 
 // 2nd Page: Search & List
-app.get('/admin/list', async (req, res) => {
-    if (req.query.auth !== 'true') return res.redirect('/');
+app.get('/admin/list', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
@@ -209,8 +252,8 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Super-Fast Indexed Teacher Analytics
-app.get('/api/teacher-analytics', async (req, res) => {
+// Teacher Analytics
+app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
     const { teacher, mode, month, year } = req.query;
     if (!teacher) return res.json({ success: false, stats: null });
 
@@ -264,7 +307,7 @@ app.get('/api/teacher-analytics', async (req, res) => {
     });
 });
 
-app.get('/api/photos-payload', async (req, res) => {
+app.get('/api/photos-payload', requireAEOAuth, async (req, res) => {
     const { viewType, date, month, year } = req.query;
     let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
 
@@ -277,13 +320,12 @@ app.get('/api/photos-payload', async (req, res) => {
     res.json({ success: true, photos });
 });
 
-app.get('/admin/teachers', async (req, res) => {
-    if (req.query.auth !== 'true') return res.redirect('/');
+app.get('/admin/teachers', requireAEOAuth, async (req, res) => {
     const schools = await getDynamicSchoolsData();
     res.render('admin-teachers', { schools });
 });
 
-app.post('/admin/teachers/update', async (req, res) => {
+app.post('/admin/teachers/update', requireAEOAuth, async (req, res) => {
     const { schoolId, teachers } = req.body;
     const { error } = await supabase
         .from('school_teachers_custom')
@@ -293,24 +335,24 @@ app.post('/admin/teachers/update', async (req, res) => {
     res.json({ success: true, message: 'Teachers updated successfully!' });
 });
 
-app.post('/admin/school/delete/:id', async (req, res) => {
+app.post('/admin/school/delete/:id', requireAEOAuth, async (req, res) => {
     const recordId = req.params.id;
     const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
-    if (error) return res.json({ success: false, message: 'Failed to delete.' });
+    if (error) return res.json({ success: false, message: 'Failed to delete record.' });
     res.json({ success: true, message: 'Record deleted successfully!' });
 });
 
-app.post('/admin/toggle-lock', async (req, res) => {
+app.post('/admin/toggle-lock', requireAEOAuth, async (req, res) => {
     const { unlock } = req.body;
     const { error } = await supabase.from('system_settings').upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
-    if (error) return res.json({ success: false, message: 'Failed to update.' });
+    if (error) return res.json({ success: false, message: 'Failed to update lock.' });
     res.json({ success: true, isUnlocked: unlock });
 });
 
-app.get('/admin/school/:id', async (req, res) => {
+app.get('/admin/school/:id', requireAEOAuth, async (req, res) => {
     const recordId = req.params.id;
     const { data, error } = await supabase.from('attendance_records').select('*').eq('id', recordId).single();
-    if (error || !data) return res.redirect('/admin?auth=true');
+    if (error || !data) return res.redirect('/admin');
 
     const record = {
         id: data.id,
@@ -324,15 +366,19 @@ app.get('/admin/school/:id', async (req, res) => {
     res.render('edit-attendance', { record });
 });
 
-app.post('/admin/school/update/:id', async (req, res) => {
+app.post('/admin/school/update/:id', requireAEOAuth, async (req, res) => {
     const recordId = req.params.id;
     const { attendance } = req.body;
     const { error } = await supabase.from('attendance_records').update({ attendance_data: JSON.parse(attendance) }).eq('id', recordId);
     if (error) return res.json({ success: false, message: 'Failed to update.' });
-    res.json({ success: true, redirectUrl: '/admin?auth=true' });
+    res.json({ success: true, redirectUrl: '/admin' });
 });
 
-app.get('/logout', (req, res) => res.redirect('/'));
+app.get('/logout', (req, res) => {
+    res.clearCookie('aeo_auth_token');
+    res.clearCookie('school_auth_token');
+    res.redirect('/');
+});
 
 module.exports = app;
 if (require.main === module) {

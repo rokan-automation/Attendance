@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
-    <link rel="apple-touch-icon" href="/icon.png?v=4">
+    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
+    <link rel="apple-touch-icon" href="/icon.png?v=6">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=6">
     <style>
         .gateway-container {
             display: flex;
@@ -128,7 +128,6 @@
             color: #0f172a;
         }
 
-        /* Clean Back Button Without Arrow */
         .btn-back-gateway {
             background: #e0e7ff;
             color: #4338ca;
@@ -188,7 +187,7 @@
 <body>
     <div class="auth-wrapper">
         
-        <!-- 1. Clean Gateway Screen (Zero Exit Button) -->
+        <!-- 1. Gateway Screen -->
         <div id="gatewaySection" class="gateway-container">
             <div class="gateway-header">
                 <h1 class="gateway-title">Attendance Portal</h1>
@@ -221,7 +220,7 @@
             </div>
         </div>
 
-        <!-- 2. Login Form Card -->
+        <!-- 2. Form Card -->
         <div class="auth-card" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
@@ -234,6 +233,7 @@
                 <div class="alert-error"><%= error %></div>
             <% } %>
 
+            <!-- School Form WITH Mandatory Password -->
             <form action="/login" method="POST" id="schoolForm" class="auth-form">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
@@ -245,9 +245,16 @@
                         <span class="trigger-icon">▼</span>
                     </div>
                 </div>
+
+                <div class="input-group">
+                    <label>School Access Password</label>
+                    <input type="password" name="password" placeholder="Enter school password" required>
+                </div>
+
                 <button type="submit" class="btn-submit">Access School Portal</button>
             </form>
 
+            <!-- Admin Form -->
             <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">

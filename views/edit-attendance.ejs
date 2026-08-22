@@ -11,25 +11,23 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .verification-box {
+        .map-wrapper-box {
             margin-top: 15px;
             background: #ffffff;
             padding: 14px;
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
 
-        .section-label {
-            font-size: 12px;
+        .map-section-title {
+            font-size: 13px;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 8px;
-            display: block;
+            margin-bottom: 10px;
         }
 
-        /* 1. Register Photo Style */
-        .register-display-img {
+        .register-full-img {
             width: 100%;
             height: 220px;
             object-fit: contain;
@@ -37,24 +35,16 @@
             border-radius: 8px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
-            margin-bottom: 15px;
+            margin-bottom: 14px;
         }
 
-        /* 2. Close-up 360 Rotatable Surroundings Photo */
-        .location-photo-frame {
+        /* Interactive Dynamic Map with Built-in 360 Photo Corner Viewer */
+        .dynamic-interactive-map {
             width: 100%;
-            height: 240px;
-            border-radius: 8px;
+            height: 320px;
+            border-radius: 10px;
             border: 1px solid #cbd5e1;
-            margin-bottom: 15px;
-        }
-
-        /* 3. Separate Dedicated Google Map */
-        .map-frame-separate {
-            width: 100%;
-            height: 160px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
+            margin-bottom: 10px;
         }
 
         .gps-badge-info {
@@ -66,7 +56,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
         }
 
         .btn-open-gmaps {
@@ -153,41 +142,34 @@
                 </table>
             </div>
 
-            <!-- Complete Verification Section -->
-            <div class="verification-box">
+            <!-- Complete Visual Verification Area -->
+            <div class="map-wrapper-box">
+                <div class="map-section-title">📸 1. Captured Attendance Register (Tap to Enlarge)</div>
+
+                <% if(record.photo) { %>
+                    <img src="<%= record.photo %>" alt="Register Photo" class="register-full-img" onclick="openImageViewer(this.src)">
+                <% } else { %>
+                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 14px;">No register photo uploaded</div>
+                <% } %>
+
                 <% 
                     let lat = (record.location && record.location.lat) ? record.location.lat : '25.736000';
                     let lng = (record.location && record.location.lng) ? record.location.lng : '88.608000';
                 %>
 
-                <!-- 1. Captured Attendance Register -->
-                <span class="section-label">📋 1. Attendance Register Photo (Tap to Enlarge)</span>
-                <% if(record.photo) { %>
-                    <img src="<%= record.photo %>" alt="Register Photo" class="register-display-img" onclick="openImageViewer(this.src)">
-                <% } else { %>
-                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 15px;">No register photo uploaded</div>
-                <% } %>
-
-                <!-- 2. Close-up 360° Rotatable Surrounding Location Photo -->
-                <span class="section-label">🌐 2. Submission Spot & Immediate Surroundings (360° View)</span>
+                <div class="map-section-title">📍 2. Submission Spot Map & 360° Surrounding Photo</div>
+                
+                <!-- Google Interactive Map with Built-in 360 View Corner Box -->
                 <iframe
-                    class="location-photo-frame"
+                    class="dynamic-interactive-map"
                     frameborder="0"
-                    src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&layer=c&cbll=<%= lat %>,<%= lng %>&cbp=11,0,0,0,0&output=svembed">
+                    src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&hl=en&z=17&t=m&output=embed">
                 </iframe>
 
-                <!-- 3. Separate GPS Coordinates & Interactive Road Map -->
                 <div class="gps-badge-info">
-                    <span>📍 <strong>GPS:</strong> <%= lat %>, <%= lng %></span>
-                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open in Google Maps ↗</a>
+                    <span>📍 <strong>Live GPS:</strong> <%= lat %>, <%= lng %></span>
+                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open Full Google Maps ↗</a>
                 </div>
-
-                <span class="section-label">🗺️ 3. Google Road Map Location</span>
-                <iframe
-                    class="map-frame-separate"
-                    frameborder="0"
-                    src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&z=17&output=embed">
-                </iframe>
             </div>
 
             <button type="button" onclick="updateAttendance()" class="btn-submit-main" style="margin-top: 15px;">Save Changes</button>

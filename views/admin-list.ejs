@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Submitted Schools & Search - Bochaganj</title>
     <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
@@ -11,95 +11,86 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .app-container {
-            max-width: 650px;
+        .app-container-scrollable {
+            max-width: 600px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 8px;
+            min-height: 100vh;
         }
 
         .search-school-input {
             width: 100%;
             box-sizing: border-box;
-            padding: 10px 14px;
+            padding: 8px 12px;
             border: 2px solid #cbd5e1;
-            border-radius: 10px;
-            font-size: 13px;
+            border-radius: 8px;
+            font-size: 12px;
             outline: none;
             background: #ffffff;
-            margin: 10px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-
-        .search-school-input:focus {
-            border-color: #4f46e5;
+            margin: 8px 0;
         }
 
         .school-list-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            padding: 14px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            transition: 0.2s;
-            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            margin-bottom: 8px;
         }
 
         .school-header-flex {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .school-info-title {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: #1e293b;
-            line-height: 1.3;
         }
 
         .action-button-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 4px;
         }
 
         .btn-view-compact {
             background: #e0e7ff;
             color: #4f46e5;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
             text-decoration: none;
-            white-space: nowrap;
         }
 
         .btn-delete-compact {
             background: #fee2e2;
             color: #dc2626;
             border: 1px solid #fca5a5;
-            font-size: 11.5px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
             cursor: pointer;
-            white-space: nowrap;
         }
 
         .teacher-mini-badges {
             display: flex;
             flex-wrap: wrap;
             gap: 4px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         .t-badge {
-            font-size: 10.5px;
-            padding: 3px 8px;
-            border-radius: 6px;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
             font-weight: 600;
-            background: #f1f5f9;
         }
 
         .t-present { background: #dcfce7; color: #15803d; }
@@ -112,11 +103,12 @@
             gap: 6px;
         }
 
+        /* Clean Back Button Without Arrow */
         .btn-back-clean {
             background: #e0e7ff;
-            color: #4338ca;
-            padding: 5px 12px;
-            font-size: 12px;
+            color: #4f46e5;
+            padding: 4px 10px;
+            font-size: 11px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
@@ -126,8 +118,8 @@
         .btn-logout {
             background: #fee2e2;
             color: #dc2626;
-            padding: 5px 10px;
-            font-size: 11.5px;
+            padding: 4px 8px;
+            font-size: 11px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
@@ -136,24 +128,23 @@
         .btn-exit-colorful {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #ffffff;
-            padding: 5px 12px;
-            font-size: 11.5px;
+            padding: 4px 10px;
+            font-size: 11px;
             font-weight: 800;
             text-decoration: none;
             border-radius: 6px;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-            cursor: pointer;
             border: none;
+            cursor: pointer;
         }
     </style>
 </head>
-<body style="background-color: #f3f4f6; padding: 8px;">
-    <div class="app-container">
+<body style="background-color: #f3f4f6;">
+    <div class="app-container-scrollable">
         
-        <!-- Header with Clean Back, Logout & Working Exit -->
-        <header class="app-header" style="margin-bottom: 8px;">
+        <!-- Header -->
+        <header class="app-header">
             <div>
-                <h3 style="font-size: 15px;">Submitted Schools List</h3>
+                <h3 style="font-size: 14px;">Submitted Schools List</h3>
                 <span class="badge"><%= viewType.toUpperCase() %> Mode</span>
             </div>
             <div class="top-btn-group">
@@ -166,13 +157,12 @@
         <!-- Deep Search Input -->
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." onkeyup="performDeepSearch()">
 
-        <!-- List -->
-        <h4 style="font-size: 13.5px; font-weight: 700; margin: 8px 0 8px 4px; color: #374155;">
+        <h4 style="font-size: 12.5px; font-weight: 700; margin: 6px 0 6px 2px; color: #374155;">
             Submitted Reports List (<%= records.length %>)
         </h4>
 
         <% if(records.length === 0) { %>
-            <p style="font-size: 12.5px; color: #6b7280; text-align: center; padding: 25px; background: white; border-radius: 10px;">No attendance records found for this period.</p>
+            <p style="font-size: 11.5px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance records found for this period.</p>
         <% } else { %>
             <div id="schoolListContainer">
                 <% records.forEach((rec, rIdx) => { %>
@@ -180,7 +170,7 @@
                         <div class="school-header-flex">
                             <div>
                                 <div class="school-info-title">🏫 <%= rec.schoolName %></div>
-                                <span style="font-size: 10.5px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
+                                <span style="font-size: 10px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                             </div>
                             <div class="action-button-group">
                                 <a href="/admin/school/<%= rec.id %>" class="btn-view-compact">View & Edit ➔</a>
@@ -236,16 +226,14 @@
         }
 
         function deleteSchoolRecord(recordId, schoolName) {
-            if (confirm(`Are you sure you want to DELETE the attendance record of "${schoolName}"? This will allow the school to submit again.`)) {
-                fetch('/admin/school/delete/' + recordId, {
-                    method: 'POST'
-                })
+            if (confirm(`Are you sure you want to DELETE attendance of "${schoolName}"?`)) {
+                fetch('/admin/school/delete/' + recordId, { method: 'POST' })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        showCustomModal('success', 'Record Deleted', `Attendance record for "${schoolName}" has been deleted.`, true);
+                        showCustomModal('success', 'Record Deleted', `Record for "${schoolName}" deleted successfully.`, true);
                     } else {
-                        showCustomModal('error', 'Delete Failed', data.message || 'Could not delete record.');
+                        showCustomModal('error', 'Delete Failed', data.message || 'Could not delete.');
                     }
                 }).catch(err => {
                     showCustomModal('error', 'Network Error', 'Connection failed.');

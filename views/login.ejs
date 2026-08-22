@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - Bochaganj</title>
     <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
@@ -18,28 +18,29 @@
             justify-content: space-between;
             min-height: 85vh;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             margin: 0 auto;
-            padding: 15px 10px;
+            padding: 10px;
         }
 
         .gateway-top-bar {
             width: 100%;
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .btn-exit-colorful {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #ffffff;
-            padding: 6px 14px;
-            font-size: 12px;
+            padding: 5px 12px;
+            font-size: 11.5px;
             font-weight: 800;
             text-decoration: none;
             border-radius: 8px;
             box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
             border: none;
+            cursor: pointer;
         }
 
         .gateway-header {
@@ -47,54 +48,51 @@
         }
 
         .gateway-title {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 800;
-            letter-spacing: 1px;
             color: #1e1b4b;
-            animation: softPulseText 3s infinite ease-in-out;
         }
 
         .gateway-sub {
-            font-size: 13px;
+            font-size: 12px;
             color: #64748b;
-            margin-top: 4px;
+            margin-top: 2px;
             font-weight: 500;
         }
 
         .role-cards-grid {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
             width: 100%;
-            margin: 25px 0;
+            margin: 20px 0;
         }
 
         .role-action-card {
             background: #ffffff;
             border: 2px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 18px;
+            border-radius: 14px;
+            padding: 16px;
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
 
         .role-action-card:hover {
             border-color: #4f46e5;
-            transform: translateY(-2px);
         }
 
         .role-icon-box {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 22px;
             flex-shrink: 0;
         }
 
@@ -102,29 +100,28 @@
         .aeo-icon-bg { background: #fef3c7; color: #d97706; }
 
         .role-info-title {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
             color: #1e293b;
             display: block;
-            margin-bottom: 2px;
         }
 
         .role-info-desc {
-            font-size: 11.5px;
+            font-size: 11px;
             color: #64748b;
             display: block;
         }
 
         .role-arrow {
             margin-left: auto;
-            font-size: 18px;
+            font-size: 16px;
             color: #94a3b8;
             font-weight: 700;
         }
 
         .developer-footer {
             text-align: center;
-            padding: 12px 20px;
+            padding: 10px 18px;
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 30px;
@@ -133,45 +130,83 @@
 
         .dev-badge-title {
             display: block;
-            font-size: 10.5px;
+            font-size: 9.5px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: #6366f1;
             font-weight: 700;
-            margin-bottom: 2px;
         }
 
         .dev-badge-name {
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 800;
             color: #0f172a;
         }
 
+        /* Clean Back Button Without Arrow */
         .btn-back-gateway {
-            background: #f1f5f9;
+            background: #e0e7ff;
             color: #4338ca;
             border: 1px solid #c7d2fe;
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 5px 12px;
+            font-size: 11.5px;
             font-weight: 700;
             cursor: pointer;
             border-radius: 6px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
+            display: inline-block;
         }
 
-        @keyframes softPulseText {
-            0%, 100% { transform: scale(1); opacity: 0.95; }
-            50% { transform: scale(1.02); opacity: 1; }
+        .school-modal-card {
+            max-height: 75vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .school-search-box input {
+            width: 100%;
+            padding: 7px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 11.5px;
+            outline: none;
+            margin-bottom: 8px;
+        }
+        .school-list-container {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .school-item-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 7px 8px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .school-serial-tag {
+            background: #e2e8f0;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 9.5px;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
     <div class="auth-wrapper">
         
-        <!-- 1. Gateway Screen with Exit Button -->
+        <!-- 1. Gateway Screen -->
         <div id="gatewaySection" class="gateway-container">
             <div class="gateway-top-bar">
-                <a href="javascript:void(0)" onclick="window.close()" class="btn-exit-colorful">Exit</a>
+                <button type="button" onclick="performAppExit()" class="btn-exit-colorful">Exit</button>
             </div>
 
             <div class="gateway-header">
@@ -184,7 +219,7 @@
                     <div class="role-icon-box school-icon-bg">🏫</div>
                     <div>
                         <span class="role-info-title">School Login</span>
-                        <span class="role-info-desc">Submit daily teacher attendance report</span>
+                        <span class="role-info-desc">Submit daily teacher attendance</span>
                     </div>
                     <span class="role-arrow">➔</span>
                 </div>
@@ -193,7 +228,7 @@
                     <div class="role-icon-box aeo-icon-bg">👨‍💼</div>
                     <div>
                         <span class="role-info-title">AEO Portal</span>
-                        <span class="role-info-desc">Executive summary & attendance verify</span>
+                        <span class="role-info-desc">Executive summary & verify</span>
                     </div>
                     <span class="role-arrow">➔</span>
                 </div>
@@ -207,7 +242,7 @@
 
         <!-- 2. Form Card -->
         <div class="auth-card" id="formCard" style="display: none;">
-            <button type="button" class="btn-back-gateway" onclick="backToGateway()">← Back</button>
+            <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
             <div class="brand-header">
                 <h2 id="formTitle">Attendance</h2>
@@ -246,44 +281,48 @@
     <!-- School Modal -->
     <div id="schoolModal" class="school-modal-overlay">
         <div class="school-modal-card">
-            <div class="school-modal-header">
-                <h4>Select Primary School</h4>
-                <button type="button" class="btn-close-modal" onclick="closeSchoolModal()">✕</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h4 style="font-size: 13px; font-weight: 700;">Select Primary School</h4>
+                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:14px; cursor:pointer;">✕</button>
             </div>
             <div class="school-search-box">
                 <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name..." onkeyup="filterSchools()">
             </div>
             <div class="school-list-container" id="schoolList">
-                <button type="button" class="school-item-btn" onclick="selectSchool(1, '1. Bochaganj Model Govt. Primary School')"><span class="school-serial-tag">1</span><span class="school-item-title">Bochaganj Model Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(2, '2. Setabganj Upashahar Govt. Primary School')"><span class="school-serial-tag">2</span><span class="school-item-title">Setabganj Upashahar Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(3, '3. Bochaganj Central Govt. Primary School')"><span class="school-serial-tag">3</span><span class="school-item-title">Bochaganj Central Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(4, '4. Muraripur Govt. Primary School')"><span class="school-serial-tag">4</span><span class="school-item-title">Muraripur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(5, '5. Chawk Rampur Govt. Primary School')"><span class="school-serial-tag">5</span><span class="school-item-title">Chawk Rampur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(6, '6. Bogula Govt. Primary School')"><span class="school-serial-tag">6</span><span class="school-item-title">Bogula Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(7, '7. Chira Govt. Primary School')"><span class="school-serial-tag">7</span><span class="school-item-title">Chira Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(8, '8. Gopalpur Govt. Primary School')"><span class="school-serial-tag">8</span><span class="school-item-title">Gopalpur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(9, '9. Ishania Govt. Primary School')"><span class="school-serial-tag">9</span><span class="school-item-title">Ishania Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(10, '10. Nandigram Govt. Primary School')"><span class="school-serial-tag">10</span><span class="school-item-title">Nandigram Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(11, '11. Shibpur Govt. Primary School')"><span class="school-serial-tag">11</span><span class="school-item-title">Shibpur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(12, '12. Ratanpur Govt. Primary School')"><span class="school-serial-tag">12</span><span class="school-item-title">Ratanpur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(13, '13. Chak Kalikapur Govt. Primary School')"><span class="school-serial-tag">13</span><span class="school-item-title">Chak Kalikapur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(14, '14. Bara Maheshtpur Govt. Primary School')"><span class="school-serial-tag">14</span><span class="school-item-title">Bara Maheshtpur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(15, '15. Chatra Govt. Primary School')"><span class="school-serial-tag">15</span><span class="school-item-title">Chatra Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(16, '16. Jagannathpur Govt. Primary School')"><span class="school-serial-tag">16</span><span class="school-item-title">Jagannathpur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(17, '17. Kashipur Govt. Primary School')"><span class="school-serial-tag">17</span><span class="school-item-title">Kashipur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(18, '18. Ramnagar Govt. Primary School')"><span class="school-serial-tag">18</span><span class="school-item-title">Ramnagar Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(19, '19. Kismat Bogula Govt. Primary School')"><span class="school-serial-tag">19</span><span class="school-item-title">Kismat Bogula Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(20, '20. Bahadurpur Govt. Primary School')"><span class="school-serial-tag">20</span><span class="school-item-title">Bahadurpur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(21, '21. Bhatgaon Govt. Primary School')"><span class="school-serial-tag">21</span><span class="school-item-title">Bhatgaon Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(22, '22. Salandar Govt. Primary School')"><span class="school-serial-tag">22</span><span class="school-item-title">Salandar Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(23, '23. Nayaghat Govt. Primary School')"><span class="school-serial-tag">23</span><span class="school-item-title">Nayaghat Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(24, '24. Sahapur Govt. Primary School')"><span class="school-serial-tag">24</span><span class="school-item-title">Sahapur Govt. Primary School</span></button>
-                <button type="button" class="school-item-btn" onclick="selectSchool(25, '25. Chakpara Govt. Primary School')"><span class="school-serial-tag">25</span><span class="school-item-title">Chakpara Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(1, '1. Bochaganj Model Govt. Primary School')"><span class="school-serial-tag">1</span><span>Bochaganj Model Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(2, '2. Setabganj Upashahar Govt. Primary School')"><span class="school-serial-tag">2</span><span>Setabganj Upashahar Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(3, '3. Bochaganj Central Govt. Primary School')"><span class="school-serial-tag">3</span><span>Bochaganj Central Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(4, '4. Muraripur Govt. Primary School')"><span class="school-serial-tag">4</span><span>Muraripur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(5, '5. Chawk Rampur Govt. Primary School')"><span class="school-serial-tag">5</span><span>Chawk Rampur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(6, '6. Bogula Govt. Primary School')"><span class="school-serial-tag">6</span><span>Bogula Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(7, '7. Chira Govt. Primary School')"><span class="school-serial-tag">7</span><span>Chira Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(8, '8. Gopalpur Govt. Primary School')"><span class="school-serial-tag">8</span><span>Gopalpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(9, '9. Ishania Govt. Primary School')"><span class="school-serial-tag">9</span><span>Ishania Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(10, '10. Nandigram Govt. Primary School')"><span class="school-serial-tag">10</span><span>Nandigram Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(11, '11. Shibpur Govt. Primary School')"><span class="school-serial-tag">11</span><span>Shibpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(12, '12. Ratanpur Govt. Primary School')"><span class="school-serial-tag">12</span><span>Ratanpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(13, '13. Chak Kalikapur Govt. Primary School')"><span class="school-serial-tag">13</span><span>Chak Kalikapur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(14, '14. Bara Maheshtpur Govt. Primary School')"><span class="school-serial-tag">14</span><span>Bara Maheshtpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(15, '15. Chatra Govt. Primary School')"><span class="school-serial-tag">15</span><span>Chatra Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(16, '16. Jagannathpur Govt. Primary School')"><span class="school-serial-tag">16</span><span>Jagannathpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(17, '17. Kashipur Govt. Primary School')"><span class="school-serial-tag">17</span><span>Kashipur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(18, '18. Ramnagar Govt. Primary School')"><span class="school-serial-tag">18</span><span>Ramnagar Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(19, '19. Kismat Bogula Govt. Primary School')"><span class="school-serial-tag">19</span><span>Kismat Bogula Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(20, '20. Bahadurpur Govt. Primary School')"><span class="school-serial-tag">20</span><span>Bahadurpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(21, '21. Bhatgaon Govt. Primary School')"><span class="school-serial-tag">21</span><span>Bhatgaon Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(22, '22. Salandar Govt. Primary School')"><span class="school-serial-tag">22</span><span>Salandar Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(23, '23. Nayaghat Govt. Primary School')"><span class="school-serial-tag">23</span><span>Nayaghat Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(24, '24. Sahapur Govt. Primary School')"><span class="school-serial-tag">24</span><span>Sahapur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(25, '25. Chakpara Govt. Primary School')"><span class="school-serial-tag">25</span><span>Chakpara Govt. Primary School</span></button>
             </div>
         </div>
     </div>
 
     <script>
+        function performAppExit() {
+            window.location.href = '/logout';
+        }
+
         function openPortal(type) {
             document.getElementById('gatewaySection').style.display = 'none';
             document.getElementById('formCard').style.display = 'block';

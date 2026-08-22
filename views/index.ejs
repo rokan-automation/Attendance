@@ -66,12 +66,13 @@
                 </table>
             </div>
 
+            <!-- Single Camera Capture for Register Photo -->
             <div class="footer-action-box">
                 <div class="camera-box">
                     <label for="registerPhoto" class="camera-label">
                         📷 Capture Attendance Register
                     </label>
-                    <input type="file" name="registerPhoto" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
+                    <input type="file" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
                     <span id="fileNameDisplay" class="file-name">No photo captured</span>
                 </div>
 
@@ -80,7 +81,7 @@
         </form>
     </div>
 
-    <!-- Animated Custom Modal Popup -->
+    <!-- Custom Modal Popup -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
@@ -134,7 +135,6 @@
             leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
         }
 
-        // Fast Client-Side Image Compressor
         function handleImageSelection(input) {
             const display = document.getElementById('fileNameDisplay');
             if (input.files && input.files[0]) {
@@ -174,7 +174,7 @@
             }
 
             const submitBtn = document.getElementById('submitBtnMain');
-            submitBtn.textContent = "📍 Acquiring GPS Location...";
+            submitBtn.textContent = "📍 Locking Real GPS Location...";
             submitBtn.disabled = true;
 
             const sendPayload = (lat, lng) => {
@@ -213,7 +213,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully with live GPS!', true);
+                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully from your exact location!', true);
                     } else {
                         showCustomModal('error', 'Failed', 'Error: ' + data.message);
                         submitBtn.textContent = "Submit Daily Report";
@@ -226,7 +226,7 @@
                 });
             };
 
-            // High Precision GPS Tracking
+            // Force High Accuracy Real GPS Satellite Connection
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -235,18 +235,20 @@
                         sendPayload(latitude, longitude);
                     },
                     (error) => {
-                        console.warn("GPS Warning:", error.message);
-                        // If user denied permission or timeout, fallback gracefully
-                        sendPayload(25.736000, 88.608000);
+                        alert("⚠️ Please enable Phone GPS/Location permission to capture exact location!");
+                        submitBtn.textContent = "Submit Daily Report";
+                        submitBtn.disabled = false;
                     },
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 8000,
-                        maximumAge: 0
+                    { 
+                        enableHighAccuracy: true, 
+                        timeout: 15000, 
+                        maximumAge: 0 
                     }
                 );
             } else {
-                sendPayload(25.736000, 88.608000);
+                alert("Geolocation is not supported by this browser.");
+                submitBtn.textContent = "Submit Daily Report";
+                submitBtn.disabled = false;
             }
         }
     </script>

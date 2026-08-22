@@ -24,7 +24,7 @@ app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-const schoolsData = [
+const defaultSchools = [
     { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Government Primary School", teachers: ["Profulla Chandra Roy (Head Teacher)", "Farhana Yeasmin (Assistant)", "Biplob Kumar (Assistant)", "Shahnaz Parvin (Assistant)", "Moksed Ali (Assistant)"] },
     { id: 3, name: "Bochaganj Central Government Primary School", teachers: ["Shah Alam (Head Teacher)", "Parul Rani (Assistant)", "Jahangir Alam (Assistant)", "Sultana Razia (Assistant)", "Kamal Hossain (Assistant)"] },
@@ -52,6 +52,22 @@ const schoolsData = [
     { id: 25, name: "Chakpara Government Primary School", teachers: ["Md. Khalilur Rahman (Head Teacher)", "Nazma Begum (Assistant)", "Harun-or-Rashid (Assistant)", "Minati Rani (Assistant)", "Abdul Alim (Assistant)"] }
 ];
 
+// Helper: Get Dynamic School with Live Teacher List from Database
+async function getDynamicSchoolsData() {
+    const { data: dbTeachers } = await supabase.from('school_teachers_custom').select('*');
+    if (!dbTeachers || dbTeachers.length === 0) {
+        return defaultSchools;
+    }
+
+    return defaultSchools.map(sch => {
+        const customEntry = dbTeachers.find(t => t.school_id === sch.id);
+        if (customEntry && customEntry.teachers) {
+            return { ...sch, teachers: customEntry.teachers };
+        }
+        return sch;
+    });
+}
+
 async function isSubmissionAllowed() {
     const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
     if (setting && setting.value === 'true') return { allowed: true, reason: 'unlocked_by_aeo' };
@@ -78,7 +94,8 @@ app.post('/login', (req, res) => {
 app.get('/index', async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
-    const school = schoolsData.find(s => s.id == schoolId);
+    const schools = await getDynamicSchoolsData();
+    const school = schools.find(s => s.id == schoolId);
     const status = await isSubmissionAllowed();
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
@@ -90,7 +107,8 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     }
 
     const { schoolId, attendance, lat, lng } = req.body;
-    const school = schoolsData.find(s => s.id == schoolId);
+    const schools = await getDynamicSchoolsData();
+    const school = schools.find(s => s.id == schoolId);
     const schoolName = school ? school.name : 'Unknown School';
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
@@ -125,7 +143,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route
+// 1st Page: AEO Summary
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -158,7 +176,7 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// API for Fast Batch Photo Fetching for ZIP
+// ZIP Batch Photo API
 app.get('/api/photos-payload', async (req, res) => {
     const { viewType, date, month, year } = req.query;
     let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
@@ -167,21 +185,12 @@ app.get('/api/photos-payload', async (req, res) => {
     else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
     else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
 
-    const { data: records, error } = await query;
-    if (error || !records) return res.json({ success: false, photos: [] });
-
-    const photos = records
-        .filter(r => r.photo_url)
-        .map(r => ({
-            schoolName: r.school_name,
-            date: r.attendance_date,
-            photo: r.photo_url
-        }));
-
+    const { data: records } = await query;
+    const photos = (records || []).filter(r => r.photo_url).map(r => ({ schoolName: r.school_name, date: r.attendance_date, photo: r.photo_url }));
     res.json({ success: true, photos });
 });
 
-// 2nd Page List
+// 2nd Page: Search & List
 app.get('/admin/list', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -210,6 +219,24 @@ app.get('/admin/list', async (req, res) => {
     }));
 
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
+});
+
+// Teacher Management Page for AEO
+app.get('/admin/teachers', async (req, res) => {
+    if (req.query.auth !== 'true') return res.redirect('/');
+    const schools = await getDynamicSchoolsData();
+    res.render('admin-teachers', { schools });
+});
+
+// Update School Teachers in Database
+app.post('/admin/teachers/update', async (req, res) => {
+    const { schoolId, teachers } = req.body;
+    const { error } = await supabase
+        .from('school_teachers_custom')
+        .upsert([{ school_id: parseInt(schoolId), teachers: JSON.parse(teachers) }]);
+
+    if (error) return res.json({ success: false, message: 'Failed to update teachers.' });
+    res.json({ success: true, message: 'Teachers updated successfully!' });
 });
 
 app.post('/admin/school/delete/:id', async (req, res) => {

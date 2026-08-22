@@ -11,7 +11,6 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css?v=5">
 
-    <!-- Excel & ZIP Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
@@ -96,6 +95,7 @@
             outline: none;
         }
 
+        /* 3-Column Tight Grids */
         .three-box-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -125,6 +125,37 @@
             font-weight: 700;
         }
 
+        /* 4-Box Row for Teachers Breakdown */
+        .four-box-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .stat-box-four {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 2px;
+            text-align: center;
+        }
+
+        .stat-box-four .num {
+            display: block;
+            font-size: 20px;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 2px;
+        }
+
+        .stat-box-four .lbl {
+            font-size: 10.5px;
+            color: #475569;
+            font-weight: 700;
+        }
+
+        /* Rates Grid */
         .rates-box-large {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -146,7 +177,7 @@
             font-weight: 800;
         }
 
-        /* 4 Action Buttons Grid */
+        /* 4 Action Buttons */
         .tools-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -303,17 +334,21 @@
                 </div>
             </div>
 
-            <!-- Row 2: Teachers Breakdown -->
-            <div class="three-box-grid">
-                <div class="stat-box-large">
+            <!-- Row 2: Teachers, Present, On Leave, Absent (4-Field Complete Row) -->
+            <div class="four-box-grid">
+                <div class="stat-box-four">
                     <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
                     <span class="lbl">Teachers</span>
                 </div>
-                <div class="stat-box-large">
+                <div class="stat-box-four">
                     <span class="num" style="color: #10b981;"><%= totalPresent %></span>
                     <span class="lbl">Present</span>
                 </div>
-                <div class="stat-box-large">
+                <div class="stat-box-four">
+                    <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
+                    <span class="lbl">On Leave</span>
+                </div>
+                <div class="stat-box-four">
                     <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
                     <span class="lbl">Absent</span>
                 </div>
@@ -466,7 +501,6 @@
             XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.xlsx`);
         }
 
-        // Fast Client-Side ZIP Packager for Register Photos
         async function downloadAllPhotosZip() {
             const btn = document.getElementById('zipBtn');
             const originalText = btn.textContent;
@@ -480,7 +514,6 @@
             btn.disabled = true;
 
             try {
-                // Fetch full photo payload for selected records
                 const response = await fetch(`/api/photos-payload?viewType=${currentView}&date=${currentSelected}&month=${currentSelected}&year=${currentSelected}`);
                 const data = await response.json();
 

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Teacher Management - Bochaganj</title>
+    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
+    <link rel="apple-touch-icon" href="/icon.png?v=5">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="stylesheet" href="/css/style.css?v=5">
+    <style>
+        .app-container-teachers {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 8px;
+            min-height: 100vh;
+        }
+
+        .school-select-dropdown {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            background: #ffffff;
+            margin-bottom: 12px;
+            outline: none;
+        }
+
+        .teacher-edit-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 14px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            margin-bottom: 12px;
+        }
+
+        .teacher-item-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .teacher-input-field {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            background: #f8fafc;
+        }
+
+        .btn-remove-teacher {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            padding: 7px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn-add-more-teacher {
+            background: #f1f5f9;
+            color: #4f46e5;
+            border: 1.5px dashed #c7d2fe;
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+
+        .btn-save-teachers-main {
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13.5px;
+            font-weight: 800;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 14px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+        }
+
+        .btn-back-clean {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #c7d2fe;
+        }
+    </style>
+</head>
+<body style="background-color: #f3f4f6;">
+    <div class="app-container-teachers">
+        
+        <header class="app-header" style="margin-bottom: 10px;">
+            <div>
+                <h3 style="font-size: 14.5px; margin:0;">Teacher Management</h3>
+                <span class="badge">Add / Edit / Remove</span>
+            </div>
+            <div>
+                <a href="/admin/list?auth=true" class="btn-back-clean">Back</a>
+            </div>
+        </header>
+
+        <label style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px; display: block;">Select School to Manage Staff:</label>
+        <select id="schoolSelector" class="school-select-dropdown" onchange="renderTeachersForSchool()">
+            <% schools.forEach(s => { %>
+                <option value="<%= s.id %>"><%= s.id %>. <%= s.name %></option>
+            <% }) %>
+        </select>
+
+        <div class="teacher-edit-card">
+            <h4 id="currentSchoolTitle" style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Teachers List:</h4>
+            
+            <div id="teachersListInputs">
+                <!-- Inputs injected via JS -->
+            </div>
+
+            <button type="button" class="btn-add-more-teacher" onclick="addNewTeacherRow()">
+                ➕ Add New Teacher / Assistant
+            </button>
+
+            <button type="button" class="btn-save-teachers-main" onclick="saveTeachersList()">
+                💾 Save Updated Teacher List
+            </button>
+        </div>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
+            <h3 id="modalTitle">Status</h3>
+            <p id="modalMessage">Action completed successfully!</p>
+            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeStatusModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        const allSchoolsData = <%- JSON.stringify(schools) %>;
+
+        function renderTeachersForSchool() {
+            const schoolId = document.getElementById('schoolSelector').value;
+            const school = allSchoolsData.find(s => s.id == schoolId);
+            const container = document.getElementById('teachersListInputs');
+            document.getElementById('currentSchoolTitle').textContent = `Staff of ${school.name}:`;
+
+            container.innerHTML = '';
+            school.teachers.forEach((t, idx) => {
+                const row = document.createElement('div');
+                row.className = 'teacher-item-row';
+                row.innerHTML = `
+                    <input type="text" class="teacher-input-field" value="${t}" placeholder="Name (Designation)">
+                    <button type="button" class="btn-remove-teacher" onclick="this.parentElement.remove()">✕ Remove</button>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function addNewTeacherRow() {
+            const container = document.getElementById('teachersListInputs');
+            const row = document.createElement('div');
+            row.className = 'teacher-item-row';
+            row.innerHTML = `
+                <input type="text" class="teacher-input-field" value="" placeholder="e.g. Md. New Teacher (Assistant)">
+                <button type="button" class="btn-remove-teacher" onclick="this.parentElement.remove()">✕ Remove</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function saveTeachersList() {
+            const schoolId = document.getElementById('schoolSelector').value;
+            const inputElements = document.querySelectorAll('.teacher-input-field');
+            const teachersArray = [];
+
+            inputElements.forEach(inp => {
+                const val = inp.value.trim();
+                if (val !== "") teachersArray.push(val);
+            });
+
+            if (teachersArray.length === 0) {
+                showStatusModal('error', 'Error', 'A school must have at least 1 teacher!');
+                return;
+            }
+
+            fetch('/admin/teachers/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ schoolId, teachers: JSON.stringify(teachersArray) })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showStatusModal('success', 'Staff Saved', 'Teacher list updated successfully! Changes are live immediately.', true);
+                } else {
+                    showStatusModal('error', 'Failed', data.message);
+                }
+            });
+        }
+
+        function showStatusModal(type, title, message, reload = false) {
+            const modal = document.getElementById('customModal');
+            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
+            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            modal.classList.add('active');
+            if (reload) {
+                document.getElementById('modalBtn').onclick = () => window.location.reload();
+            }
+        }
+
+        function closeStatusModal() {
+            document.getElementById('customModal').classList.remove('active');
+        }
+
+        window.onload = renderTeachersForSchool;
+    </script>
+</body>
+</html>

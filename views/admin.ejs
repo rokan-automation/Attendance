@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily, Monthly & Yearly Attendance - Bochaganj</title>
+    <title>Attendance Summary - Bochaganj</title>
     <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
     <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
@@ -11,40 +11,52 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        .summary-card {
+        /* Full Viewport First Screen Container */
+        .executive-hero-screen {
+            min-height: calc(100vh - 24px);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+        }
+
+        .summary-card-fullscreen {
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            padding: 16px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
         }
 
         .summary-header {
             text-align: center;
-            margin-bottom: 14px;
             border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 10px;
+            padding-bottom: 8px;
         }
 
         .summary-header h3 {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1f2937;
-            margin-bottom: 6px;
+            font-size: 16px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 4px;
+            letter-spacing: 0.5px;
         }
 
         .filter-mode-tabs {
             display: flex;
             justify-content: center;
             gap: 6px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .mode-tab-btn {
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
-            padding: 4px 12px;
+            padding: 3px 12px;
             border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
@@ -64,12 +76,11 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            margin-top: 4px;
         }
 
         .date-input-field {
-            padding: 4px 8px;
-            font-size: 12px;
+            padding: 3px 8px;
+            font-size: 11px;
             font-weight: 600;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
@@ -78,61 +89,84 @@
             outline: none;
         }
 
+        /* 2-Row Counts Grid */
         .two-row-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 8px;
+            margin: 6px 0;
         }
 
         .clean-stat-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 12px 6px;
+            padding: 10px 4px;
             text-align: center;
         }
 
         .clean-stat-box .num {
             display: block;
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 800;
             line-height: 1.2;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .clean-stat-box .lbl {
-            font-size: 10.5px;
-            color: #64748b;
-            font-weight: 600;
-        }
-
-        .rates-grid-clean {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .clean-rate-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 12px 8px;
-            text-align: center;
-        }
-
-        .clean-rate-box .title {
-            display: block;
             font-size: 10px;
             color: #64748b;
             font-weight: 600;
-            margin-bottom: 4px;
-            line-height: 1.3;
         }
 
-        .clean-rate-box .value {
-            font-size: 21px;
+        /* 3 Rate Cards Grid */
+        .three-rates-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .rate-box-compact {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 4px;
+            text-align: center;
+        }
+
+        .rate-box-compact .title {
+            display: block;
+            font-size: 9.5px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .rate-box-compact .value {
+            font-size: 17px;
             font-weight: 800;
+        }
+
+        /* Scroll Down Indicator */
+        .scroll-down-notice {
+            text-align: center;
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 600;
+            padding: 8px 0 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* Scrollable Details Section */
+        .scrollable-details-section {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 2px dashed #cbd5e1;
         }
 
         .aeo-tools-bar {
@@ -145,9 +179,9 @@
         .btn-tool {
             background: #ffffff;
             border: 1px solid #cbd5e1;
-            padding: 7px 12px;
+            padding: 8px 14px;
             border-radius: 6px;
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 600;
             color: #334155;
             cursor: pointer;
@@ -170,14 +204,15 @@
         }
 
         .search-school-input {
-            flex: 1;
-            min-width: 160px;
-            padding: 7px 12px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 12px;
             outline: none;
             background: #ffffff;
+            margin-bottom: 12px;
         }
 
         .school-list-card {
@@ -228,7 +263,6 @@
             gap: 8px;
         }
 
-        /* Colorful Vibrant Gradient Exit Button */
         .btn-exit-colorful {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #ffffff;
@@ -240,45 +274,16 @@
             box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
             border: none;
             transition: all 0.25s ease;
-            letter-spacing: 0.5px;
-        }
-
-        .btn-exit-colorful:hover {
-            transform: scale(1.04);
-            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.4);
-        }
-
-        @media print {
-            .app-header, .aeo-tools-bar, .filter-mode-tabs, .date-filter-bar, .btn-view-compact, .custom-modal-overlay {
-                display: none !important;
-            }
-            body {
-                background: white !important;
-                padding: 0 !important;
-            }
-            .app-container, .summary-card {
-                box-shadow: none !important;
-                border: 1px solid #000 !important;
-            }
         }
     </style>
 </head>
 <body style="background-color: #f3f4f6; padding: 12px;">
     <div class="app-container" style="max-width: 650px; margin: 0 auto; padding: 12px;">
-        <header class="app-header">
-            <div>
-                <h3>Bochaganj Upazila</h3>
-                <span class="badge">AEO Executive Portal</span>
-            </div>
-            <!-- Logout and Colorful Exit Button -->
-            <div class="top-btn-group">
-                <a href="/logout" class="btn-logout">Logout</a>
-                <a href="/" class="btn-exit-colorful">Exit</a>
-            </div>
-        </header>
-
+        
         <% 
+            const totalSchools = 25;
             let submittedCount = records.length;
+            let pendingCount = totalSchools - submittedCount;
 
             let totalPresent = 0;
             let totalLeave = 0;
@@ -296,120 +301,140 @@
                 }
             });
 
-            let rateTotalTeachers = actualTotalTeachers > 0 ? ((totalPresent / actualTotalTeachers) * 100).toFixed(1) : 0;
-            let effectiveTeachers = actualTotalTeachers - totalLeave;
-            let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
+            // Rates Calculation on Total Teachers Base
+            let ratePresent = actualTotalTeachers > 0 ? ((totalPresent / actualTotalTeachers) * 100).toFixed(1) : "0.0";
+            let rateAbsent = actualTotalTeachers > 0 ? ((totalAbsentWithoutLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
+            let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
         %>
 
-        <!-- Summary Card with Mode Tabs -->
-        <div class="summary-card">
-            <div class="summary-header">
-                <h3>Attendance Summary Report</h3>
-                
-                <div class="filter-mode-tabs">
-                    <a href="/admin?auth=true&viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
-                    <a href="/admin?auth=true&viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
-                    <a href="/admin?auth=true&viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
+        <!-- 1. FULLSCREEN FIRST VIEW: Attendance Summary Report (Screenshot Perfect) -->
+        <div class="executive-hero-screen">
+            <header class="app-header" style="margin-bottom: 10px;">
+                <div>
+                    <h3>Bochaganj Upazila</h3>
+                    <span class="badge">AEO Daily Summary</span>
+                </div>
+                <div class="top-btn-group">
+                    <a href="/logout" class="btn-logout">Logout</a>
+                    <a href="/" class="btn-exit-colorful">Exit</a>
+                </div>
+            </header>
+
+            <div class="summary-card-fullscreen">
+                <div class="summary-header">
+                    <h3>Attendance Summary Report</h3>
+                    
+                    <div class="filter-mode-tabs">
+                        <a href="/admin?auth=true&viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
+                        <a href="/admin?auth=true&viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
+                        <a href="/admin?auth=true&viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
+                    </div>
+
+                    <div class="date-filter-bar">
+                        <% if (viewType === 'daily') { %>
+                            <span style="font-size: 11px; color: #64748b;">Date:</span>
+                            <input type="date" class="date-input-field" value="<%= selectedDate %>" onchange="changeFilter('daily', this.value)">
+                        <% } else if (viewType === 'monthly') { %>
+                            <span style="font-size: 11px; color: #64748b;">Month:</span>
+                            <input type="month" class="date-input-field" value="<%= selectedMonth %>" onchange="changeFilter('monthly', this.value)">
+                        <% } else if (viewType === 'yearly') { %>
+                            <span style="font-size: 11px; color: #64748b;">Year:</span>
+                            <select class="date-input-field" onchange="changeFilter('yearly', this.value)">
+                                <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
+                                <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
+                                <option value="2027" <%= selectedYear === '2027' ? 'selected' : '' %>>2027</option>
+                            </select>
+                        <% } %>
+                    </div>
                 </div>
 
-                <div class="date-filter-bar">
-                    <% if (viewType === 'daily') { %>
-                        <span style="font-size: 11px; color: #64748b;">Select Date:</span>
-                        <input type="date" class="date-input-field" value="<%= selectedDate %>" onchange="changeFilter('daily', this.value)">
-                    <% } else if (viewType === 'monthly') { %>
-                        <span style="font-size: 11px; color: #64748b;">Select Month:</span>
-                        <input type="month" class="date-input-field" value="<%= selectedMonth %>" onchange="changeFilter('monthly', this.value)">
-                    <% } else if (viewType === 'yearly') { %>
-                        <span style="font-size: 11px; color: #64748b;">Select Year:</span>
-                        <select class="date-input-field" onchange="changeFilter('yearly', this.value)">
-                            <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
-                            <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
-                            <option value="2027" <%= selectedYear === '2027' ? 'selected' : '' %>>2027</option>
-                        </select>
-                    <% } %>
+                <!-- Row 1: Counts -->
+                <div class="two-row-grid">
+                    <div class="clean-stat-box">
+                        <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
+                        <span class="lbl"><%= viewType === 'daily' ? 'Submitted' : 'Reports' %></span>
+                    </div>
+                    <div class="clean-stat-box">
+                        <span class="num" style="color: #dc2626;"><%= viewType === 'daily' ? pendingCount : totalSchools %></span>
+                        <span class="lbl"><%= viewType === 'daily' ? 'Pending' : 'Total Schools' %></span>
+                    </div>
+                    <div class="clean-stat-box">
+                        <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
+                        <span class="lbl">Teachers</span>
+                    </div>
+                </div>
+
+                <!-- Row 2: Status Breakdown -->
+                <div class="two-row-grid">
+                    <div class="clean-stat-box">
+                        <span class="num" style="color: #10b981;"><%= totalPresent %></span>
+                        <span class="lbl">Present</span>
+                    </div>
+                    <div class="clean-stat-box">
+                        <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
+                        <span class="lbl">On Leave</span>
+                    </div>
+                    <div class="clean-stat-box">
+                        <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
+                        <span class="lbl">Absent</span>
+                    </div>
+                </div>
+
+                <!-- Three Rates Breakdown on Total Teachers -->
+                <div class="three-rates-grid">
+                    <div class="rate-box-compact">
+                        <span class="title">Present Rate</span>
+                        <span class="value" style="color: #10b981;"><%= ratePresent %>%</span>
+                    </div>
+                    <div class="rate-box-compact">
+                        <span class="title">Absent Rate</span>
+                        <span class="value" style="color: #ef4444;"><%= rateAbsent %>%</span>
+                    </div>
+                    <div class="rate-box-compact">
+                        <span class="title">Leave Rate</span>
+                        <span class="value" style="color: #f59e0b;"><%= rateLeave %>%</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- Row 1 -->
-            <div class="two-row-grid">
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
-                    <span class="lbl"><%= viewType === 'daily' ? 'Submitted' : 'Total Reports' %></span>
-                </div>
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
-                    <span class="lbl">Total Teachers</span>
-                </div>
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #10b981;"><%= totalPresent %></span>
-                    <span class="lbl">Present</span>
-                </div>
-            </div>
-
-            <!-- Row 2 -->
-            <div class="two-row-grid">
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
-                    <span class="lbl">On Leave</span>
-                </div>
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
-                    <span class="lbl">Absent</span>
-                </div>
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #4338ca;"><%= rateTotalTeachers %>%</span>
-                    <span class="lbl">Present Rate</span>
-                </div>
-            </div>
-
-            <!-- Rates -->
-            <div class="rates-grid-clean">
-                <div class="clean-rate-box">
-                    <span class="title">Attendance Rate<br><small style="font-weight:400; font-size:9px;">(Total Base)</small></span>
-                    <span class="value" style="color: #2563eb;"><%= rateTotalTeachers %>%</span>
-                </div>
-                <div class="clean-rate-box">
-                    <span class="title">Absence Rate<br><small style="font-weight:400; font-size:9px;">(Excl. Leave)</small></span>
-                    <span class="value" style="color: #dc2626;"><%= rateEffective %>%</span>
-                </div>
+            <div class="scroll-down-notice">
+                <span>👇 Scroll down for actions & school list</span>
             </div>
         </div>
 
-        <!-- AEO Tools -->
-        <div class="aeo-tools-bar">
-            <button type="button" class="btn-tool btn-unlock-toggle" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
-                <%= isAeoUnlocked ? '🔒 Re-lock Submission' : '🔓 Emergency Unlock' %>
-            </button>
-            <button type="button" class="btn-tool" onclick="exportToExcel()">📊 Export <%= viewType.toUpperCase() %> Excel</button>
-            <button type="button" class="btn-tool" onclick="window.print()">🖨️ Print</button>
-        </div>
+        <!-- 2. SCROLLABLE DETAILS SECTION (Below First Screen) -->
+        <div class="scrollable-details-section">
+            <div class="aeo-tools-bar">
+                <button type="button" class="btn-tool btn-unlock-toggle" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
+                    <%= isAeoUnlocked ? '🔒 Re-lock Submission' : '🔓 Emergency Unlock' %>
+                </button>
+                <button type="button" class="btn-tool" onclick="exportToExcel()">📊 Export <%= viewType.toUpperCase() %> Excel</button>
+            </div>
 
-        <div style="margin-bottom: 12px;">
-            <input type="text" id="searchSchool" class="search-school-input" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Search school..." onkeyup="filterSchoolsList()">
-        </div>
+            <input type="text" id="searchSchool" class="search-school-input" placeholder="🔍 Search school name..." onkeyup="filterSchoolsList()">
 
-        <!-- Reports List -->
-        <h4 style="font-size: 13px; font-weight: 700; margin: 10px 0 10px 4px; color: #374155;">
-            Submitted Reports List (<%= submittedCount %>)
-        </h4>
-        
-        <% if(records.length === 0) { %>
-            <p style="font-size: 12px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance records found for this selection.</p>
-        <% } else { %>
-            <div id="schoolListContainer" style="display: flex; flex-direction: column;">
-                <% records.forEach(rec => { %>
-                    <a href="/admin/school/<%= rec.id %>" class="school-card-link" style="text-decoration: none; color: inherit;">
-                        <div class="school-list-card">
-                            <div>
-                                <div class="school-info-title">🏫 <%= rec.schoolName %></div>
-                                <span class="school-info-time">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
+            <h4 style="font-size: 13px; font-weight: 700; margin: 10px 0 10px 4px; color: #374155;">
+                Submitted Reports List (<%= submittedCount %>)
+            </h4>
+            
+            <% if(records.length === 0) { %>
+                <p style="font-size: 12px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance records found for this selection.</p>
+            <% } else { %>
+                <div id="schoolListContainer" style="display: flex; flex-direction: column;">
+                    <% records.forEach(rec => { %>
+                        <a href="/admin/school/<%= rec.id %>" class="school-card-link" style="text-decoration: none; color: inherit;">
+                            <div class="school-list-card">
+                                <div>
+                                    <div class="school-info-title">🏫 <%= rec.schoolName %></div>
+                                    <span class="school-info-time">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
+                                </div>
+                                <span class="btn-view-compact">View & Edit ➔</span>
                             </div>
-                            <span class="btn-view-compact">View & Edit ➔</span>
-                        </div>
-                    </a>
-                <% }) %>
-            </div>
-        <% } %>
+                        </a>
+                    <% }) %>
+                </div>
+            <% } %>
+        </div>
     </div>
 
     <!-- Custom Animated Modal Popup -->

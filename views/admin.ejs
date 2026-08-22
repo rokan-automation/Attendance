@@ -12,67 +12,55 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         html, body {
-            height: 100%;
+            background-color: #f3f4f6;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background-color: #f3f4f6;
         }
 
-        /* 100% Full Width Mobile Container */
-        .app-container-fullscreen {
-            width: 100%;
-            max-width: 100%;
-            height: 100vh;
-            padding: 6px 8px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
+        .app-container-tight {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 8px;
             box-sizing: border-box;
         }
 
-        .summary-card-page1 {
+        .summary-card-solid {
             background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 10px 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            margin: 4px 0;
-            width: 100%;
-            box-sizing: border-box;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 14px 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            margin-top: 4px;
         }
 
         .summary-header {
             text-align: center;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 4px;
+            border-bottom: 1.5px solid #f1f5f9;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .summary-header h3 {
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 800;
-            color: #1e293b;
-            margin: 0 0 3px 0;
+            color: #0f172a;
+            margin: 0 0 6px 0;
         }
 
         .filter-mode-tabs {
             display: flex;
             justify-content: center;
-            gap: 5px;
-            margin-bottom: 3px;
+            gap: 6px;
+            margin-bottom: 6px;
         }
 
         .mode-tab-btn {
             background: #f1f5f9;
             border: 1px solid #cbd5e1;
-            padding: 2px 10px;
+            padding: 4px 14px;
             border-radius: 20px;
-            font-size: 10px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             color: #475569;
             cursor: pointer;
             text-decoration: none;
@@ -88,92 +76,82 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 6px;
         }
 
         .date-input-field {
-            padding: 2px 6px;
-            font-size: 10.5px;
-            font-weight: 600;
-            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            border: 1.5px solid #cbd5e1;
             border-radius: 6px;
             background: #f8fafc;
             color: #1e293b;
             outline: none;
         }
 
-        /* 3-Columns Grid with 100% Width */
-        .two-row-grid {
+        .three-box-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin: 3px 0;
-            width: 100%;
+            gap: 8px;
+            margin-bottom: 8px;
         }
 
-        .clean-stat-box {
+        .stat-box-large {
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 6px 2px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 2px;
             text-align: center;
         }
 
-        .clean-stat-box .num {
+        .stat-box-large .num {
             display: block;
-            font-size: 17px;
+            font-size: 23px;
             font-weight: 800;
             line-height: 1.1;
             margin-bottom: 2px;
         }
 
-        .clean-stat-box .lbl {
-            font-size: 10px;
-            color: #64748b;
-            font-weight: 600;
+        .stat-box-large .lbl {
+            font-size: 11.5px;
+            color: #475569;
+            font-weight: 700;
         }
 
-        .three-rates-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 5px;
-            margin: 3px 0;
-            width: 100%;
-        }
-
-        .rate-box-compact {
+        .rates-box-large {
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 6px 2px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 2px;
             text-align: center;
         }
 
-        .rate-box-compact .title {
+        .rates-box-large .title {
             display: block;
-            font-size: 9.5px;
-            color: #64748b;
+            font-size: 11px;
+            color: #475569;
             font-weight: 700;
-            margin-bottom: 1px;
+            margin-bottom: 2px;
         }
 
-        .rate-box-compact .value {
-            font-size: 16.5px;
+        .rates-box-large .value {
+            font-size: 21px;
             font-weight: 800;
         }
 
-        .first-screen-actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 4px;
-            width: 100%;
+        /* 3-Buttons Balanced Row */
+        .tools-action-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1.2fr 1fr;
+            gap: 6px;
+            margin-top: 12px;
         }
 
-        .btn-action-first {
-            flex: 1;
-            padding: 7px 4px;
-            border-radius: 6px;
-            font-size: 10.5px;
+        .btn-tool-solid {
+            padding: 10px 4px;
+            border-radius: 8px;
+            font-size: 11.5px;
             font-weight: 700;
             cursor: pointer;
             border: none;
@@ -188,37 +166,41 @@
         .btn-unlock-style {
             background: <%= isAeoUnlocked ? '#fee2e2' : '#dcfce7' %>;
             color: <%= isAeoUnlocked ? '#dc2626' : '#15803d' %>;
-            border: 1px solid <%= isAeoUnlocked ? '#fca5a5' : '#86efac' %>;
+            border: 1.5px solid <%= isAeoUnlocked ? '#fca5a5' : '#86efac' %>;
         }
 
         .btn-excel-style {
             background: #e0e7ff;
             color: #4338ca;
-            border: 1px solid #c7d2fe;
+            border: 1.5px solid #c7d2fe;
         }
 
-        /* Next Page Direct Action Button */
-        .btn-goto-page2 {
+        .btn-refresh-style {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1.5px solid #cbd5e1;
+        }
+
+        .btn-goto-page2-large {
             background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
             color: #ffffff;
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 700;
+            padding: 13px 10px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 800;
             text-align: center;
             text-decoration: none;
             display: block;
-            box-shadow: 0 3px 8px rgba(79, 70, 229, 0.25);
-            margin-top: 4px;
-            width: 100%;
-            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            margin-top: 12px;
+            letter-spacing: 0.3px;
         }
 
         .btn-logout {
             background: #fee2e2;
             color: #dc2626;
-            padding: 4px 10px;
-            font-size: 11px;
+            padding: 5px 12px;
+            font-size: 12px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
@@ -226,7 +208,7 @@
     </style>
 </head>
 <body>
-    <div class="app-container-fullscreen">
+    <div class="app-container-tight">
         
         <% 
             const totalSchools = 25;
@@ -255,9 +237,9 @@
         %>
 
         <!-- Header -->
-        <header class="app-header">
+        <header class="app-header" style="margin-bottom: 6px;">
             <div>
-                <h3 style="font-size: 14px; margin:0;">Bochaganj Upazila</h3>
+                <h3 style="font-size: 15px; margin:0;">Bochaganj Upazila</h3>
                 <span class="badge">AEO Summary Report</span>
             </div>
             <div>
@@ -265,8 +247,8 @@
             </div>
         </header>
 
-        <!-- Attendance Summary Report Card (Edge-to-Edge Fullscreen) -->
-        <div class="summary-card-page1">
+        <!-- Summary Card -->
+        <div class="summary-card-solid">
             <div class="summary-header">
                 <h3>Attendance Summary Report</h3>
                 
@@ -278,13 +260,13 @@
 
                 <div class="date-filter-bar">
                     <% if (viewType === 'daily') { %>
-                        <span style="font-size: 10px; color: #64748b;">Date:</span>
+                        <span style="font-size: 11.5px; color: #475569;">Date:</span>
                         <input type="date" class="date-input-field" value="<%= selectedDate %>" onchange="changeFilter('daily', this.value)">
                     <% } else if (viewType === 'monthly') { %>
-                        <span style="font-size: 10px; color: #64748b;">Month:</span>
+                        <span style="font-size: 11.5px; color: #475569;">Month:</span>
                         <input type="month" class="date-input-field" value="<%= selectedMonth %>" onchange="changeFilter('monthly', this.value)">
                     <% } else if (viewType === 'yearly') { %>
-                        <span style="font-size: 10px; color: #64748b;">Year:</span>
+                        <span style="font-size: 11.5px; color: #475569;">Year:</span>
                         <select class="date-input-field" onchange="changeFilter('yearly', this.value)">
                             <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
                             <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
@@ -294,67 +276,70 @@
             </div>
 
             <!-- Row 1: Total Schools, Submitted, Pending -->
-            <div class="two-row-grid">
-                <div class="clean-stat-box">
+            <div class="three-box-grid">
+                <div class="stat-box-large">
                     <span class="num" style="color: #4f46e5;"><%= totalSchools %></span>
                     <span class="lbl">Total Schools</span>
                 </div>
-                <div class="clean-stat-box">
+                <div class="stat-box-large">
                     <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
                     <span class="lbl"><%= viewType === 'daily' ? 'Submitted' : 'Reports' %></span>
                 </div>
-                <div class="clean-stat-box">
+                <div class="stat-box-large">
                     <span class="num" style="color: #dc2626;"><%= viewType === 'daily' ? pendingCount : 0 %></span>
                     <span class="lbl">Pending</span>
                 </div>
             </div>
 
             <!-- Row 2: Teachers Breakdown -->
-            <div class="two-row-grid">
-                <div class="clean-stat-box">
+            <div class="three-box-grid">
+                <div class="stat-box-large">
                     <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
                     <span class="lbl">Teachers</span>
                 </div>
-                <div class="clean-stat-box">
+                <div class="stat-box-large">
                     <span class="num" style="color: #10b981;"><%= totalPresent %></span>
                     <span class="lbl">Present</span>
                 </div>
-                <div class="clean-stat-box">
+                <div class="stat-box-large">
                     <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
                     <span class="lbl">Absent</span>
                 </div>
             </div>
 
             <!-- Three Rates Breakdown -->
-            <div class="three-rates-grid">
-                <div class="rate-box-compact">
+            <div class="three-box-grid">
+                <div class="rates-box-large">
                     <span class="title">Present Rate</span>
                     <span class="value" style="color: #10b981;"><%= ratePresent %>%</span>
                 </div>
-                <div class="rate-box-compact">
+                <div class="rates-box-large">
                     <span class="title">Absent Rate</span>
                     <span class="value" style="color: #ef4444;"><%= rateAbsent %>%</span>
                 </div>
-                <div class="rate-box-compact">
+                <div class="rates-box-large">
                     <span class="title">Leave Rate</span>
                     <span class="value" style="color: #f59e0b;"><%= rateLeave %>%</span>
                 </div>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="first-screen-actions">
-                <button type="button" class="btn-action-first btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
-                    <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Emergency Unlock' %>
+            <!-- 3 Action Buttons -->
+            <div class="tools-action-grid">
+                <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
+                    <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
                 </button>
-                <button type="button" class="btn-action-first btn-excel-style" onclick="exportToExcel()">
-                    📊 Export <%= viewType.toUpperCase() %> Excel
+                <button type="button" class="btn-tool-solid btn-excel-style" onclick="exportToExcel()">
+                    📊 Export Excel
+                </button>
+                <button type="button" class="btn-tool-solid btn-refresh-style" onclick="window.location.reload()">
+                    🔄 Refresh
                 </button>
             </div>
         </div>
 
-        <!-- 2nd Page Button (Always Visible in Screen Viewport) -->
-        <a href="/admin/list?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2">
-            📋 View Submitted Schools & Search Teachers ➔
+        <!-- 2nd Page Button -->
+        <a href="/admin/list?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2-large">
+            📋 View All Submitted Schools & Search ➔
         </a>
     </div>
 

@@ -158,7 +158,30 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// Search & List Page
+// API for Fast Batch Photo Fetching for ZIP
+app.get('/api/photos-payload', async (req, res) => {
+    const { viewType, date, month, year } = req.query;
+    let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
+
+    if (viewType === 'daily') query = query.eq('attendance_date', date);
+    else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+    else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+
+    const { data: records, error } = await query;
+    if (error || !records) return res.json({ success: false, photos: [] });
+
+    const photos = records
+        .filter(r => r.photo_url)
+        .map(r => ({
+            schoolName: r.school_name,
+            date: r.attendance_date,
+            photo: r.photo_url
+        }));
+
+    res.json({ success: true, photos });
+});
+
+// 2nd Page List
 app.get('/admin/list', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -189,7 +212,6 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Delete Record
 app.post('/admin/school/delete/:id', async (req, res) => {
     const recordId = req.params.id;
     const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);

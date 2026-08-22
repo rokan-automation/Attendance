@@ -4,13 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Summary - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
-    <link rel="apple-touch-icon" href="/icon.png?v=4">
+    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
+    <link rel="apple-touch-icon" href="/icon.png?v=5">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=5">
+
+    <!-- Excel & ZIP Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -141,9 +146,10 @@
             font-weight: 800;
         }
 
+        /* 4 Action Buttons Grid */
         .tools-action-grid {
             display: grid;
-            grid-template-columns: 1.2fr 1.2fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 6px;
             margin-top: 12px;
         }
@@ -175,6 +181,12 @@
             border: 1.5px solid #c7d2fe;
         }
 
+        .btn-zip-style {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1.5px solid #fde68a;
+        }
+
         .btn-refresh-style {
             background: #f1f5f9;
             color: #334155;
@@ -196,15 +208,14 @@
             letter-spacing: 0.3px;
         }
 
-        .btn-logout-main {
+        .btn-logout {
             background: #fee2e2;
             color: #dc2626;
-            padding: 5px 14px;
+            padding: 5px 12px;
             font-size: 12px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
-            border: 1px solid #fca5a5;
         }
     </style>
 </head>
@@ -237,14 +248,14 @@
             let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
         %>
 
-        <!-- Clean Main Header: Only 1 Logout Button -->
+        <!-- Header -->
         <header class="app-header" style="margin-bottom: 6px;">
             <div>
                 <h3 style="font-size: 15px; margin:0;">Bochaganj Upazila</h3>
                 <span class="badge">AEO Summary Report</span>
             </div>
             <div>
-                <a href="/logout" class="btn-logout-main">Logout</a>
+                <a href="/logout" class="btn-logout">Logout</a>
             </div>
         </header>
 
@@ -324,13 +335,16 @@
                 </div>
             </div>
 
-            <!-- 3 Action Buttons -->
+            <!-- 4 Action Buttons -->
             <div class="tools-action-grid">
                 <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
                     <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
                 </button>
                 <button type="button" class="btn-tool-solid btn-excel-style" onclick="exportToAutoFittedExcel()">
                     📊 Export Excel
+                </button>
+                <button type="button" class="btn-tool-solid btn-zip-style" id="zipBtn" onclick="downloadAllPhotosZip()">
+                    📦 Photos (ZIP)
                 </button>
                 <button type="button" class="btn-tool-solid btn-refresh-style" onclick="window.location.reload()">
                     🔄 Refresh
@@ -360,13 +374,10 @@
         const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
         let shouldReloadPage = false;
 
-        // Permanent Android Phone Back Button Trap - Guarantees 100% Exit on Phone Back Press
-        (function() {
-            window.history.pushState({ page: 'main_dashboard' }, "", "");
-            window.onpopstate = function () {
-                window.location.replace('/logout');
-            };
-        })();
+        window.history.pushState({ page: 1 }, "", "");
+        window.onpopstate = function () {
+            window.location.replace('/logout');
+        };
 
         function showCustomModal(type, title, message, reload = false) {
             const modal = document.getElementById('customModal');
@@ -453,6 +464,57 @@
             ws['!cols'] = colWidths;
             XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
             XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.xlsx`);
+        }
+
+        // Fast Client-Side ZIP Packager for Register Photos
+        async function downloadAllPhotosZip() {
+            const btn = document.getElementById('zipBtn');
+            const originalText = btn.textContent;
+
+            if (submittedRecords.length === 0) {
+                showCustomModal('error', 'No Photos', 'No submitted records available for this date!');
+                return;
+            }
+
+            btn.textContent = "⏳ Fetching...";
+            btn.disabled = true;
+
+            try {
+                // Fetch full photo payload for selected records
+                const response = await fetch(`/api/photos-payload?viewType=${currentView}&date=${currentSelected}&month=${currentSelected}&year=${currentSelected}`);
+                const data = await response.json();
+
+                if (!data.success || !data.photos || data.photos.length === 0) {
+                    showCustomModal('error', 'No Photos', 'No register photos uploaded for this period.');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                btn.textContent = "📦 Zipping...";
+                const zip = new JSZip();
+                const folderName = `Bochaganj_Registers_${currentSelected}`;
+                const imgFolder = zip.folder(folderName);
+
+                data.photos.forEach((item, idx) => {
+                    if (item.photo) {
+                        const base64Data = item.photo.split(',')[1];
+                        const sanitizedSchool = item.schoolName.replace(/[^a-zA-Z0-9]/g, '_');
+                        const fileName = `${idx + 1}_${sanitizedSchool}_${item.date}.jpg`;
+                        imgFolder.file(fileName, base64Data, { base64: true });
+                    }
+                });
+
+                const content = await zip.generateAsync({ type: "blob" });
+                saveAs(content, `${folderName}.zip`);
+
+                showCustomModal('success', 'Download Complete', 'All register photos zipped and downloaded successfully!');
+            } catch (err) {
+                showCustomModal('error', 'ZIP Failed', 'Could not create ZIP package.');
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>

@@ -11,28 +11,19 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 
-// High Performance GZIP Compression for Ultra-Fast Mobile Speed
 app.use(compression());
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
-// Multer Storage
-const upload = multer({ 
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 }
-});
-
-// Middleware & View Configurations
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-// Favicon/Icon Direct Serve Route
 app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-// Bochaganj 25 Primary Schools Data
 const schoolsData = [
     { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Government Primary School", teachers: ["Profulla Chandra Roy (Head Teacher)", "Farhana Yeasmin (Assistant)", "Biplob Kumar (Assistant)", "Shahnaz Parvin (Assistant)", "Moksed Ali (Assistant)"] },
@@ -62,24 +53,15 @@ const schoolsData = [
 ];
 
 async function isSubmissionAllowed() {
-    const { data: setting } = await supabase
-        .from('system_settings')
-        .select('*')
-        .eq('key', 'aeo_override_unlock')
-        .single();
-
-    if (setting && setting.value === 'true') {
-        return { allowed: true, reason: 'unlocked_by_aeo' };
-    }
+    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
+    if (setting && setting.value === 'true') return { allowed: true, reason: 'unlocked_by_aeo' };
 
     const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
     const [hours] = bdTimeStr.split(':').map(Number);
     if (hours < 10) return { allowed: true, reason: 'regular_time' };
-
     return { allowed: false, reason: 'time_expired' };
 }
 
-// Routes
 app.get('/', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', (req, res) => {
@@ -97,26 +79,19 @@ app.get('/index', async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
     const school = schoolsData.find(s => s.id == schoolId);
-
     const status = await isSubmissionAllowed();
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-// Submit Attendance
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     const status = await isSubmissionAllowed();
     if (!status.allowed) {
-        return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance is locked by system!' });
+        return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
     }
 
     const { schoolId, attendance, lat, lng } = req.body;
     const school = schoolsData.find(s => s.id == schoolId);
-    
-    let photoDataUrl = null;
-    if (req.file) {
-        photoDataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    }
-
+    let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
     const newRecord = {
@@ -129,51 +104,30 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         created_at: new Date().toISOString()
     };
 
-    const { error } = await supabase
-        .from('attendance_records')
-        .insert([newRecord]);
-
-    if (error) {
-        return res.json({ success: false, message: 'Database error occurred!' });
-    }
-
+    const { error } = await supabase.from('attendance_records').insert([newRecord]);
+    if (error) return res.json({ success: false, message: 'Database error occurred!' });
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Super-Fast Admin Route
+// 1st Page: AEO Summary Report Screen
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
-
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-    res.setHeader('Pragma', 'no-cache');
-    res.setHeader('Expires', '0');
 
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
     const viewType = req.query.viewType || 'daily';
-    
     const selectedDate = req.query.date || todayDate;
     const selectedMonth = req.query.month || todayDate.substring(0, 7);
     const selectedYear = req.query.year || todayDate.substring(0, 4);
 
     let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
 
-    if (viewType === 'daily') {
-        query = query.eq('attendance_date', selectedDate);
-    } else if (viewType === 'monthly') {
-        query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-    } else if (viewType === 'yearly') {
-        query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-    }
+    if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
+    else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+    else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
 
     const { data: records } = await query.order('created_at', { ascending: false });
-
-    // Fetch Override Status
-    const { data: setting } = await supabase
-        .from('system_settings')
-        .select('*')
-        .eq('key', 'aeo_override_unlock')
-        .single();
-
+    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
     const isAeoUnlocked = (setting && setting.value === 'true');
 
     const formattedRecords = (records || []).map(rec => ({
@@ -185,40 +139,50 @@ app.get('/admin', async (req, res) => {
         timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
     }));
 
-    res.render('admin', { 
-        records: formattedRecords, 
-        viewType, 
-        selectedDate, 
-        selectedMonth, 
-        selectedYear, 
-        isAeoUnlocked 
-    });
+    res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// AEO Toggle Lock
+// 2nd Page: Search & Submitted Schools List Screen
+app.get('/admin/list', async (req, res) => {
+    if (req.query.auth !== 'true') return res.redirect('/');
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+    const viewType = req.query.viewType || 'daily';
+    const selectedDate = req.query.date || todayDate;
+    const selectedMonth = req.query.month || todayDate.substring(0, 7);
+    const selectedYear = req.query.year || todayDate.substring(0, 4);
+
+    let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
+
+    if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
+    else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+    else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+
+    const { data: records } = await query.order('created_at', { ascending: false });
+
+    const formattedRecords = (records || []).map(rec => ({
+        id: rec.id,
+        schoolName: rec.school_name,
+        date: rec.attendance_date,
+        attendance: rec.attendance_data,
+        location: { lat: rec.latitude, lng: rec.longitude },
+        timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
+    }));
+
+    res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
+});
+
 app.post('/admin/toggle-lock', async (req, res) => {
     const { unlock } = req.body;
-
-    const { error } = await supabase
-        .from('system_settings')
-        .upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
-
-    if (error) {
-        return res.json({ success: false, message: 'Failed to update lock status.' });
-    }
-
+    const { error } = await supabase.from('system_settings').upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
+    if (error) return res.json({ success: false, message: 'Failed to update lock.' });
     res.json({ success: true, isUnlocked: unlock });
 });
 
-// Edit Page for AEO
 app.get('/admin/school/:id', async (req, res) => {
     const recordId = req.params.id;
-    const { data, error } = await supabase
-        .from('attendance_records')
-        .select('*')
-        .eq('id', recordId)
-        .single();
-
+    const { data, error } = await supabase.from('attendance_records').select('*').eq('id', recordId).single();
     if (error || !data) return res.redirect('/admin?auth=true');
 
     const record = {
@@ -230,31 +194,20 @@ app.get('/admin/school/:id', async (req, res) => {
         location: { lat: data.latitude, lng: data.longitude },
         timestamp: new Date(data.created_at).toLocaleString()
     };
-
     res.render('edit-attendance', { record });
 });
 
-// Update School Attendance by AEO
 app.post('/admin/school/update/:id', async (req, res) => {
     const recordId = req.params.id;
     const { attendance } = req.body;
-
-    const { error } = await supabase
-        .from('attendance_records')
-        .update({ attendance_data: JSON.parse(attendance) })
-        .eq('id', recordId);
-
-    if (error) {
-        return res.json({ success: false, message: 'Failed to update attendance.' });
-    }
-
+    const { error } = await supabase.from('attendance_records').update({ attendance_data: JSON.parse(attendance) }).eq('id', recordId);
+    if (error) return res.json({ success: false, message: 'Failed to update.' });
     res.json({ success: true, redirectUrl: '/admin?auth=true' });
 });
 
 app.get('/logout', (req, res) => res.redirect('/'));
 
 module.exports = app;
-
 if (require.main === module) {
     app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
 }

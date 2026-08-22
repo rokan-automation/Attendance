@@ -15,22 +15,28 @@
             max-width: 650px;
             margin: 0 auto;
             padding: 10px;
+            min-height: 95vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
-        .summary-card-balanced {
+        .summary-card-page1 {
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 14px;
-            padding: 14px;
+            padding: 16px 14px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            margin-bottom: 12px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
         }
 
         .summary-header {
             text-align: center;
             border-bottom: 1px solid #f1f5f9;
             padding-bottom: 8px;
-            margin-bottom: 8px;
         }
 
         .summary-header h3 {
@@ -38,7 +44,6 @@
             font-weight: 800;
             color: #1e293b;
             margin-bottom: 4px;
-            letter-spacing: 0.5px;
         }
 
         .filter-mode-tabs {
@@ -84,7 +89,6 @@
             outline: none;
         }
 
-        /* 2-Row Counts Grid */
         .two-row-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -114,7 +118,6 @@
             font-weight: 600;
         }
 
-        /* 3 Rate Cards Grid */
         .three-rates-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -136,7 +139,6 @@
             color: #64748b;
             font-weight: 700;
             margin-bottom: 2px;
-            line-height: 1.2;
         }
 
         .rate-box-compact .value {
@@ -144,7 +146,6 @@
             font-weight: 800;
         }
 
-        /* 1st Screen Action Buttons */
         .first-screen-actions {
             display: flex;
             gap: 8px;
@@ -165,7 +166,6 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            transition: 0.2s;
         }
 
         .btn-unlock-style {
@@ -180,74 +180,57 @@
             border: 1px solid #c7d2fe;
         }
 
+        /* Next Page Button */
+        .btn-goto-page2 {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        }
+
         .top-btn-group {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
+        }
+
+        .btn-back-clean {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #c7d2fe;
+        }
+
+        .btn-logout {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 5px 10px;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
         }
 
         .btn-exit-colorful {
             background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
             color: #ffffff;
-            padding: 6px 14px;
-            font-size: 12.5px;
+            padding: 5px 12px;
+            font-size: 11.5px;
             font-weight: 800;
             text-decoration: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-            border: none;
-            transition: all 0.25s ease;
-        }
-
-        /* Search Section */
-        .search-school-input {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 9px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 12.5px;
-            outline: none;
-            background: #ffffff;
-            margin: 12px 0 8px 0;
-        }
-
-        .school-list-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            padding: 12px 14px;
-            border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            transition: 0.2s;
-            margin-bottom: 8px;
-        }
-
-        .school-info-title {
-            font-size: 12.5px;
-            font-weight: 700;
-            color: #1f2937;
-            line-height: 1.3;
-            max-width: 220px;
-        }
-
-        .school-info-time {
-            display: block;
-            font-size: 10.5px;
-            color: #6b7280;
-            margin-top: 3px;
-        }
-
-        .btn-view-compact {
-            background: #e0e7ff;
-            color: #4f46e5;
-            font-size: 11.5px;
-            font-weight: 700;
-            padding: 6px 12px;
             border-radius: 6px;
-            white-space: nowrap;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
         }
     </style>
 </head>
@@ -280,20 +263,21 @@
             let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
         %>
 
-        <!-- Header -->
+        <!-- Header with Back, Logout & Exit -->
         <header class="app-header" style="margin-bottom: 8px;">
             <div>
-                <h3>Bochaganj Upazila</h3>
-                <span class="badge">AEO Executive Portal</span>
+                <h3 style="font-size: 15px;">Bochaganj Upazila</h3>
+                <span class="badge">AEO Summary Report</span>
             </div>
             <div class="top-btn-group">
+                <a href="/" class="btn-back-clean">← Back</a>
                 <a href="/logout" class="btn-logout">Logout</a>
                 <a href="/" class="btn-exit-colorful">Exit</a>
             </div>
         </header>
 
-        <!-- Compact Balanced 1st Screen Summary Card -->
-        <div class="summary-card-balanced">
+        <!-- Attendance Summary Report Card (Page 1) -->
+        <div class="summary-card-page1">
             <div class="summary-header">
                 <h3>Attendance Summary Report</h3>
                 
@@ -315,7 +299,6 @@
                         <select class="date-input-field" onchange="changeFilter('yearly', this.value)">
                             <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
                             <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
-                            <option value="2027" <%= selectedYear === '2027' ? 'selected' : '' %>>2027</option>
                         </select>
                     <% } %>
                 </div>
@@ -369,7 +352,7 @@
                 </div>
             </div>
 
-            <!-- Action Buttons on 1st Screen -->
+            <!-- Action Buttons -->
             <div class="first-screen-actions">
                 <button type="button" class="btn-action-first btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
                     <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Emergency Unlock' %>
@@ -380,34 +363,13 @@
             </div>
         </div>
 
-        <!-- Deep Search Bar for School & Teacher Name -->
-        <input type="text" id="searchSchool" class="search-school-input" placeholder="🔍 Search by school name or teacher name..." onkeyup="filterSchoolsList()">
-
-        <!-- Submitted Reports List -->
-        <h4 style="font-size: 13.5px; font-weight: 700; margin: 6px 0 8px 4px; color: #374155;">
-            Submitted Reports List (<%= submittedCount %>)
-        </h4>
-        
-        <% if(records.length === 0) { %>
-            <p style="font-size: 12.5px; color: #6b7280; text-align: center; padding: 18px; background: white; border-radius: 8px;">No attendance records found for this selection.</p>
-        <% } else { %>
-            <div id="schoolListContainer" style="display: flex; flex-direction: column;">
-                <% records.forEach(rec => { %>
-                    <a href="/admin/school/<%= rec.id %>" class="school-card-link" style="text-decoration: none; color: inherit;">
-                        <div class="school-list-card">
-                            <div>
-                                <div class="school-info-title">🏫 <%= rec.schoolName %></div>
-                                <span class="school-info-time">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
-                            </div>
-                            <span class="btn-view-compact">View & Edit ➔</span>
-                        </div>
-                    </a>
-                <% }) %>
-            </div>
-        <% } %>
+        <!-- Button to Go to Page 2 (Search & Submitted List) -->
+        <a href="/admin/list?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2">
+            📋 View Submitted Schools & Search Teachers ➔
+        </a>
     </div>
 
-    <!-- Custom Animated Modal Popup -->
+    <!-- Custom Modal -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
@@ -425,31 +387,17 @@
 
         function showCustomModal(type, title, message, reload = false) {
             const modal = document.getElementById('customModal');
-            const icon = document.getElementById('modalIcon');
-            const titleEl = document.getElementById('modalTitle');
-            const messageEl = document.getElementById('modalMessage');
-
-            titleEl.textContent = title;
-            messageEl.textContent = message;
+            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
+            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
             shouldReloadPage = reload;
-
-            if (type === 'success') {
-                icon.className = "modal-icon-wrapper modal-icon-success";
-                icon.innerHTML = "✓";
-            } else {
-                icon.className = "modal-icon-wrapper modal-icon-error";
-                icon.innerHTML = "✕";
-            }
-
             modal.classList.add('active');
         }
 
         function closeCustomModal() {
-            const modal = document.getElementById('customModal');
-            modal.classList.remove('active');
-            if (shouldReloadPage) {
-                window.location.reload();
-            }
+            document.getElementById('customModal').classList.remove('active');
+            if (shouldReloadPage) window.location.reload();
         }
 
         function changeFilter(type, value) {
@@ -469,37 +417,13 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    const msg = unlockStatus ? 'Attendance submission UNLOCKED!' : 'Attendance submission LOCKED!';
-                    showCustomModal('success', 'Permission Updated', msg, true);
+                    showCustomModal('success', 'Permission Updated', unlockStatus ? 'Attendance submission UNLOCKED!' : 'Attendance submission LOCKED!', true);
                 } else {
                     showCustomModal('error', 'Update Failed', 'Failed to change lock status.');
                 }
             });
         }
 
-        // Deep Search Filter for School Name & Teacher Name
-        function filterSchoolsList() {
-            const query = document.getElementById('searchSchool').value.toLowerCase();
-            const cards = document.querySelectorAll('.school-card-link');
-            
-            cards.forEach((card, index) => {
-                const rec = submittedRecords[index];
-                let isMatched = false;
-
-                if (rec) {
-                    if (rec.schoolName.toLowerCase().includes(query)) isMatched = true;
-                    if (rec.attendance) {
-                        rec.attendance.forEach(t => {
-                            if (t.teacher.toLowerCase().includes(query)) isMatched = true;
-                        });
-                    }
-                }
-
-                card.style.display = isMatched ? 'block' : 'none';
-            });
-        }
-
-        // Export to Excel with Exact Picture Columns
         function exportToExcel() {
             if (submittedRecords.length === 0) {
                 showCustomModal('error', 'No Data', 'No submitted data available to export!');

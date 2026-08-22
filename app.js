@@ -52,12 +52,9 @@ const defaultSchools = [
     { id: 25, name: "Chakpara Government Primary School", teachers: ["Md. Khalilur Rahman (Head Teacher)", "Nazma Begum (Assistant)", "Harun-or-Rashid (Assistant)", "Minati Rani (Assistant)", "Abdul Alim (Assistant)"] }
 ];
 
-// Helper: Get Dynamic School with Live Teacher List from Database
 async function getDynamicSchoolsData() {
     const { data: dbTeachers } = await supabase.from('school_teachers_custom').select('*');
-    if (!dbTeachers || dbTeachers.length === 0) {
-        return defaultSchools;
-    }
+    if (!dbTeachers || dbTeachers.length === 0) return defaultSchools;
 
     return defaultSchools.map(sch => {
         const customEntry = dbTeachers.find(t => t.school_id === sch.id);
@@ -143,7 +140,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// 1st Page: AEO Summary
+// Admin Route
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -174,20 +171,6 @@ app.get('/admin', async (req, res) => {
     }));
 
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
-});
-
-// ZIP Batch Photo API
-app.get('/api/photos-payload', async (req, res) => {
-    const { viewType, date, month, year } = req.query;
-    let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
-
-    if (viewType === 'daily') query = query.eq('attendance_date', date);
-    else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
-    else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
-
-    const { data: records } = await query;
-    const photos = (records || []).filter(r => r.photo_url).map(r => ({ schoolName: r.school_name, date: r.attendance_date, photo: r.photo_url }));
-    res.json({ success: true, photos });
 });
 
 // 2nd Page: Search & List
@@ -221,28 +204,78 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Teacher Management Page for AEO
+// Teacher Individual Attendance Analytics API
+app.get('/api/teacher-analytics', async (req, res) => {
+    const teacherName = req.query.teacher;
+    if (!teacherName) return res.json({ success: false, stats: null });
+
+    const { data: allRecords } = await supabase
+        .from('attendance_records')
+        .select('school_name, attendance_date, attendance_data, created_at')
+        .order('attendance_date', { ascending: false });
+
+    let presentCount = 0;
+    let leaveCount = 0;
+    let absentCount = 0;
+    let history = [];
+    let schoolName = '';
+
+    (allRecords || []).forEach(rec => {
+        if (rec.attendance_data && Array.isArray(rec.attendance_data)) {
+            const found = rec.attendance_data.find(t => t.teacher.toLowerCase().trim() === teacherName.toLowerCase().trim());
+            if (found) {
+                schoolName = rec.school_name;
+                if (found.status === 'Present') presentCount++;
+                else if (found.status === 'Leave') leaveCount++;
+                else if (found.status === 'Absent') absentCount++;
+
+                history.push({
+                    date: rec.attendance_date,
+                    status: found.status,
+                    leaveType: found.leaveType || ''
+                });
+            }
+        }
+    });
+
+    const totalDays = presentCount + leaveCount + absentCount;
+    const presentRate = totalDays > 0 ? ((presentCount / totalDays) * 100).toFixed(1) : "0.0";
+
+    res.json({
+        success: true,
+        teacherName,
+        schoolName,
+        stats: {
+            totalDays,
+            presentCount,
+            leaveCount,
+            absentCount,
+            presentRate
+        },
+        history: history.slice(0, 30) // Recent 30 days
+    });
+});
+
 app.get('/admin/teachers', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     const schools = await getDynamicSchoolsData();
     res.render('admin-teachers', { schools });
 });
 
-// Update School Teachers in Database
 app.post('/admin/teachers/update', async (req, res) => {
     const { schoolId, teachers } = req.body;
     const { error } = await supabase
         .from('school_teachers_custom')
         .upsert([{ school_id: parseInt(schoolId), teachers: JSON.parse(teachers) }]);
 
-    if (error) return res.json({ success: false, message: 'Failed to update teachers.' });
+    if (error) return res.json({ success: false, message: 'Failed to update.' });
     res.json({ success: true, message: 'Teachers updated successfully!' });
 });
 
 app.post('/admin/school/delete/:id', async (req, res) => {
     const recordId = req.params.id;
     const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
-    if (error) return res.json({ success: false, message: 'Failed to delete record.' });
+    if (error) return res.json({ success: false, message: 'Failed to delete.' });
     res.json({ success: true, message: 'Record deleted successfully!' });
 });
 

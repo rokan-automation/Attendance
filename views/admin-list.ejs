@@ -96,20 +96,31 @@
         .teacher-mini-badges {
             display: flex;
             flex-wrap: wrap;
-            gap: 4px;
-            margin-top: 4px;
+            gap: 5px;
+            margin-top: 6px;
         }
 
-        .t-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: 600;
+        /* Interactive Clickable Teacher Badges */
+        .t-badge-interactive {
+            font-size: 10.5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            transition: 0.15s;
+            border: 1px solid transparent;
         }
 
-        .t-present { background: #dcfce7; color: #15803d; }
-        .t-absent { background: #fee2e2; color: #dc2626; }
-        .t-leave { background: #fef3c7; color: #d97706; }
+        .t-badge-interactive:hover, .t-badge-interactive:active {
+            transform: scale(1.04);
+        }
+
+        .t-present { background: #dcfce7; color: #15803d; border-color: #86efac; }
+        .t-absent { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+        .t-leave { background: #fef3c7; color: #d97706; border-color: #fde68a; }
 
         .btn-back-clean {
             background: #e0e7ff;
@@ -120,6 +131,53 @@
             text-decoration: none;
             border-radius: 6px;
             border: 1px solid #c7d2fe;
+        }
+
+        /* Teacher Analytics Modal Styles */
+        .analytics-grid-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            margin: 10px 0;
+        }
+
+        .analytics-stat-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 2px;
+            text-align: center;
+        }
+
+        .analytics-stat-item .num {
+            display: block;
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+
+        .analytics-stat-item .lbl {
+            font-size: 9.5px;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .history-list-box {
+            max-height: 180px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px;
+            text-align: left;
+            margin-top: 8px;
+        }
+
+        .history-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 6px;
+            font-size: 11px;
+            border-bottom: 1px solid #f1f5f9;
         }
 
         .modal-btn-delete {
@@ -149,7 +207,7 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-scrollable">
         
-        <!-- Header: ONLY BACK BUTTON -->
+        <!-- Header -->
         <header class="app-header" style="margin-bottom: 8px;">
             <div>
                 <h3 style="font-size: 14.5px; margin:0;">Submitted Schools List</h3>
@@ -160,12 +218,10 @@
             </div>
         </header>
 
-        <!-- Manage Teachers Button -->
         <a href="/admin/teachers?auth=true" class="manage-teachers-btn">
             👨‍🏫 Manage Teachers & Staff (Add / Remove) ➔
         </a>
 
-        <!-- Deep Search Input -->
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." onkeyup="performDeepSearch()">
 
         <h4 style="font-size: 12.5px; font-weight: 700; margin: 6px 0 6px 2px; color: #374155;">
@@ -189,11 +245,12 @@
                             </div>
                         </div>
 
-                        <!-- Teacher Status Badges -->
+                        <!-- Clickable Teacher Badges -->
                         <div class="teacher-mini-badges">
                             <% rec.attendance.forEach(t => { %>
-                                <span class="t-badge <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>">
-                                    <%= t.teacher.split('(')[0] %>: <%= t.status %>
+                                <span class="t-badge-interactive <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>" 
+                                      onclick="openTeacherAnalytics('<%= t.teacher %>')">
+                                    <%= t.teacher.split('(')[0] %>: <%= t.status %> 📊
                                 </span>
                             <% }) %>
                         </div>
@@ -201,6 +258,41 @@
                 <% }) %>
             </div>
         <% } %>
+    </div>
+
+    <!-- Teacher Analytics Modal Popup -->
+    <div id="teacherAnalyticsModal" class="custom-modal-overlay">
+        <div class="custom-modal-box" style="max-width: 380px;">
+            <div class="modal-icon-wrapper modal-icon-success">👨‍🏫</div>
+            <h3 id="modalTeacherName" style="font-size: 15px; margin-bottom: 2px;">Teacher Profile</h3>
+            <p id="modalSchoolName" style="font-size: 11px; color: #64748b; margin-bottom: 6px;"></p>
+
+            <div class="analytics-grid-row">
+                <div class="analytics-stat-item">
+                    <span class="num" id="statPresent" style="color: #16a34a;">0</span>
+                    <span class="lbl">Present</span>
+                </div>
+                <div class="analytics-stat-item">
+                    <span class="num" id="statLeave" style="color: #d97706;">0</span>
+                    <span class="lbl">Leave</span>
+                </div>
+                <div class="analytics-stat-item">
+                    <span class="num" id="statAbsent" style="color: #dc2626;">0</span>
+                    <span class="lbl">Absent</span>
+                </div>
+                <div class="analytics-stat-item">
+                    <span class="num" id="statRate" style="color: #2563eb;">0%</span>
+                    <span class="lbl">Rate</span>
+                </div>
+            </div>
+
+            <p style="font-size: 11px; font-weight: 700; text-align: left; margin: 6px 0 2px 2px; color: #334155;">Recent Attendance History:</p>
+            <div class="history-list-box" id="modalHistoryList">
+                <!-- Injected via JS -->
+            </div>
+
+            <button type="button" class="modal-btn-confirm" onclick="closeTeacherAnalyticsModal()" style="margin-top: 12px;">Close</button>
+        </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -216,19 +308,55 @@
         </div>
     </div>
 
-    <!-- General Status Modal -->
-    <div id="customModal" class="custom-modal-overlay">
-        <div class="custom-modal-box">
-            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
-            <h3 id="modalTitle">Status</h3>
-            <p id="modalMessage">Action completed successfully!</p>
-            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeStatusModal()">OK</button>
-        </div>
-    </div>
-
     <script>
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
+
+        // Fetch & Open Teacher Attendance Analytics Modal
+        async function openTeacherAnalytics(teacherFullName) {
+            try {
+                const res = await fetch(`/api/teacher-analytics?teacher=${encodeURIComponent(teacherFullName)}`);
+                const data = await res.json();
+
+                if (!data.success || !data.stats) {
+                    alert('No historical analytics found for this teacher.');
+                    return;
+                }
+
+                document.getElementById('modalTeacherName').textContent = data.teacherName;
+                document.getElementById('modalSchoolName').textContent = `🏫 ${data.schoolName}`;
+                document.getElementById('statPresent').textContent = data.stats.presentCount;
+                document.getElementById('statLeave').textContent = data.stats.leaveCount;
+                document.getElementById('statAbsent').textContent = data.stats.absentCount;
+                document.getElementById('statRate').textContent = `${data.stats.presentRate}%`;
+
+                const historyBox = document.getElementById('modalHistoryList');
+                historyBox.innerHTML = '';
+
+                if (data.history.length === 0) {
+                    historyBox.innerHTML = '<p style="font-size:10.5px; color:#94a3b8; text-align:center;">No history records available.</p>';
+                } else {
+                    data.history.forEach(h => {
+                        const statusColor = h.status === 'Present' ? '#16a34a' : (h.status === 'Leave' ? '#d97706' : '#dc2626');
+                        const row = document.createElement('div');
+                        row.className = 'history-item-row';
+                        row.innerHTML = `
+                            <span>📅 ${h.date}</span>
+                            <span style="font-weight:700; color:${statusColor};">${h.status} ${h.leaveType ? `(${h.leaveType})` : ''}</span>
+                        `;
+                        historyBox.appendChild(row);
+                    });
+                }
+
+                document.getElementById('teacherAnalyticsModal').classList.add('active');
+            } catch (err) {
+                alert('Failed to load teacher analytics.');
+            }
+        }
+
+        function closeTeacherAnalyticsModal() {
+            document.getElementById('teacherAnalyticsModal').classList.remove('active');
+        }
 
         function openDeleteConfirmModal(recordId, schoolName) {
             selectedRecordIdToDelete = recordId;
@@ -250,29 +378,11 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    showStatusModal('success', 'Record Deleted', 'Attendance record deleted successfully!', true);
+                    window.location.reload();
                 } else {
-                    showStatusModal('error', 'Delete Failed', data.message || 'Could not delete record.');
+                    alert('Delete failed.');
                 }
-            }).catch(err => {
-                showStatusModal('error', 'Network Error', 'Connection failed.');
             });
-        }
-
-        function showStatusModal(type, title, message, reload = false) {
-            const modal = document.getElementById('customModal');
-            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
-            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalMessage').textContent = message;
-            modal.classList.add('active');
-            if (reload) {
-                document.getElementById('modalBtn').onclick = () => window.location.reload();
-            }
-        }
-
-        function closeStatusModal() {
-            document.getElementById('customModal').classList.remove('active');
         }
 
         function performDeepSearch() {

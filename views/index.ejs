@@ -2,15 +2,172 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
-    <link rel="apple-touch-icon" href="/icon.png?v=4">
+    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
+    <link rel="apple-touch-icon" href="/icon.png?v=5">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=5">
     <style>
+        body {
+            background-color: #f3f4f6 !important;
+            margin: 0;
+            padding: 8px;
+        }
+
+        .app-container-school {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+        }
+
+        .school-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid #f1f5f9;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .school-header-bar h3 {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.3;
+        }
+
+        /* Clean Back Button Only */
+        .btn-back-school {
+            background: #e0e7ff;
+            color: #4338ca;
+            padding: 5px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #c7d2fe;
+            white-space: nowrap;
+        }
+
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-table th {
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            padding: 8px 6px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .modern-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .teacher-title-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.3;
+        }
+
+        .status-options-flex {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .radio-pill-custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 4px 6px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            cursor: pointer;
+            background: #ffffff;
+            white-space: nowrap;
+        }
+
+        .radio-pill-custom input {
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .form-control-leave {
+            padding: 4px;
+            font-size: 10.5px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            width: 100%;
+            max-width: 150px;
+            margin-top: 4px;
+            outline: none;
+            background: #ffffff;
+        }
+
+        .camera-capture-box {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            padding: 12px;
+            text-align: center;
+            border-radius: 10px;
+            margin-top: 12px;
+            cursor: pointer;
+        }
+
+        .camera-label-btn {
+            font-size: 12px;
+            font-weight: 700;
+            color: #4f46e5;
+            cursor: pointer;
+            display: block;
+        }
+
+        .file-status-text {
+            display: block;
+            font-size: 10px;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
+        .btn-submit-daily {
+            background: #10b981;
+            color: #ffffff;
+            border: none;
+            padding: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 12px;
+            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+            transition: 0.2s;
+        }
+
+        .btn-submit-daily:hover {
+            background: #059669;
+        }
+
         .lock-notice-box {
             background: #fff1f2;
             border: 2px dashed #f43f5e;
@@ -19,55 +176,22 @@
             text-align: center;
             margin-top: 20px;
         }
-        .lock-icon {
-            font-size: 40px;
-            margin-bottom: 8px;
-            display: block;
-        }
-        .lock-title {
-            font-size: 16px;
-            font-weight: 800;
-            color: #be123c;
-            margin-bottom: 6px;
-        }
-        .lock-desc {
-            font-size: 12.5px;
-            color: #475569;
-            line-height: 1.4;
-        }
-        .top-btn-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-exit-colorful {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
-            color: #ffffff;
-            padding: 5px 12px;
-            font-size: 11px;
-            font-weight: 800;
-            text-decoration: none;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
-            border: none;
-            transition: all 0.25s ease;
-        }
-        .btn-exit-colorful:hover {
-            transform: scale(1.04);
-            box-shadow: 0 6px 15px rgba(236, 72, 153, 0.4);
-        }
+        .lock-icon { font-size: 40px; margin-bottom: 8px; display: block; }
+        .lock-title { font-size: 16px; font-weight: 800; color: #be123c; margin-bottom: 6px; }
+        .lock-desc { font-size: 12px; color: #475569; line-height: 1.4; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header class="app-header">
+    <div class="app-container-school">
+        
+        <!-- Header: ONLY Back Button (Zero Logout/Exit) -->
+        <header class="school-header-bar">
             <div>
                 <h3><%= school.id %>. <%= school.name %></h3>
-                <span class="badge">Teacher Attendance Portal</span>
+                <span class="badge" style="margin-top: 2px;">Teacher Attendance Portal</span>
             </div>
-            <div class="top-btn-group">
-                <a href="/logout" class="btn-logout">Logout</a>
-                <a href="/" class="btn-exit-colorful">Exit</a>
+            <div>
+                <a href="/" class="btn-back-school">Back</a>
             </div>
         </header>
 
@@ -81,7 +205,7 @@
                 </p>
             </div>
         <% } else { %>
-            <form id="attendanceForm" class="dashboard-form">
+            <form id="attendanceForm">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 
                 <div class="table-responsive">
@@ -95,24 +219,24 @@
                         <tbody>
                             <% school.teachers.forEach((teacher, index) => { %>
                                 <tr>
-                                    <td class="teacher-name"><%= teacher %></td>
+                                    <td class="teacher-title-text"><%= teacher %></td>
                                     <td>
-                                        <div class="status-options">
-                                            <label class="radio-pill present">
+                                        <div class="status-options-flex">
+                                            <label class="radio-pill-custom">
                                                 <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
                                                 <span>Present</span>
                                             </label>
-                                            <label class="radio-pill leave">
+                                            <label class="radio-pill-custom">
                                                 <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
                                                 <span>On Leave</span>
                                             </label>
-                                            <label class="radio-pill absent">
+                                            <label class="radio-pill-custom">
                                                 <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
                                                 <span>Absent</span>
                                             </label>
                                         </div>
-                                        <div id="leave_div_<%= index %>" style="display:none;" class="leave-dropdown-box">
-                                            <select name="leaveType_<%= index %>" class="form-control-sm">
+                                        <div id="leave_div_<%= index %>" style="display:none;">
+                                            <select name="leaveType_<%= index %>" class="form-control-leave">
                                                 <option value="Casual Leave">Casual Leave</option>
                                                 <option value="Medical Leave">Medical Leave</option>
                                                 <option value="Maternity Leave">Maternity Leave</option>
@@ -126,17 +250,15 @@
                     </table>
                 </div>
 
-                <div class="footer-action-box">
-                    <div class="camera-box">
-                        <label for="registerPhoto" class="camera-label">
-                            📷 Capture Attendance Register
-                        </label>
-                        <input type="file" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
-                        <span id="fileNameDisplay" class="file-name">No photo captured</span>
-                    </div>
-
-                    <button type="button" onclick="submitData()" class="btn-submit-main" id="submitBtnMain">Submit Daily Report</button>
+                <div class="camera-capture-box">
+                    <label for="registerPhoto" class="camera-label-btn">
+                        📷 Capture Attendance Register
+                    </label>
+                    <input type="file" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
+                    <span id="fileNameDisplay" class="file-status-text">No photo captured</span>
                 </div>
+
+                <button type="button" onclick="submitData()" class="btn-submit-daily" id="submitBtnMain">Submit Daily Report</button>
             </form>
         <% } %>
     </div>
@@ -158,30 +280,18 @@
 
         function showCustomModal(type, title, message, shouldReload = false) {
             const modal = document.getElementById('customModal');
-            const icon = document.getElementById('modalIcon');
-            const titleEl = document.getElementById('modalTitle');
-            const messageEl = document.getElementById('modalMessage');
-
-            titleEl.textContent = title;
-            messageEl.textContent = message;
+            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
+            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
             redirectOnClose = shouldReload;
-
-            if (type === 'success') {
-                icon.className = "modal-icon-wrapper modal-icon-success";
-                icon.innerHTML = "✓";
-            } else {
-                icon.className = "modal-icon-wrapper modal-icon-error";
-                icon.innerHTML = "✕";
-            }
-
             modal.classList.add('active');
         }
 
         function closeCustomModal() {
-            const modal = document.getElementById('customModal');
-            modal.classList.remove('active');
+            document.getElementById('customModal').classList.remove('active');
             if (redirectOnClose) {
-                window.location.reload();
+                window.location.href = '/';
             }
         }
 
@@ -275,7 +385,7 @@
                     if(data.success) {
                         showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully!', true);
                     } else {
-                        showCustomModal('error', 'Submission Locked', data.message);
+                        showCustomModal('error', 'Submission Failed', data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }

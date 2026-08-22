@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Attendance Summary - Bochaganj</title>
+    <title>Daily, Monthly & Yearly Attendance - Bochaganj</title>
     <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
     <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
@@ -31,7 +31,33 @@
             font-size: 15px;
             font-weight: 700;
             color: #1f2937;
-            margin-bottom: 4px;
+            margin-bottom: 6px;
+        }
+
+        /* Filter Selector Tabs */
+        .filter-mode-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .mode-tab-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .mode-tab-btn.active {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
         }
 
         .date-filter-bar {
@@ -39,7 +65,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
         .date-input-field {
@@ -110,7 +136,6 @@
             font-weight: 800;
         }
 
-        /* Control Lock & Tools Bar */
         .aeo-tools-bar {
             display: flex;
             gap: 8px;
@@ -199,7 +224,7 @@
         }
 
         @media print {
-            .app-header, .aeo-tools-bar, .date-filter-bar, .btn-view-compact, .custom-modal-overlay {
+            .app-header, .aeo-tools-bar, .filter-mode-tabs, .date-filter-bar, .btn-view-compact, .custom-modal-overlay {
                 display: none !important;
             }
             body {
@@ -218,15 +243,13 @@
         <header class="app-header">
             <div>
                 <h3>Bochaganj Upazila</h3>
-                <span class="badge">AEO Daily Summary</span>
+                <span class="badge">AEO Executive Portal</span>
             </div>
             <a href="/logout" class="btn-logout">Logout</a>
         </header>
 
         <% 
-            const totalSchools = 25;
             let submittedCount = records.length;
-            let pendingCount = totalSchools - submittedCount;
 
             let totalPresent = 0;
             let totalLeave = 0;
@@ -249,13 +272,34 @@
             let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
         %>
 
-        <!-- Summary Card -->
+        <!-- Summary Card with Mode Tabs (Daily/Monthly/Yearly) -->
         <div class="summary-card">
             <div class="summary-header">
-                <h3>Teacher Attendance Summary Report</h3>
+                <h3>Attendance Summary Report</h3>
+                
+                <!-- View Mode Tabs -->
+                <div class="filter-mode-tabs">
+                    <a href="/admin?auth=true&viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
+                    <a href="/admin?auth=true&viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
+                    <a href="/admin?auth=true&viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
+                </div>
+
+                <!-- Dynamic Filter Input based on Mode -->
                 <div class="date-filter-bar">
-                    <span style="font-size: 11px; color: #64748b;">Date:</span>
-                    <input type="date" class="date-input-field" value="<%= selectedDate %>" onchange="changeReportDate(this.value)">
+                    <% if (viewType === 'daily') { %>
+                        <span style="font-size: 11px; color: #64748b;">Select Date:</span>
+                        <input type="date" class="date-input-field" value="<%= selectedDate %>" onchange="changeFilter('daily', this.value)">
+                    <% } else if (viewType === 'monthly') { %>
+                        <span style="font-size: 11px; color: #64748b;">Select Month:</span>
+                        <input type="month" class="date-input-field" value="<%= selectedMonth %>" onchange="changeFilter('monthly', this.value)">
+                    <% } else if (viewType === 'yearly') { %>
+                        <span style="font-size: 11px; color: #64748b;">Select Year:</span>
+                        <select class="date-input-field" onchange="changeFilter('yearly', this.value)">
+                            <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
+                            <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
+                            <option value="2027" <%= selectedYear === '2027' ? 'selected' : '' %>>2027</option>
+                        </select>
+                    <% } %>
                 </div>
             </div>
 
@@ -263,24 +307,20 @@
             <div class="two-row-grid">
                 <div class="clean-stat-box">
                     <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
-                    <span class="lbl">Submitted</span>
-                </div>
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #dc2626;"><%= pendingCount %></span>
-                    <span class="lbl">Pending</span>
+                    <span class="lbl"><%= viewType === 'daily' ? 'Submitted' : 'Total Reports' %></span>
                 </div>
                 <div class="clean-stat-box">
                     <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
-                    <span class="lbl">Teachers</span>
+                    <span class="lbl">Total Teachers</span>
+                </div>
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #10b981;"><%= totalPresent %></span>
+                    <span class="lbl">Present</span>
                 </div>
             </div>
 
             <!-- Row 2 -->
             <div class="two-row-grid">
-                <div class="clean-stat-box">
-                    <span class="num" style="color: #10b981;"><%= totalPresent %></span>
-                    <span class="lbl">Present</span>
-                </div>
                 <div class="clean-stat-box">
                     <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
                     <span class="lbl">On Leave</span>
@@ -289,12 +329,16 @@
                     <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
                     <span class="lbl">Absent</span>
                 </div>
+                <div class="clean-stat-box">
+                    <span class="num" style="color: #4338ca;"><%= rateTotalTeachers %>%</span>
+                    <span class="lbl">Present Rate</span>
+                </div>
             </div>
 
             <!-- Rates -->
             <div class="rates-grid-clean">
                 <div class="clean-rate-box">
-                    <span class="title">Attendance Rate<br><small style="font-weight:400; font-size:9px;">(Submitted Base)</small></span>
+                    <span class="title">Attendance Rate<br><small style="font-weight:400; font-size:9px;">(Total Base)</small></span>
                     <span class="value" style="color: #2563eb;"><%= rateTotalTeachers %>%</span>
                 </div>
                 <div class="clean-rate-box">
@@ -304,12 +348,12 @@
             </div>
         </div>
 
-        <!-- AEO Tools: Emergency Lock/Unlock, Excel, Print & Search -->
+        <!-- AEO Tools: Emergency Lock, Export Excel, Print & Search -->
         <div class="aeo-tools-bar">
             <button type="button" class="btn-tool btn-unlock-toggle" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
-                <%= isAeoUnlocked ? '🔒 Re-lock Submission' : '🔓 Emergency Unlock Submission' %>
+                <%= isAeoUnlocked ? '🔒 Re-lock Submission' : '🔓 Emergency Unlock' %>
             </button>
-            <button type="button" class="btn-tool" onclick="exportToExcel()">📊 Export Excel</button>
+            <button type="button" class="btn-tool" onclick="exportToExcel()">📊 Export <%= viewType.toUpperCase() %> Excel</button>
             <button type="button" class="btn-tool" onclick="window.print()">🖨️ Print</button>
         </div>
 
@@ -317,11 +361,13 @@
             <input type="text" id="searchSchool" class="search-school-input" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Search school..." onkeyup="filterSchoolsList()">
         </div>
 
-        <!-- Submitted Reports List -->
-        <h4 style="font-size: 13px; font-weight: 700; margin: 10px 0 10px 4px; color: #374155;">Submitted Reports (<%= submittedCount %> / <%= totalSchools %>)</h4>
+        <!-- Reports List -->
+        <h4 style="font-size: 13px; font-weight: 700; margin: 10px 0 10px 4px; color: #374155;">
+            Submitted Reports List (<%= submittedCount %>)
+        </h4>
         
         <% if(records.length === 0) { %>
-            <p style="font-size: 12px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance submitted for <%= selectedDate %>.</p>
+            <p style="font-size: 12px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance records found for this selection.</p>
         <% } else { %>
             <div id="schoolListContainer" style="display: flex; flex-direction: column;">
                 <% records.forEach(rec => { %>
@@ -329,7 +375,7 @@
                         <div class="school-list-card">
                             <div>
                                 <div class="school-info-title">🏫 <%= rec.schoolName %></div>
-                                <span class="school-info-time">Time: <%= rec.timestamp %></span>
+                                <span class="school-info-time">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                             </div>
                             <span class="btn-view-compact">View & Edit ➔</span>
                         </div>
@@ -351,7 +397,8 @@
 
     <script>
         const submittedRecords = <%- JSON.stringify(records) %>;
-        const reportDate = "<%= selectedDate %>";
+        const currentView = "<%= viewType %>";
+        const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
         let shouldReloadPage = false;
 
         function showCustomModal(type, title, message, reload = false) {
@@ -383,13 +430,14 @@
             }
         }
 
-        function changeReportDate(newDate) {
-            if (newDate) {
-                window.location.href = '/admin?auth=true&date=' + newDate;
+        function changeFilter(type, value) {
+            if (value) {
+                if (type === 'daily') window.location.href = `/admin?auth=true&viewType=daily&date=${value}`;
+                else if (type === 'monthly') window.location.href = `/admin?auth=true&viewType=monthly&month=${value}`;
+                else if (type === 'yearly') window.location.href = `/admin?auth=true&viewType=yearly&year=${value}`;
             }
         }
 
-        // Emergency Toggle Lock with Custom Animated Popup
         function toggleEmergencyLock(unlockStatus) {
             fetch('/admin/toggle-lock', {
                 method: 'POST',
@@ -399,19 +447,14 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    const msg = unlockStatus 
-                        ? 'Attendance submission is now UNLOCKED for all schools!' 
-                        : 'Attendance submission is now LOCKED for all schools!';
+                    const msg = unlockStatus ? 'Attendance submission UNLOCKED!' : 'Attendance submission LOCKED!';
                     showCustomModal('success', 'Permission Updated', msg, true);
                 } else {
-                    showCustomModal('error', 'Update Failed', data.message || 'Failed to change lock status.');
+                    showCustomModal('error', 'Update Failed', 'Failed to change lock status.');
                 }
-            }).catch(err => {
-                showCustomModal('error', 'Network Error', 'Please check your connection.');
             });
         }
 
-        // Search Filter
         function filterSchoolsList() {
             const query = document.getElementById('searchSchool').value.toLowerCase();
             const cards = document.querySelectorAll('.school-card-link');
@@ -421,17 +464,18 @@
             });
         }
 
-        // Export Excel / CSV
+        // Export to Excel with Exact Picture Columns
         function exportToExcel() {
             if (submittedRecords.length === 0) {
-                showCustomModal('error', 'No Data', 'No submitted data available to export for this date!');
+                showCustomModal('error', 'No Data', 'No submitted data available to export!');
                 return;
             }
 
-            let csvContent = "data:text/csv;charset=utf-8,";
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; // UTF-8 BOM for Excel Bengali & Symbols
             csvContent += "Date,School Name,Teacher Name,Status,Leave Type,Submission Time,Latitude,Longitude\r\n";
 
             submittedRecords.forEach(rec => {
+                const date = rec.date;
                 const school = rec.schoolName.replace(/,/g, '');
                 const time = rec.timestamp;
                 const lat = rec.location ? rec.location.lat : '';
@@ -441,14 +485,14 @@
                     const teacher = item.teacher.replace(/,/g, '');
                     const status = item.status;
                     const leave = item.leaveType || '';
-                    csvContent += `${reportDate},${school},${teacher},${status},${leave},${time},${lat},${lng}\r\n`;
+                    csvContent += `${date},${school},${teacher},${status},${leave},${time},${lat},${lng}\r\n`;
                 });
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Attendance_Report_Bochaganj_${reportDate}.csv`);
+            link.setAttribute("download", `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);

@@ -57,9 +57,7 @@ const schoolsData = [
     { id: 25, name: "Chakpara Government Primary School", teachers: ["Md. Khalilur Rahman (Head Teacher)", "Nazma Begum (Assistant)", "Harun-or-Rashid (Assistant)", "Minati Rani (Assistant)", "Abdul Alim (Assistant)"] }
 ];
 
-// Helper: Check if Submission is Allowed (Before 10:00 AM or if AEO Unlocked)
 async function isSubmissionAllowed() {
-    // 1. Check Supabase Settings Table for AEO Override
     const { data: setting } = await supabase
         .from('system_settings')
         .select('*')
@@ -70,14 +68,9 @@ async function isSubmissionAllowed() {
         return { allowed: true, reason: 'unlocked_by_aeo' };
     }
 
-    // 2. Check Bangladesh Current Time
     const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
-    const [hours, minutes] = bdTimeStr.split(':').map(Number);
-
-    // If before 10:00 AM (e.g. 09:59)
-    if (hours < 10) {
-        return { allowed: true, reason: 'regular_time' };
-    }
+    const [hours] = bdTimeStr.split(':').map(Number);
+    if (hours < 10) return { allowed: true, reason: 'regular_time' };
 
     return { allowed: false, reason: 'time_expired' };
 }
@@ -105,7 +98,7 @@ app.get('/index', async (req, res) => {
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-// Submit Attendance to Supabase
+// Submit Attendance
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     const status = await isSubmissionAllowed();
     if (!status.allowed) {
@@ -137,14 +130,13 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         .insert([newRecord]);
 
     if (error) {
-        console.error('Supabase Insert Error:', error.message);
         return res.json({ success: false, message: 'Database error occurred!' });
     }
 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route with Lock Status & Date Filter
+// Admin Route with Daily, Monthly & Yearly Filter
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
 
@@ -153,14 +145,23 @@ app.get('/admin', async (req, res) => {
     res.setHeader('Expires', '0');
 
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+    const viewType = req.query.viewType || 'daily'; // 'daily', 'monthly', 'yearly'
+    
     const selectedDate = req.query.date || todayDate;
+    const selectedMonth = req.query.month || todayDate.substring(0, 7); // YYYY-MM
+    const selectedYear = req.query.year || todayDate.substring(0, 4); // YYYY
 
-    // Fetch Attendance
-    const { data: records, error } = await supabase
-        .from('attendance_records')
-        .select('*')
-        .eq('attendance_date', selectedDate)
-        .order('created_at', { ascending: false });
+    let query = supabase.from('attendance_records').select('*');
+
+    if (viewType === 'daily') {
+        query = query.eq('attendance_date', selectedDate);
+    } else if (viewType === 'monthly') {
+        query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+    } else if (viewType === 'yearly') {
+        query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+    }
+
+    const { data: records, error } = await query.order('created_at', { ascending: false });
 
     // Fetch Current Override Status
     const { data: setting } = await supabase
@@ -181,12 +182,19 @@ app.get('/admin', async (req, res) => {
         timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
     }));
 
-    res.render('admin', { records: formattedRecords, selectedDate, isAeoUnlocked });
+    res.render('admin', { 
+        records: formattedRecords, 
+        viewType, 
+        selectedDate, 
+        selectedMonth, 
+        selectedYear, 
+        isAeoUnlocked 
+    });
 });
 
 // AEO Toggle Unlock Permission API
 app.post('/admin/toggle-lock', async (req, res) => {
-    const { unlock } = req.body; // 'true' or 'false'
+    const { unlock } = req.body;
 
     const { error } = await supabase
         .from('system_settings')

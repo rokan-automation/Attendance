@@ -28,7 +28,7 @@ app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-// Bochaganj 25 Primary Schools Data with Demo Teachers
+// Bochaganj 25 Primary Schools Data
 const schoolsData = [
     { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Government Primary School", teachers: ["Profulla Chandra Roy (Head Teacher)", "Farhana Yeasmin (Assistant)", "Biplob Kumar (Assistant)", "Shahnaz Parvin (Assistant)", "Moksed Ali (Assistant)"] },
@@ -57,6 +57,31 @@ const schoolsData = [
     { id: 25, name: "Chakpara Government Primary School", teachers: ["Md. Khalilur Rahman (Head Teacher)", "Nazma Begum (Assistant)", "Harun-or-Rashid (Assistant)", "Minati Rani (Assistant)", "Abdul Alim (Assistant)"] }
 ];
 
+// Helper: Check if Submission is Allowed (Before 10:00 AM or if AEO Unlocked)
+async function isSubmissionAllowed() {
+    // 1. Check Supabase Settings Table for AEO Override
+    const { data: setting } = await supabase
+        .from('system_settings')
+        .select('*')
+        .eq('key', 'aeo_override_unlock')
+        .single();
+
+    if (setting && setting.value === 'true') {
+        return { allowed: true, reason: 'unlocked_by_aeo' };
+    }
+
+    // 2. Check Bangladesh Current Time
+    const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
+    const [hours, minutes] = bdTimeStr.split(':').map(Number);
+
+    // If before 10:00 AM (e.g. 09:59)
+    if (hours < 10) {
+        return { allowed: true, reason: 'regular_time' };
+    }
+
+    return { allowed: false, reason: 'time_expired' };
+}
+
 // Routes
 app.get('/', (req, res) => res.render('login', { error: null }));
 
@@ -71,15 +96,22 @@ app.post('/login', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/index', (req, res) => {
+app.get('/index', async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
     const school = schoolsData.find(s => s.id == schoolId);
-    res.render('index', { school });
+
+    const status = await isSubmissionAllowed();
+    res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
 // Submit Attendance to Supabase
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
+    const status = await isSubmissionAllowed();
+    if (!status.allowed) {
+        return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance is locked by system!' });
+    }
+
     const { schoolId, attendance, lat, lng } = req.body;
     const school = schoolsData.find(s => s.id == schoolId);
     
@@ -88,7 +120,6 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         photoDataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     }
 
-    // Bangladesh Timezone Date (YYYY-MM-DD)
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
     const newRecord = {
@@ -113,7 +144,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route with Date-Wise Filter
+// Admin Route with Lock Status & Date Filter
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
 
@@ -121,22 +152,26 @@ app.get('/admin', async (req, res) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
-    // Selected Date from query or default Today's Date
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
     const selectedDate = req.query.date || todayDate;
 
-    // Filter Supabase records strictly by attendance_date
+    // Fetch Attendance
     const { data: records, error } = await supabase
         .from('attendance_records')
         .select('*')
         .eq('attendance_date', selectedDate)
         .order('created_at', { ascending: false });
 
-    if (error) {
-        return res.render('admin', { records: [], selectedDate });
-    }
+    // Fetch Current Override Status
+    const { data: setting } = await supabase
+        .from('system_settings')
+        .select('*')
+        .eq('key', 'aeo_override_unlock')
+        .single();
 
-    const formattedRecords = records.map(rec => ({
+    const isAeoUnlocked = (setting && setting.value === 'true');
+
+    const formattedRecords = (records || []).map(rec => ({
         id: rec.id,
         schoolName: rec.school_name,
         date: rec.attendance_date,
@@ -146,7 +181,22 @@ app.get('/admin', async (req, res) => {
         timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
     }));
 
-    res.render('admin', { records: formattedRecords, selectedDate });
+    res.render('admin', { records: formattedRecords, selectedDate, isAeoUnlocked });
+});
+
+// AEO Toggle Unlock Permission API
+app.post('/admin/toggle-lock', async (req, res) => {
+    const { unlock } = req.body; // 'true' or 'false'
+
+    const { error } = await supabase
+        .from('system_settings')
+        .upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
+
+    if (error) {
+        return res.json({ success: false, message: 'Failed to update lock status.' });
+    }
+
+    res.json({ success: true, isUnlocked: unlock });
 });
 
 // Edit Page for AEO

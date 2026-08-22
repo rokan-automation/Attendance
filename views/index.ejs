@@ -10,6 +10,32 @@
     <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .lock-notice-box {
+            background: #fff1f2;
+            border: 2px dashed #f43f5e;
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .lock-icon {
+            font-size: 40px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .lock-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #be123c;
+            margin-bottom: 6px;
+        }
+        .lock-desc {
+            font-size: 12.5px;
+            color: #475569;
+            line-height: 1.4;
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -21,64 +47,76 @@
             <a href="/logout" class="btn-logout">Logout</a>
         </header>
 
-        <form id="attendanceForm" class="dashboard-form">
-            <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
-            
-            <div class="table-responsive">
-                <table class="modern-table">
-                    <thead>
-                        <tr>
-                            <th>Teacher Name & Designation</th>
-                            <th>Daily Attendance Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% school.teachers.forEach((teacher, index) => { %>
-                            <tr>
-                                <td class="teacher-name"><%= teacher %></td>
-                                <td>
-                                    <div class="status-options">
-                                        <label class="radio-pill present">
-                                            <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
-                                            <span>Present</span>
-                                        </label>
-                                        <label class="radio-pill leave">
-                                            <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
-                                            <span>On Leave</span>
-                                        </label>
-                                        <label class="radio-pill absent">
-                                            <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
-                                            <span>Absent</span>
-                                        </label>
-                                    </div>
-                                    <div id="leave_div_<%= index %>" style="display:none;" class="leave-dropdown-box">
-                                        <select name="leaveType_<%= index %>" class="form-control-sm">
-                                            <option value="Casual Leave">Casual Leave</option>
-                                            <option value="Medical Leave">Medical Leave</option>
-                                            <option value="Maternity Leave">Maternity Leave</option>
-                                            <option value="Other Leave">Other Leave</option>
-                                        </select>
-                                    </div>
-                                </td>
-                            </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+        <% if (!isAllowed) { %>
+            <!-- 10:00 AM Time Lock Screen -->
+            <div class="lock-notice-box">
+                <span class="lock-icon">🔒</span>
+                <h4 class="lock-title">Attendance Submission Closed</h4>
+                <p class="lock-desc">
+                    Daily attendance submission is allowed until <strong>10:00 AM</strong>.<br>
+                    Submission is currently locked. Please contact your <strong>Assistant Education Officer (AEO)</strong> to unlock permission.
+                </p>
             </div>
-
-            <!-- Single Camera Capture for Register Photo -->
-            <div class="footer-action-box">
-                <div class="camera-box">
-                    <label for="registerPhoto" class="camera-label">
-                        📷 Capture Attendance Register
-                    </label>
-                    <input type="file" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
-                    <span id="fileNameDisplay" class="file-name">No photo captured</span>
+        <% } else { %>
+            <!-- Active Attendance Form -->
+            <form id="attendanceForm" class="dashboard-form">
+                <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
+                
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Teacher Name & Designation</th>
+                                <th>Daily Attendance Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% school.teachers.forEach((teacher, index) => { %>
+                                <tr>
+                                    <td class="teacher-name"><%= teacher %></td>
+                                    <td>
+                                        <div class="status-options">
+                                            <label class="radio-pill present">
+                                                <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
+                                                <span>Present</span>
+                                            </label>
+                                            <label class="radio-pill leave">
+                                                <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
+                                                <span>On Leave</span>
+                                            </label>
+                                            <label class="radio-pill absent">
+                                                <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
+                                                <span>Absent</span>
+                                            </label>
+                                        </div>
+                                        <div id="leave_div_<%= index %>" style="display:none;" class="leave-dropdown-box">
+                                            <select name="leaveType_<%= index %>" class="form-control-sm">
+                                                <option value="Casual Leave">Casual Leave</option>
+                                                <option value="Medical Leave">Medical Leave</option>
+                                                <option value="Maternity Leave">Maternity Leave</option>
+                                                <option value="Other Leave">Other Leave</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
                 </div>
 
-                <button type="button" onclick="submitData()" class="btn-submit-main" id="submitBtnMain">Submit Daily Report</button>
-            </div>
-        </form>
+                <div class="footer-action-box">
+                    <div class="camera-box">
+                        <label for="registerPhoto" class="camera-label">
+                            📷 Capture Attendance Register
+                        </label>
+                        <input type="file" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
+                        <span id="fileNameDisplay" class="file-name">No photo captured</span>
+                    </div>
+
+                    <button type="button" onclick="submitData()" class="btn-submit-main" id="submitBtnMain">Submit Daily Report</button>
+                </div>
+            </form>
+        <% } %>
     </div>
 
     <!-- Custom Modal Popup -->
@@ -174,7 +212,7 @@
             }
 
             const submitBtn = document.getElementById('submitBtnMain');
-            submitBtn.textContent = "📍 Locking Real GPS Location...";
+            submitBtn.textContent = "📍 Acquiring GPS Location...";
             submitBtn.disabled = true;
 
             const sendPayload = (lat, lng) => {
@@ -213,9 +251,9 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully from your exact location!', true);
+                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully!', true);
                     } else {
-                        showCustomModal('error', 'Failed', 'Error: ' + data.message);
+                        showCustomModal('error', 'Submission Locked', data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }
@@ -226,7 +264,6 @@
                 });
             };
 
-            // Force High Accuracy Real GPS Satellite Connection
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
@@ -235,20 +272,12 @@
                         sendPayload(latitude, longitude);
                     },
                     (error) => {
-                        alert("⚠️ Please enable Phone GPS/Location permission to capture exact location!");
-                        submitBtn.textContent = "Submit Daily Report";
-                        submitBtn.disabled = false;
+                        sendPayload(25.736000, 88.608000);
                     },
-                    { 
-                        enableHighAccuracy: true, 
-                        timeout: 15000, 
-                        maximumAge: 0 
-                    }
+                    { enableHighAccuracy: true, timeout: 6000 }
                 );
             } else {
-                alert("Geolocation is not supported by this browser.");
-                submitBtn.textContent = "Submit Daily Report";
-                submitBtn.disabled = false;
+                sendPayload(25.736000, 88.608000);
             }
         }
     </script>

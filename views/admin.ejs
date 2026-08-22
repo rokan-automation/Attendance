@@ -11,7 +11,6 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
     <style>
-        /* Mobile-First 2-Row Clean Layout */
         .summary-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -35,7 +34,6 @@
             margin-bottom: 4px;
         }
 
-        /* Compact Date Picker Bar */
         .date-filter-bar {
             display: flex;
             align-items: center;
@@ -55,7 +53,6 @@
             outline: none;
         }
 
-        /* 2 Rows Grid: 3 items in Row 1, 3 items in Row 2 */
         .two-row-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -113,6 +110,52 @@
             font-weight: 800;
         }
 
+        /* Control Lock & Tools Bar */
+        .aeo-tools-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn-tool {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: 0.2s;
+        }
+
+        .btn-tool:hover {
+            border-color: #4f46e5;
+            color: #4f46e5;
+        }
+
+        .btn-unlock-toggle {
+            background: <%= isAeoUnlocked ? '#fee2e2' : '#dcfce7' %>;
+            color: <%= isAeoUnlocked ? '#dc2626' : '#15803d' %>;
+            border: 1px solid <%= isAeoUnlocked ? '#fca5a5' : '#86efac' %>;
+            font-weight: 700;
+        }
+
+        .search-school-input {
+            flex: 1;
+            min-width: 160px;
+            padding: 7px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 12px;
+            outline: none;
+            background: #ffffff;
+        }
+
         .school-list-card {
             background: #ffffff;
             border: 1px solid #e5e7eb;
@@ -154,6 +197,20 @@
             border-radius: 6px;
             white-space: nowrap;
         }
+
+        @media print {
+            .app-header, .aeo-tools-bar, .date-filter-bar, .btn-view-compact {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+            .app-container, .summary-card {
+                box-shadow: none !important;
+                border: 1px solid #000 !important;
+            }
+        }
     </style>
 </head>
 <body style="background-color: #f3f4f6; padding: 12px;">
@@ -192,7 +249,7 @@
             let rateEffective = effectiveTeachers > 0 ? ((totalAbsentWithoutLeave / effectiveTeachers) * 100).toFixed(1) : 0;
         %>
 
-        <!-- Executive Summary Card (Date-Filtered) -->
+        <!-- Summary Card -->
         <div class="summary-card">
             <div class="summary-header">
                 <h3>Teacher Attendance Summary Report</h3>
@@ -202,7 +259,7 @@
                 </div>
             </div>
 
-            <!-- Row 1: School & Teacher Counts -->
+            <!-- Row 1 -->
             <div class="two-row-grid">
                 <div class="clean-stat-box">
                     <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
@@ -218,7 +275,7 @@
                 </div>
             </div>
 
-            <!-- Row 2: Attendance Status Breakdown -->
+            <!-- Row 2 -->
             <div class="two-row-grid">
                 <div class="clean-stat-box">
                     <span class="num" style="color: #10b981;"><%= totalPresent %></span>
@@ -234,7 +291,7 @@
                 </div>
             </div>
 
-            <!-- Rates Grid -->
+            <!-- Rates -->
             <div class="rates-grid-clean">
                 <div class="clean-rate-box">
                     <span class="title">Attendance Rate<br><small style="font-weight:400; font-size:9px;">(Submitted Base)</small></span>
@@ -247,15 +304,28 @@
             </div>
         </div>
 
-        <!-- Submitted Reports List for Selected Date -->
-        <h4 style="font-size: 13px; font-weight: 700; margin: 15px 0 10px 4px; color: #374155;">Submitted Reports (<%= submittedCount %> / <%= totalSchools %>)</h4>
+        <!-- AEO Tools: Emergency Lock/Unlock, Excel, Print & Search -->
+        <div class="aeo-tools-bar">
+            <button type="button" class="btn-tool btn-unlock-toggle" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
+                <%= isAeoUnlocked ? '🔒 Re-lock Submission' : '🔓 Emergency Unlock Submission' %>
+            </button>
+            <button type="button" class="btn-tool" onclick="exportToExcel()">📊 Export Excel</button>
+            <button type="button" class="btn-tool" onclick="window.print()">🖨️ Print</button>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+            <input type="text" id="searchSchool" class="search-school-input" style="width: 100%; box-sizing: border-box;" placeholder="🔍 Search school..." onkeyup="filterSchoolsList()">
+        </div>
+
+        <!-- Submitted Reports List -->
+        <h4 style="font-size: 13px; font-weight: 700; margin: 10px 0 10px 4px; color: #374155;">Submitted Reports (<%= submittedCount %> / <%= totalSchools %>)</h4>
         
         <% if(records.length === 0) { %>
             <p style="font-size: 12px; color: #6b7280; text-align: center; padding: 20px; background: white; border-radius: 8px;">No attendance submitted for <%= selectedDate %>.</p>
         <% } else { %>
-            <div style="display: flex; flex-direction: column;">
+            <div id="schoolListContainer" style="display: flex; flex-direction: column;">
                 <% records.forEach(rec => { %>
-                    <a href="/admin/school/<%= rec.id %>" style="text-decoration: none; color: inherit;">
+                    <a href="/admin/school/<%= rec.id %>" class="school-card-link" style="text-decoration: none; color: inherit;">
                         <div class="school-list-card">
                             <div>
                                 <div class="school-info-title">🏫 <%= rec.schoolName %></div>
@@ -270,10 +340,74 @@
     </div>
 
     <script>
+        const submittedRecords = <%- JSON.stringify(records) %>;
+        const reportDate = "<%= selectedDate %>";
+
         function changeReportDate(newDate) {
             if (newDate) {
                 window.location.href = '/admin?auth=true&date=' + newDate;
             }
+        }
+
+        // Emergency Toggle Lock
+        function toggleEmergencyLock(unlockStatus) {
+            fetch('/admin/toggle-lock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ unlock: unlockStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(unlockStatus ? 'Attendance submission is now UNLOCKED for all schools!' : 'Attendance submission is now LOCKED!');
+                    window.location.reload();
+                } else {
+                    alert('Failed to change lock status.');
+                }
+            });
+        }
+
+        // Search Filter
+        function filterSchoolsList() {
+            const query = document.getElementById('searchSchool').value.toLowerCase();
+            const cards = document.querySelectorAll('.school-card-link');
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? 'block' : 'none';
+            });
+        }
+
+        // Export Excel / CSV
+        function exportToExcel() {
+            if (submittedRecords.length === 0) {
+                alert("No submitted data available to export for this date!");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Date,School Name,Teacher Name,Status,Leave Type,Submission Time,Latitude,Longitude\r\n";
+
+            submittedRecords.forEach(rec => {
+                const school = rec.schoolName.replace(/,/g, '');
+                const time = rec.timestamp;
+                const lat = rec.location ? rec.location.lat : '';
+                const lng = rec.location ? rec.location.lng : '';
+
+                rec.attendance.forEach(item => {
+                    const teacher = item.teacher.replace(/,/g, '');
+                    const status = item.status;
+                    const leave = item.leaveType || '';
+                    csvContent += `${reportDate},${school},${teacher},${status},${leave},${time},${lat},${lng}\r\n`;
+                });
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Attendance_Report_Bochaganj_${reportDate}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     </script>
 </body>

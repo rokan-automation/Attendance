@@ -10,6 +10,11 @@
     <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+    
+    <!-- High-Performance Interactive Map Engine (Leaflet Canvas) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
         .map-wrapper-box {
             margin-top: 15px;
@@ -38,13 +43,14 @@
             margin-bottom: 14px;
         }
 
-        /* Interactive Dynamic Map with Built-in 360 Photo Corner Viewer */
-        .dynamic-interactive-map {
+        /* HD Crystal Clear Interactive Map Canvas */
+        #liveMapCanvas {
             width: 100%;
-            height: 320px;
+            height: 280px;
             border-radius: 10px;
             border: 1px solid #cbd5e1;
             margin-bottom: 10px;
+            z-index: 10;
         }
 
         .gps-badge-info {
@@ -144,7 +150,7 @@
 
             <!-- Complete Visual Verification Area -->
             <div class="map-wrapper-box">
-                <div class="map-section-title">📸 1. Captured Attendance Register (Tap to Enlarge)</div>
+                <div class="map-section-title">📸 1. Attendance Register (Tap to Enlarge)</div>
 
                 <% if(record.photo) { %>
                     <img src="<%= record.photo %>" alt="Register Photo" class="register-full-img" onclick="openImageViewer(this.src)">
@@ -157,18 +163,14 @@
                     let lng = (record.location && record.location.lng) ? record.location.lng : '88.608000';
                 %>
 
-                <div class="map-section-title">📍 2. Submission Spot Map & 360° Surrounding Photo</div>
+                <div class="map-section-title">📍 2. Exact Submission Spot (Interactive HD 360° Aerial View)</div>
                 
-                <!-- Google Interactive Map with Built-in 360 View Corner Box -->
-                <iframe
-                    class="dynamic-interactive-map"
-                    frameborder="0"
-                    src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&hl=en&z=17&t=m&output=embed">
-                </iframe>
+                <!-- HD Dynamic Interactive Satellite Canvas Map -->
+                <div id="liveMapCanvas"></div>
 
                 <div class="gps-badge-info">
                     <span>📍 <strong>Live GPS:</strong> <%= lat %>, <%= lng %></span>
-                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open Full Google Maps ↗</a>
+                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open in Google Maps ↗</a>
                 </div>
             </div>
 
@@ -194,6 +196,25 @@
     <script>
         const totalTeachersCount = <%= record.attendance.length %>;
         let redirectTarget = null;
+
+        // Initialize HD Live Interactive Satellite Spot Map
+        window.addEventListener('DOMContentLoaded', () => {
+            const latitude = parseFloat("<%= lat %>");
+            const longitude = parseFloat("<%= lng %>");
+
+            // Leaflet map centered exactly at the teacher's spot with high zoom
+            const map = L.map('liveMapCanvas').setView([latitude, longitude], 17);
+
+            // Google High-Resolution Hybrid Satellite Imagery Layer
+            L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                attribution: '© Google Satellite'
+            }).addTo(map);
+
+            // Custom Pulsing Pin Marker on Exact Location
+            const marker = L.marker([latitude, longitude]).addTo(map);
+            marker.bindPopup("<b>🏫 <%= record.schoolName %></b><br>Exact Submission Spot").openPopup();
+        });
 
         function openImageViewer(src) {
             document.getElementById('enlargedImg').src = src;

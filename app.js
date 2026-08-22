@@ -83,6 +83,7 @@ app.get('/index', async (req, res) => {
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
+// Submit Attendance with Strict Daily Duplicate Check
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     const status = await isSubmissionAllowed();
     if (!status.allowed) {
@@ -91,11 +92,28 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
 
     const { schoolId, attendance, lat, lng } = req.body;
     const school = schoolsData.find(s => s.id == schoolId);
-    let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
+    const schoolName = school ? school.name : 'Unknown School';
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
+    // Check if this school has already submitted today
+    const { data: existing } = await supabase
+        .from('attendance_records')
+        .select('id')
+        .eq('school_name', schoolName)
+        .eq('attendance_date', todayDate)
+        .maybeSingle();
+
+    if (existing) {
+        return res.json({ 
+            success: false, 
+            message: `Attendance for ${schoolName} has already been submitted for today! Contact AEO if you need corrections.` 
+        });
+    }
+
+    let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
+
     const newRecord = {
-        school_name: school ? school.name : 'Unknown School',
+        school_name: schoolName,
         attendance_date: todayDate,
         attendance_data: JSON.parse(attendance),
         photo_url: photoDataUrl,
@@ -171,6 +189,14 @@ app.get('/admin/list', async (req, res) => {
     }));
 
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
+});
+
+// Delete Submission Record by AEO
+app.post('/admin/school/delete/:id', async (req, res) => {
+    const recordId = req.params.id;
+    const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
+    if (error) return res.json({ success: false, message: 'Failed to delete record.' });
+    res.json({ success: true, message: 'Record deleted successfully!' });
 });
 
 app.post('/admin/toggle-lock', async (req, res) => {

@@ -44,10 +44,6 @@
             margin-bottom: 10px;
         }
 
-        .school-list-card:hover {
-            border-color: #4f46e5;
-        }
-
         .school-header-flex {
             display: flex;
             justify-content: space-between;
@@ -58,8 +54,37 @@
         .school-info-title {
             font-size: 13px;
             font-weight: 700;
-            color: #1f2937;
+            color: #1e293b;
             line-height: 1.3;
+        }
+
+        .action-button-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-view-compact {
+            background: #e0e7ff;
+            color: #4f46e5;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-delete-compact {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .teacher-mini-badges {
@@ -80,17 +105,6 @@
         .t-present { background: #dcfce7; color: #15803d; }
         .t-absent { background: #fee2e2; color: #dc2626; }
         .t-leave { background: #fef3c7; color: #d97706; }
-
-        .btn-view-compact {
-            background: #e0e7ff;
-            color: #4f46e5;
-            font-size: 11.5px;
-            font-weight: 700;
-            padding: 6px 12px;
-            border-radius: 6px;
-            text-decoration: none;
-            white-space: nowrap;
-        }
 
         .top-btn-group {
             display: flex;
@@ -128,26 +142,28 @@
             text-decoration: none;
             border-radius: 6px;
             box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
+            cursor: pointer;
+            border: none;
         }
     </style>
 </head>
 <body style="background-color: #f3f4f6; padding: 8px;">
     <div class="app-container">
         
-        <!-- Header with Back to Page 1, Logout & Exit -->
+        <!-- Header with Clean Back, Logout & Working Exit -->
         <header class="app-header" style="margin-bottom: 8px;">
             <div>
                 <h3 style="font-size: 15px;">Submitted Schools List</h3>
                 <span class="badge"><%= viewType.toUpperCase() %> Mode</span>
             </div>
             <div class="top-btn-group">
-                <a href="/admin?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-back-clean">← Back</a>
+                <a href="/admin?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-back-clean">Back</a>
                 <a href="/logout" class="btn-logout">Logout</a>
-                <a href="/" class="btn-exit-colorful">Exit</a>
+                <button type="button" onclick="performExit()" class="btn-exit-colorful">Exit</button>
             </div>
         </header>
 
-        <!-- Deep Search Input (Works for School and Teachers) -->
+        <!-- Deep Search Input -->
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." onkeyup="performDeepSearch()">
 
         <!-- List -->
@@ -166,10 +182,13 @@
                                 <div class="school-info-title">🏫 <%= rec.schoolName %></div>
                                 <span style="font-size: 10.5px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                             </div>
-                            <a href="/admin/school/<%= rec.id %>" class="btn-view-compact">View & Edit ➔</a>
+                            <div class="action-button-group">
+                                <a href="/admin/school/<%= rec.id %>" class="btn-view-compact">View & Edit ➔</a>
+                                <button type="button" onclick="deleteSchoolRecord(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-compact">🗑️ Delete</button>
+                            </div>
                         </div>
 
-                        <!-- Teacher Attendance Pills for Fast Identification -->
+                        <!-- Teacher Status Badges -->
                         <div class="teacher-mini-badges">
                             <% rec.attendance.forEach(t => { %>
                                 <span class="t-badge <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>">
@@ -183,10 +202,57 @@
         <% } %>
     </div>
 
+    <!-- Custom Modal -->
+    <div id="customModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
+            <h3 id="modalTitle">Status</h3>
+            <p id="modalMessage">Action completed successfully!</p>
+            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
+        </div>
+    </div>
+
     <script>
         const submittedRecords = <%- JSON.stringify(records) %>;
+        let shouldReloadPage = false;
 
-        // Instant Deep Search for Teacher Name & School Name
+        function performExit() {
+            window.location.href = '/logout';
+        }
+
+        function showCustomModal(type, title, message, reload = false) {
+            const modal = document.getElementById('customModal');
+            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
+            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            shouldReloadPage = reload;
+            modal.classList.add('active');
+        }
+
+        function closeCustomModal() {
+            document.getElementById('customModal').classList.remove('active');
+            if (shouldReloadPage) window.location.reload();
+        }
+
+        function deleteSchoolRecord(recordId, schoolName) {
+            if (confirm(`Are you sure you want to DELETE the attendance record of "${schoolName}"? This will allow the school to submit again.`)) {
+                fetch('/admin/school/delete/' + recordId, {
+                    method: 'POST'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showCustomModal('success', 'Record Deleted', `Attendance record for "${schoolName}" has been deleted.`, true);
+                    } else {
+                        showCustomModal('error', 'Delete Failed', data.message || 'Could not delete record.');
+                    }
+                }).catch(err => {
+                    showCustomModal('error', 'Network Error', 'Connection failed.');
+                });
+            }
+        }
+
         function performDeepSearch() {
             const query = document.getElementById('searchKeyword').value.toLowerCase().trim();
 
@@ -200,18 +266,10 @@
                 }
 
                 let isMatch = false;
-
-                // 1. Match School Name
-                if (rec.schoolName.toLowerCase().includes(query)) {
-                    isMatch = true;
-                }
-
-                // 2. Match Any Teacher Name
+                if (rec.schoolName.toLowerCase().includes(query)) isMatch = true;
                 if (rec.attendance && Array.isArray(rec.attendance)) {
                     rec.attendance.forEach(t => {
-                        if (t.teacher.toLowerCase().includes(query)) {
-                            isMatch = true;
-                        }
+                        if (t.teacher.toLowerCase().includes(query)) isMatch = true;
                     });
                 }
 

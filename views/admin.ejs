@@ -199,7 +199,7 @@
         }
 
         @media print {
-            .app-header, .aeo-tools-bar, .date-filter-bar, .btn-view-compact {
+            .app-header, .aeo-tools-bar, .date-filter-bar, .btn-view-compact, .custom-modal-overlay {
                 display: none !important;
             }
             body {
@@ -339,9 +339,49 @@
         <% } %>
     </div>
 
+    <!-- Custom Animated Modal Popup -->
+    <div id="customModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
+            <h3 id="modalTitle">Status</h3>
+            <p id="modalMessage">Action completed successfully!</p>
+            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
+        </div>
+    </div>
+
     <script>
         const submittedRecords = <%- JSON.stringify(records) %>;
         const reportDate = "<%= selectedDate %>";
+        let shouldReloadPage = false;
+
+        function showCustomModal(type, title, message, reload = false) {
+            const modal = document.getElementById('customModal');
+            const icon = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            shouldReloadPage = reload;
+
+            if (type === 'success') {
+                icon.className = "modal-icon-wrapper modal-icon-success";
+                icon.innerHTML = "✓";
+            } else {
+                icon.className = "modal-icon-wrapper modal-icon-error";
+                icon.innerHTML = "✕";
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeCustomModal() {
+            const modal = document.getElementById('customModal');
+            modal.classList.remove('active');
+            if (shouldReloadPage) {
+                window.location.reload();
+            }
+        }
 
         function changeReportDate(newDate) {
             if (newDate) {
@@ -349,7 +389,7 @@
             }
         }
 
-        // Emergency Toggle Lock
+        // Emergency Toggle Lock with Custom Animated Popup
         function toggleEmergencyLock(unlockStatus) {
             fetch('/admin/toggle-lock', {
                 method: 'POST',
@@ -359,11 +399,15 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    alert(unlockStatus ? 'Attendance submission is now UNLOCKED for all schools!' : 'Attendance submission is now LOCKED!');
-                    window.location.reload();
+                    const msg = unlockStatus 
+                        ? 'Attendance submission is now UNLOCKED for all schools!' 
+                        : 'Attendance submission is now LOCKED for all schools!';
+                    showCustomModal('success', 'Permission Updated', msg, true);
                 } else {
-                    alert('Failed to change lock status.');
+                    showCustomModal('error', 'Update Failed', data.message || 'Failed to change lock status.');
                 }
+            }).catch(err => {
+                showCustomModal('error', 'Network Error', 'Please check your connection.');
             });
         }
 
@@ -380,7 +424,7 @@
         // Export Excel / CSV
         function exportToExcel() {
             if (submittedRecords.length === 0) {
-                alert("No submitted data available to export for this date!");
+                showCustomModal('error', 'No Data', 'No submitted data available to export for this date!');
                 return;
             }
 

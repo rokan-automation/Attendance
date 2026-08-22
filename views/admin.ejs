@@ -10,6 +10,10 @@
     <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+
+    <!-- High-Speed Client-Side Real Excel (.xlsx) Formatter Library -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -140,7 +144,7 @@
             font-weight: 800;
         }
 
-        /* 3-Buttons Balanced Row */
+        /* 3 Buttons Grid */
         .tools-action-grid {
             display: grid;
             grid-template-columns: 1.2fr 1.2fr 1fr;
@@ -247,7 +251,7 @@
             </div>
         </header>
 
-        <!-- Summary Card -->
+        <!-- Compact Summary Card -->
         <div class="summary-card-solid">
             <div class="summary-header">
                 <h3>Attendance Summary Report</h3>
@@ -323,12 +327,12 @@
                 </div>
             </div>
 
-            <!-- 3 Action Buttons -->
+            <!-- Action Buttons Grid -->
             <div class="tools-action-grid">
                 <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
                     <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
                 </button>
-                <button type="button" class="btn-tool-solid btn-excel-style" onclick="exportToExcel()">
+                <button type="button" class="btn-tool-solid btn-excel-style" onclick="exportToAutoFittedExcel()">
                     📊 Export Excel
                 </button>
                 <button type="button" class="btn-tool-solid btn-refresh-style" onclick="window.location.reload()">
@@ -403,37 +407,58 @@
             });
         }
 
-        function exportToExcel() {
+        // Native .xlsx Exporter with Perfect Auto-Fitted Column Widths (Matches Image 2)
+        function exportToAutoFittedExcel() {
             if (submittedRecords.length === 0) {
                 showCustomModal('error', 'No Data', 'No submitted data available to export!');
                 return;
             }
 
-            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-            csvContent += "Date,School Name,Teacher Name,Status,Leave Type,Submission Time,Latitude,Longitude\r\n";
+            // Prepare Data Array
+            const excelRows = [
+                ["Date", "School Name", "Teacher Name", "Status", "Leave Type", "Submission Time", "Latitude", "Longitude"]
+            ];
 
             submittedRecords.forEach(rec => {
                 const date = rec.date;
-                const school = rec.schoolName.replace(/,/g, '');
+                const school = rec.schoolName;
                 const time = rec.timestamp;
                 const lat = rec.location ? rec.location.lat : '';
                 const lng = rec.location ? rec.location.lng : '';
 
                 rec.attendance.forEach(item => {
-                    const teacher = item.teacher.replace(/,/g, '');
-                    const status = item.status;
-                    const leave = item.leaveType || '';
-                    csvContent += `${date},${school},${teacher},${status},${leave},${time},${lat},${lng}\r\n`;
+                    excelRows.push([
+                        date,
+                        school,
+                        item.teacher,
+                        item.status,
+                        item.leaveType || '',
+                        time,
+                        lat,
+                        lng
+                    ]);
                 });
             });
 
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // Create Workbook and Worksheet
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelRows);
+
+            // Calculate Optimal Column Widths Automatically
+            const colWidths = excelRows[0].map((col, colIdx) => {
+                let maxLen = col.length;
+                excelRows.forEach(row => {
+                    const cellVal = row[colIdx] ? String(row[colIdx]) : '';
+                    if (cellVal.length > maxLen) maxLen = cellVal.length;
+                });
+                return { wch: maxLen + 3 }; // Add comfortable padding
+            });
+
+            ws['!cols'] = colWidths;
+
+            // Append Worksheet and Save File (.xlsx)
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
+            XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.xlsx`);
         }
     </script>
 </body>

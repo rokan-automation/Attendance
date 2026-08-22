@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Verify Attendance - <%= record.schoolName %></title>
     <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
@@ -10,74 +10,85 @@
     <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
     <style>
-        .verification-box {
-            margin-top: 15px;
+        .app-container-edit {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 8px;
+            min-height: 100vh;
+        }
+
+        .map-wrapper-box {
+            margin-top: 12px;
             background: #ffffff;
-            padding: 14px;
+            padding: 12px;
             border-radius: 12px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
 
-        .section-label {
-            font-size: 12px;
+        .map-section-title {
+            font-size: 12.5px;
             font-weight: 700;
             color: #1e293b;
             margin-bottom: 8px;
-            display: block;
         }
 
-        .register-display-img {
+        .register-full-img {
             width: 100%;
-            height: 220px;
+            height: 200px;
             object-fit: contain;
             background: #0f172a;
             border-radius: 8px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
-            margin-bottom: 15px;
-        }
-
-        .gps-card-action {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 14px;
-            text-align: center;
-        }
-
-        .gps-coords-text {
-            font-size: 12px;
-            font-weight: 700;
-            color: #334155;
             margin-bottom: 10px;
-            display: block;
         }
 
-        .btn-live-satellite {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        #liveMapCanvas {
+            width: 100%;
+            height: 220px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            margin-bottom: 8px;
+            z-index: 10;
+        }
+
+        .gps-badge-info {
+            background: #f1f5f9;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 10.5px;
+            color: #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-open-gmaps {
+            background: #2563eb;
             color: #ffffff;
             text-decoration: none;
-            padding: 10px 18px;
-            border-radius: 8px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Clean Back Button */
+        .btn-back-clean {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 5px 14px;
             font-size: 12px;
             font-weight: 700;
-            display: inline-block;
-            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
-            transition: 0.2s;
-        }
-
-        .btn-live-satellite:hover {
-            background: #1e40af;
-        }
-
-        .embedded-road-map {
-            width: 100%;
-            height: 180px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            margin-top: 10px;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #c7d2fe;
         }
 
         #imgViewerModal {
@@ -100,14 +111,18 @@
         }
     </style>
 </head>
-<body style="background-color: #f3f4f6; padding: 12px;">
-    <div class="app-container" style="max-width: 650px; margin: 0 auto; padding: 12px;">
+<body style="background-color: #f3f4f6;">
+    <div class="app-container-edit">
+        
+        <!-- Header: ONLY BACK BUTTON -->
         <header class="app-header">
             <div>
-                <h3><%= record.schoolName %></h3>
-                <span class="badge">AEO Verification Portal</span>
+                <h3 style="font-size: 13.5px; margin:0;"><%= record.schoolName %></h3>
+                <span class="badge">AEO Verification</span>
             </div>
-            <a href="/admin?auth=true" class="btn-logout" style="background: #e0e7ff; color: #4f46e5;">← Back to Summary</a>
+            <div>
+                <a href="javascript:history.back()" class="btn-back-clean">Back</a>
+            </div>
         </header>
 
         <form id="editForm">
@@ -117,7 +132,7 @@
                     <thead>
                         <tr>
                             <th>Teacher Name & Designation</th>
-                            <th>Attendance Status</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -154,48 +169,39 @@
                 </table>
             </div>
 
-            <!-- Complete Verification Section -->
-            <div class="verification-box">
+            <!-- Photos & Satellite Map -->
+            <div class="map-wrapper-box">
+                <div class="map-section-title">📸 1. Attendance Register Photo</div>
+
+                <% if(record.photo) { %>
+                    <img src="<%= record.photo %>" alt="Register Photo" class="register-full-img" onclick="openImageViewer(this.src)">
+                <% } else { %>
+                    <div style="height: 100px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 10px;">No register photo uploaded</div>
+                <% } %>
+
                 <% 
                     let lat = (record.location && record.location.lat) ? record.location.lat : '25.736000';
                     let lng = (record.location && record.location.lng) ? record.location.lng : '88.608000';
                 %>
 
-                <span class="section-label">📋 1. Attendance Register Photo (Tap to Enlarge)</span>
-                <% if(record.photo) { %>
-                    <img src="<%= record.photo %>" alt="Register Photo" class="register-display-img" onclick="openImageViewer(this.src)">
-                <% } else { %>
-                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 15px;">No register photo uploaded</div>
-                <% } %>
+                <div class="map-section-title">📍 2. Exact Submission Spot (360° View)</div>
+                <div id="liveMapCanvas"></div>
 
-                <span class="section-label">📍 2. Submission GPS Location & Surroundings</span>
-                <div class="gps-card-action">
-                    <span class="gps-coords-text">📍 Real Coordinates: <%= lat %>, <%= lng %></span>
-                    
-                    <!-- 360 Degree HD Satellite Link that You Liked -->
-                    <a href="https://www.google.com/maps/@<%= lat %>,<%= lng %>,18z/data=!3m1!1e3" target="_blank" class="btn-live-satellite">
-                        🛰️ Open HD 360° Satellite Surroundings View ↗
-                    </a>
-
-                    <!-- Direct Google Map Preview below button -->
-                    <iframe
-                        class="embedded-road-map"
-                        frameborder="0"
-                        src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&z=16&output=embed">
-                    </iframe>
+                <div class="gps-badge-info">
+                    <span>📍 <%= lat %>, <%= lng %></span>
+                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open Maps ↗</a>
                 </div>
             </div>
 
-            <button type="button" onclick="updateAttendance()" class="btn-submit-main" style="margin-top: 15px;">Save Changes</button>
+            <button type="button" onclick="updateAttendance()" class="btn-submit-main" style="margin-top: 12px;">Save Changes</button>
         </form>
     </div>
 
-    <!-- Full-Screen Image Viewer Modal -->
     <div id="imgViewerModal" onclick="this.style.display='none'">
         <img id="enlargedImg" src="" alt="Enlarged Photo">
     </div>
 
-    <!-- Custom Modal Popup -->
+    <!-- Custom Modal -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
@@ -207,49 +213,45 @@
 
     <script>
         const totalTeachersCount = <%= record.attendance.length %>;
-        let redirectTarget = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const latitude = parseFloat("<%= lat %>");
+            const longitude = parseFloat("<%= lng %>");
+
+            const map = L.map('liveMapCanvas').setView([latitude, longitude], 17);
+            L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                attribution: '© Google Satellite'
+            }).addTo(map);
+
+            const marker = L.marker([latitude, longitude]).addTo(map);
+            marker.bindPopup("<b><%= record.schoolName %></b>").openPopup();
+        });
 
         function openImageViewer(src) {
             document.getElementById('enlargedImg').src = src;
             document.getElementById('imgViewerModal').style.display = 'flex';
         }
 
-        function showCustomModal(type, title, message, redirectUrl = null) {
+        function showCustomModal(type, title, message) {
             const modal = document.getElementById('customModal');
-            const icon = document.getElementById('modalIcon');
-            const titleEl = document.getElementById('modalTitle');
-            const messageEl = document.getElementById('modalMessage');
-
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-            redirectTarget = redirectUrl;
-
-            if (type === 'success') {
-                icon.className = "modal-icon-wrapper modal-icon-success";
-                icon.innerHTML = "✓";
-            } else {
-                icon.className = "modal-icon-wrapper modal-icon-error";
-                icon.innerHTML = "✕";
-            }
-
+            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
+            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
             modal.classList.add('active');
         }
 
         function closeCustomModal() {
-            const modal = document.getElementById('customModal');
-            modal.classList.remove('active');
-            if (redirectTarget) {
-                window.location.href = redirectTarget;
-            }
+            document.getElementById('customModal').classList.remove('active');
+            window.location.href = '/admin?auth=true';
         }
 
         function toggleLeaveType(index) {
             let radios = document.getElementsByName('status_' + index);
             let leaveDiv = document.getElementById('leave_div_' + index);
             let selectedValue = '';
-            for(let r of radios) {
-                if(r.checked) selectedValue = r.value;
-            }
+            for(let r of radios) { if(r.checked) selectedValue = r.value; }
             leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
         }
 
@@ -278,12 +280,10 @@
             .then(res => res.json())
             .then(data => {
                 if(data.success) {
-                    showCustomModal('success', 'Changes Saved', 'Attendance record updated successfully!', data.redirectUrl);
+                    showCustomModal('success', 'Changes Saved', 'Attendance record updated successfully!');
                 } else {
                     showCustomModal('error', 'Update Failed', data.message || 'Could not update.');
                 }
-            }).catch(err => {
-                showCustomModal('error', 'Network Error', 'Connection problem occurred.');
             });
         }
     </script>

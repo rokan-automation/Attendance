@@ -10,10 +10,7 @@
     <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
-
-    <!-- High-Speed Client-Side Real Excel (.xlsx) Formatter Library -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -144,7 +141,6 @@
             font-weight: 800;
         }
 
-        /* 3 Buttons Grid */
         .tools-action-grid {
             display: grid;
             grid-template-columns: 1.2fr 1.2fr 1fr;
@@ -200,14 +196,15 @@
             letter-spacing: 0.3px;
         }
 
-        .btn-logout {
+        .btn-logout-main {
             background: #fee2e2;
             color: #dc2626;
-            padding: 5px 12px;
+            padding: 5px 14px;
             font-size: 12px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
+            border: 1px solid #fca5a5;
         }
     </style>
 </head>
@@ -240,18 +237,18 @@
             let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
         %>
 
-        <!-- Header -->
+        <!-- Clean Main Header: Only 1 Logout Button -->
         <header class="app-header" style="margin-bottom: 6px;">
             <div>
                 <h3 style="font-size: 15px; margin:0;">Bochaganj Upazila</h3>
                 <span class="badge">AEO Summary Report</span>
             </div>
             <div>
-                <a href="/logout" class="btn-logout">Logout</a>
+                <a href="/logout" class="btn-logout-main">Logout</a>
             </div>
         </header>
 
-        <!-- Compact Summary Card -->
+        <!-- Summary Card -->
         <div class="summary-card-solid">
             <div class="summary-header">
                 <h3>Attendance Summary Report</h3>
@@ -327,7 +324,7 @@
                 </div>
             </div>
 
-            <!-- Action Buttons Grid -->
+            <!-- 3 Action Buttons -->
             <div class="tools-action-grid">
                 <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
                     <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
@@ -363,10 +360,13 @@
         const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
         let shouldReloadPage = false;
 
-        window.history.pushState({ page: 1 }, "", "");
-        window.onpopstate = function () {
-            window.location.replace('/logout');
-        };
+        // Permanent Android Phone Back Button Trap - Guarantees 100% Exit on Phone Back Press
+        (function() {
+            window.history.pushState({ page: 'main_dashboard' }, "", "");
+            window.onpopstate = function () {
+                window.location.replace('/logout');
+            };
+        })();
 
         function showCustomModal(type, title, message, reload = false) {
             const modal = document.getElementById('customModal');
@@ -407,14 +407,12 @@
             });
         }
 
-        // Native .xlsx Exporter with Perfect Auto-Fitted Column Widths (Matches Image 2)
         function exportToAutoFittedExcel() {
             if (submittedRecords.length === 0) {
                 showCustomModal('error', 'No Data', 'No submitted data available to export!');
                 return;
             }
 
-            // Prepare Data Array
             const excelRows = [
                 ["Date", "School Name", "Teacher Name", "Status", "Leave Type", "Submission Time", "Latitude", "Longitude"]
             ];
@@ -440,23 +438,19 @@
                 });
             });
 
-            // Create Workbook and Worksheet
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(excelRows);
 
-            // Calculate Optimal Column Widths Automatically
             const colWidths = excelRows[0].map((col, colIdx) => {
                 let maxLen = col.length;
                 excelRows.forEach(row => {
                     const cellVal = row[colIdx] ? String(row[colIdx]) : '';
                     if (cellVal.length > maxLen) maxLen = cellVal.length;
                 });
-                return { wch: maxLen + 3 }; // Add comfortable padding
+                return { wch: maxLen + 3 };
             });
 
             ws['!cols'] = colWidths;
-
-            // Append Worksheet and Save File (.xlsx)
             XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
             XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.xlsx`);
         }

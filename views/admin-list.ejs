@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="/css/style.css">
     <style>
         .app-container-scrollable {
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
             padding: 8px;
             min-height: 100vh;
@@ -21,10 +21,10 @@
         .search-school-input {
             width: 100%;
             box-sizing: border-box;
-            padding: 8px 12px;
+            padding: 9px 12px;
             border: 2px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 12.5px;
             outline: none;
             background: #ffffff;
             margin: 8px 0;
@@ -47,7 +47,7 @@
         }
 
         .school-info-title {
-            font-size: 12.5px;
+            font-size: 13px;
             font-weight: 700;
             color: #1e293b;
         }
@@ -58,7 +58,6 @@
             gap: 4px;
         }
 
-        /* Clean Button without Arrow */
         .btn-view-compact {
             background: #e0e7ff;
             color: #4f46e5;
@@ -98,46 +97,18 @@
         .t-absent { background: #fee2e2; color: #dc2626; }
         .t-leave { background: #fef3c7; color: #d97706; }
 
-        .top-btn-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
+        /* Clean Back Button */
         .btn-back-clean {
             background: #e0e7ff;
             color: #4f46e5;
-            padding: 4px 10px;
-            font-size: 11px;
+            padding: 5px 14px;
+            font-size: 12px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
             border: 1px solid #c7d2fe;
         }
 
-        .btn-logout {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 4px 8px;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 6px;
-        }
-
-        .btn-exit-colorful {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
-            color: #ffffff;
-            padding: 4px 10px;
-            font-size: 11px;
-            font-weight: 800;
-            text-decoration: none;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-        }
-
-        /* Custom Delete Confirmation Modal */
         .modal-btn-delete {
             background: #dc2626;
             color: #fff;
@@ -165,20 +136,18 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-scrollable">
         
-        <!-- Header with Clean Back -->
+        <!-- Header: ONLY BACK BUTTON -->
         <header class="app-header">
             <div>
-                <h3 style="font-size: 14px;">Submitted Schools List</h3>
+                <h3 style="font-size: 14.5px; margin:0;">Submitted Schools List</h3>
                 <span class="badge"><%= viewType.toUpperCase() %> Mode</span>
             </div>
-            <div class="top-btn-group">
+            <div>
                 <a href="/admin?auth=true&viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-back-clean">Back</a>
-                <a href="/logout" class="btn-logout">Logout</a>
-                <button type="button" onclick="performExit()" class="btn-exit-colorful">Exit</button>
             </div>
         </header>
 
-        <!-- Search Input -->
+        <!-- Deep Search Input -->
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." onkeyup="performDeepSearch()">
 
         <h4 style="font-size: 12.5px; font-weight: 700; margin: 6px 0 6px 2px; color: #374155;">
@@ -202,6 +171,7 @@
                             </div>
                         </div>
 
+                        <!-- Teacher Status Badges -->
                         <div class="teacher-mini-badges">
                             <% rec.attendance.forEach(t => { %>
                                 <span class="t-badge <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>">
@@ -219,11 +189,11 @@
     <div id="deleteConfirmModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div class="modal-icon-wrapper modal-icon-error">🗑️</div>
-            <h3 id="deleteModalTitle">Confirm Delete</h3>
+            <h3>Confirm Delete</h3>
             <p id="deleteModalMessage">Are you sure you want to delete this record?</p>
             <div style="display: flex; gap: 8px; margin-top: 10px;">
                 <button type="button" class="modal-btn-cancel" onclick="closeDeleteConfirmModal()">Cancel</button>
-                <button type="button" id="confirmDeleteBtn" class="modal-btn-delete" onclick="executeDelete()">Delete</button>
+                <button type="button" class="modal-btn-delete" onclick="executeDelete()">Delete</button>
             </div>
         </div>
     </div>
@@ -242,11 +212,6 @@
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
 
-        function performExit() {
-            window.location.href = '/logout';
-        }
-
-        // Custom Delete Modal Trigger
         function openDeleteConfirmModal(recordId, schoolName) {
             selectedRecordIdToDelete = recordId;
             document.getElementById('deleteModalMessage').textContent = `Are you sure you want to delete attendance record of "${schoolName}"?`;

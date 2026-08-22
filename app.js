@@ -83,7 +83,6 @@ app.get('/index', async (req, res) => {
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-// Submit Attendance with Strict Daily Duplicate Check
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     const status = await isSubmissionAllowed();
     if (!status.allowed) {
@@ -95,7 +94,6 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     const schoolName = school ? school.name : 'Unknown School';
     const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
 
-    // Check if this school has already submitted today
     const { data: existing } = await supabase
         .from('attendance_records')
         .select('id')
@@ -106,7 +104,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     if (existing) {
         return res.json({ 
             success: false, 
-            message: `Attendance for ${schoolName} has already been submitted for today! Contact AEO if you need corrections.` 
+            message: `Attendance for ${schoolName} has already been submitted for today!` 
         });
     }
 
@@ -127,7 +125,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// 1st Page: AEO Summary Report Screen
+// Admin Route
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -160,7 +158,7 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// 2nd Page: Search & Submitted Schools List Screen
+// Search & List Page
 app.get('/admin/list', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -191,7 +189,7 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Delete Submission Record by AEO
+// Delete Record
 app.post('/admin/school/delete/:id', async (req, res) => {
     const recordId = req.params.id;
     const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);

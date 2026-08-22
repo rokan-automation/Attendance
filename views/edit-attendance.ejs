@@ -10,29 +10,25 @@
     <link rel="apple-touch-icon" href="/icon.png?v=4">
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css">
-    
-    <!-- Leaflet HD Canvas Engine -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
     <style>
-        .map-wrapper-box {
+        .verification-box {
             margin-top: 15px;
             background: #ffffff;
             padding: 14px;
-            border-radius: 14px;
+            border-radius: 12px;
             border: 1px solid #e2e8f0;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
 
-        .map-section-title {
-            font-size: 13px;
+        .section-label {
+            font-size: 12px;
             font-weight: 700;
             color: #1e293b;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            display: block;
         }
 
-        .register-full-img {
+        .register-display-img {
             width: 100%;
             height: 220px;
             object-fit: contain;
@@ -40,38 +36,48 @@
             border-radius: 8px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
-            margin-bottom: 14px;
+            margin-bottom: 15px;
         }
 
-        /* 360 Degree Rotatable Canvas View */
-        #liveMapCanvas {
-            width: 100%;
-            height: 280px;
-            border-radius: 10px;
+        .gps-card-action {
+            background: #f8fafc;
             border: 1px solid #cbd5e1;
-            margin-bottom: 10px;
-            z-index: 10;
+            border-radius: 10px;
+            padding: 14px;
+            text-align: center;
         }
 
-        .gps-badge-info {
-            background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 11px;
+        .gps-coords-text {
+            font-size: 12px;
+            font-weight: 700;
             color: #334155;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-bottom: 10px;
+            display: block;
         }
 
-        .btn-open-gmaps {
-            background: #2563eb;
+        .btn-live-satellite {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             color: #ffffff;
             text-decoration: none;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+            transition: 0.2s;
+        }
+
+        .btn-live-satellite:hover {
+            background: #1e40af;
+        }
+
+        .embedded-road-map {
+            width: 100%;
+            height: 180px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            margin-top: 10px;
         }
 
         #imgViewerModal {
@@ -148,29 +154,35 @@
                 </table>
             </div>
 
-            <!-- Visual Verification: Register Photo + 360° Rotatable Location View -->
-            <div class="map-wrapper-box">
-                <div class="map-section-title">📸 1. Attendance Register (Tap to Enlarge)</div>
-
-                <% if(record.photo) { %>
-                    <img src="<%= record.photo %>" alt="Register Photo" class="register-full-img" onclick="openImageViewer(this.src)">
-                <% } else { %>
-                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 14px;">No register photo uploaded</div>
-                <% } %>
-
+            <!-- Complete Verification Section -->
+            <div class="verification-box">
                 <% 
                     let lat = (record.location && record.location.lat) ? record.location.lat : '25.736000';
                     let lng = (record.location && record.location.lng) ? record.location.lng : '88.608000';
                 %>
 
-                <div class="map-section-title">📍 2. Exact Submission Spot (360° Rotatable Surroundings View)</div>
-                
-                <!-- HD Dynamic Interactive 360 Map Canvas -->
-                <div id="liveMapCanvas"></div>
+                <span class="section-label">📋 1. Attendance Register Photo (Tap to Enlarge)</span>
+                <% if(record.photo) { %>
+                    <img src="<%= record.photo %>" alt="Register Photo" class="register-display-img" onclick="openImageViewer(this.src)">
+                <% } else { %>
+                    <div style="height: 120px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #94a3b8; border: 1px dashed #cbd5e1; border-radius: 8px; margin-bottom: 15px;">No register photo uploaded</div>
+                <% } %>
 
-                <div class="gps-badge-info">
-                    <span>📍 <strong>Live GPS:</strong> <%= lat %>, <%= lng %></span>
-                    <a href="https://www.google.com/maps/search/?api=1&query=<%= lat %>,<%= lng %>" target="_blank" class="btn-open-gmaps">Open Full Google Maps ↗</a>
+                <span class="section-label">📍 2. Submission GPS Location & Surroundings</span>
+                <div class="gps-card-action">
+                    <span class="gps-coords-text">📍 Real Coordinates: <%= lat %>, <%= lng %></span>
+                    
+                    <!-- 360 Degree HD Satellite Link that You Liked -->
+                    <a href="https://www.google.com/maps/@<%= lat %>,<%= lng %>,18z/data=!3m1!1e3" target="_blank" class="btn-live-satellite">
+                        🛰️ Open HD 360° Satellite Surroundings View ↗
+                    </a>
+
+                    <!-- Direct Google Map Preview below button -->
+                    <iframe
+                        class="embedded-road-map"
+                        frameborder="0"
+                        src="https://maps.google.com/maps?q=<%= lat %>,<%= lng %>&z=16&output=embed">
+                    </iframe>
                 </div>
             </div>
 
@@ -196,22 +208,6 @@
     <script>
         const totalTeachersCount = <%= record.attendance.length %>;
         let redirectTarget = null;
-
-        // Initialize 360° Rotatable HD Canvas Map
-        window.addEventListener('DOMContentLoaded', () => {
-            const latitude = parseFloat("<%= lat %>");
-            const longitude = parseFloat("<%= lng %>");
-
-            const map = L.map('liveMapCanvas').setView([latitude, longitude], 17);
-
-            L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-                maxZoom: 20,
-                attribution: '© Google Satellite 360'
-            }).addTo(map);
-
-            const marker = L.marker([latitude, longitude]).addTo(map);
-            marker.bindPopup("<b>🏫 <%= record.schoolName %></b><br>Submission Spot").openPopup();
-        });
 
         function openImageViewer(src) {
             document.getElementById('enlargedImg').src = src;

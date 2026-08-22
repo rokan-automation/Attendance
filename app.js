@@ -10,13 +10,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 
-// Multer Memory Storage with 10MB limit
+// Multer Storage
 const upload = multer({ 
     storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 }
 });
 
-// Middleware & Configurations
+// Middleware & View Configurations
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -78,7 +78,7 @@ app.get('/index', (req, res) => {
     res.render('index', { school });
 });
 
-// Submit Attendance
+// Submit Attendance to Supabase
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     const { schoolId, attendance, lat, lng } = req.body;
     const school = schoolsData.find(s => s.id == schoolId);
@@ -87,10 +87,13 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     if (req.file) {
         photoDataUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
     }
-    
+
+    // Bangladesh Timezone Date (YYYY-MM-DD)
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+
     const newRecord = {
         school_name: school ? school.name : 'Unknown School',
-        attendance_date: new Date().toISOString().split('T')[0],
+        attendance_date: todayDate,
         attendance_data: JSON.parse(attendance),
         photo_url: photoDataUrl,
         latitude: lat,
@@ -110,7 +113,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route
+// Admin Route with Date-Wise Filter
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
 
@@ -118,13 +121,19 @@ app.get('/admin', async (req, res) => {
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
 
+    // Selected Date from query or default Today's Date
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+    const selectedDate = req.query.date || todayDate;
+
+    // Filter Supabase records strictly by attendance_date
     const { data: records, error } = await supabase
         .from('attendance_records')
         .select('*')
+        .eq('attendance_date', selectedDate)
         .order('created_at', { ascending: false });
 
     if (error) {
-        return res.render('admin', { records: [] });
+        return res.render('admin', { records: [], selectedDate });
     }
 
     const formattedRecords = records.map(rec => ({
@@ -134,10 +143,10 @@ app.get('/admin', async (req, res) => {
         attendance: rec.attendance_data,
         photo: rec.photo_url,
         location: { lat: rec.latitude, lng: rec.longitude },
-        timestamp: new Date(rec.created_at).toLocaleString()
+        timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
     }));
 
-    res.render('admin', { records: formattedRecords });
+    res.render('admin', { records: formattedRecords, selectedDate });
 });
 
 // Edit Page for AEO
@@ -164,7 +173,7 @@ app.get('/admin/school/:id', async (req, res) => {
     res.render('edit-attendance', { record });
 });
 
-// Update Attendance by AEO
+// Update School Attendance by AEO
 app.post('/admin/school/update/:id', async (req, res) => {
     const recordId = req.params.id;
     const { attendance } = req.body;

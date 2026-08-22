@@ -204,15 +204,23 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Teacher Individual Attendance Analytics API
+// Teacher Individual Multi-View Analytics API (Daily/Monthly/Yearly/All)
 app.get('/api/teacher-analytics', async (req, res) => {
-    const teacherName = req.query.teacher;
-    if (!teacherName) return res.json({ success: false, stats: null });
+    const { teacher, mode, month, year } = req.query;
+    if (!teacher) return res.json({ success: false, stats: null });
 
-    const { data: allRecords } = await supabase
+    let query = supabase
         .from('attendance_records')
         .select('school_name, attendance_date, attendance_data, created_at')
         .order('attendance_date', { ascending: false });
+
+    if (mode === 'monthly' && month) {
+        query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+    } else if (mode === 'yearly' && year) {
+        query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+    }
+
+    const { data: allRecords } = await query;
 
     let presentCount = 0;
     let leaveCount = 0;
@@ -222,7 +230,7 @@ app.get('/api/teacher-analytics', async (req, res) => {
 
     (allRecords || []).forEach(rec => {
         if (rec.attendance_data && Array.isArray(rec.attendance_data)) {
-            const found = rec.attendance_data.find(t => t.teacher.toLowerCase().trim() === teacherName.toLowerCase().trim());
+            const found = rec.attendance_data.find(t => t.teacher.toLowerCase().trim() === teacher.toLowerCase().trim());
             if (found) {
                 schoolName = rec.school_name;
                 if (found.status === 'Present') presentCount++;
@@ -243,7 +251,7 @@ app.get('/api/teacher-analytics', async (req, res) => {
 
     res.json({
         success: true,
-        teacherName,
+        teacherName: teacher,
         schoolName,
         stats: {
             totalDays,
@@ -252,8 +260,21 @@ app.get('/api/teacher-analytics', async (req, res) => {
             absentCount,
             presentRate
         },
-        history: history.slice(0, 30) // Recent 30 days
+        history
     });
+});
+
+app.get('/api/photos-payload', async (req, res) => {
+    const { viewType, date, month, year } = req.query;
+    let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
+
+    if (viewType === 'daily') query = query.eq('attendance_date', date);
+    else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+    else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+
+    const { data: records } = await query;
+    const photos = (records || []).filter(r => r.photo_url).map(r => ({ schoolName: r.school_name, date: r.attendance_date, photo: r.photo_url }));
+    res.json({ success: true, photos });
 });
 
 app.get('/admin/teachers', async (req, res) => {
@@ -275,7 +296,7 @@ app.post('/admin/teachers/update', async (req, res) => {
 app.post('/admin/school/delete/:id', async (req, res) => {
     const recordId = req.params.id;
     const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
-    if (error) return res.json({ success: false, message: 'Failed to delete.' });
+    if (error) return res.json({ success: false, message: 'Failed to delete record.' });
     res.json({ success: true, message: 'Record deleted successfully!' });
 });
 

@@ -97,10 +97,9 @@
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
-            margin-top: 6px;
+            margin-top: 4px;
         }
 
-        /* Interactive Clickable Teacher Badges */
         .t-badge-interactive {
             font-size: 10.5px;
             padding: 3px 8px;
@@ -133,12 +132,36 @@
             border: 1px solid #c7d2fe;
         }
 
-        /* Teacher Analytics Modal Styles */
+        /* Teacher Analytics Modal Tabs */
+        .t-modal-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin: 8px 0 6px 0;
+        }
+
+        .t-tab-btn {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            padding: 3px 10px;
+            border-radius: 16px;
+            font-size: 10.5px;
+            font-weight: 700;
+            color: #475569;
+            cursor: pointer;
+        }
+
+        .t-tab-btn.active {
+            background: #4f46e5;
+            color: #ffffff;
+            border-color: #4f46e5;
+        }
+
         .analytics-grid-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 6px;
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .analytics-stat-item {
@@ -163,13 +186,13 @@
         }
 
         .history-list-box {
-            max-height: 180px;
+            max-height: 170px;
             overflow-y: auto;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 6px;
             text-align: left;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .history-item-row {
@@ -207,7 +230,6 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-scrollable">
         
-        <!-- Header -->
         <header class="app-header" style="margin-bottom: 8px;">
             <div>
                 <h3 style="font-size: 14.5px; margin:0;">Submitted Schools List</h3>
@@ -260,12 +282,19 @@
         <% } %>
     </div>
 
-    <!-- Teacher Analytics Modal Popup -->
+    <!-- Multi-Mode Teacher Analytics Modal (Daily / Monthly / Yearly) -->
     <div id="teacherAnalyticsModal" class="custom-modal-overlay">
         <div class="custom-modal-box" style="max-width: 380px;">
             <div class="modal-icon-wrapper modal-icon-success">👨‍🏫</div>
             <h3 id="modalTeacherName" style="font-size: 15px; margin-bottom: 2px;">Teacher Profile</h3>
-            <p id="modalSchoolName" style="font-size: 11px; color: #64748b; margin-bottom: 6px;"></p>
+            <p id="modalSchoolName" style="font-size: 11px; color: #64748b; margin-bottom: 4px;"></p>
+
+            <!-- Mode Filter Tabs for Individual Teacher -->
+            <div class="t-modal-tabs">
+                <button type="button" id="tabAll" class="t-tab-btn active" onclick="switchTeacherAnalyticsMode('all')">All Time</button>
+                <button type="button" id="tabMonthly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('monthly')">This Month</button>
+                <button type="button" id="tabYearly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('yearly')">This Year</button>
+            </div>
 
             <div class="analytics-grid-row">
                 <div class="analytics-stat-item">
@@ -286,12 +315,12 @@
                 </div>
             </div>
 
-            <p style="font-size: 11px; font-weight: 700; text-align: left; margin: 6px 0 2px 2px; color: #334155;">Recent Attendance History:</p>
+            <p style="font-size: 11px; font-weight: 700; text-align: left; margin: 6px 0 2px 2px; color: #334155;">Attendance Log History:</p>
             <div class="history-list-box" id="modalHistoryList">
                 <!-- Injected via JS -->
             </div>
 
-            <button type="button" class="modal-btn-confirm" onclick="closeTeacherAnalyticsModal()" style="margin-top: 12px;">Close</button>
+            <button type="button" class="modal-btn-confirm" onclick="closeTeacherAnalyticsModal()" style="margin-top: 10px;">Close</button>
         </div>
     </div>
 
@@ -311,17 +340,30 @@
     <script>
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
+        let currentActiveTeacher = '';
+        let currentActiveSchool = '';
 
-        // Fetch & Open Teacher Attendance Analytics Modal
         async function openTeacherAnalytics(teacherFullName) {
+            currentActiveTeacher = teacherFullName;
+            switchTeacherAnalyticsMode('all');
+            document.getElementById('teacherAnalyticsModal').classList.add('active');
+        }
+
+        async function switchTeacherAnalyticsMode(mode) {
+            document.querySelectorAll('.t-tab-btn').forEach(b => b.classList.remove('active'));
+            if (mode === 'all') document.getElementById('tabAll').classList.add('active');
+            else if (mode === 'monthly') document.getElementById('tabMonthly').classList.add('active');
+            else if (mode === 'yearly') document.getElementById('tabYearly').classList.add('active');
+
+            const now = new Date();
+            const month = now.toISOString().substring(0, 7);
+            const year = now.getFullYear();
+
             try {
-                const res = await fetch(`/api/teacher-analytics?teacher=${encodeURIComponent(teacherFullName)}`);
+                const res = await fetch(`/api/teacher-analytics?teacher=${encodeURIComponent(currentActiveTeacher)}&mode=${mode}&month=${month}&year=${year}`);
                 const data = await res.json();
 
-                if (!data.success || !data.stats) {
-                    alert('No historical analytics found for this teacher.');
-                    return;
-                }
+                if (!data.success || !data.stats) return;
 
                 document.getElementById('modalTeacherName').textContent = data.teacherName;
                 document.getElementById('modalSchoolName').textContent = `🏫 ${data.schoolName}`;
@@ -334,7 +376,7 @@
                 historyBox.innerHTML = '';
 
                 if (data.history.length === 0) {
-                    historyBox.innerHTML = '<p style="font-size:10.5px; color:#94a3b8; text-align:center;">No history records available.</p>';
+                    historyBox.innerHTML = '<p style="font-size:10.5px; color:#94a3b8; text-align:center; padding:10px;">No attendance found for this period.</p>';
                 } else {
                     data.history.forEach(h => {
                         const statusColor = h.status === 'Present' ? '#16a34a' : (h.status === 'Leave' ? '#d97706' : '#dc2626');
@@ -347,10 +389,8 @@
                         historyBox.appendChild(row);
                     });
                 }
-
-                document.getElementById('teacherAnalyticsModal').classList.add('active');
             } catch (err) {
-                alert('Failed to load teacher analytics.');
+                console.error(err);
             }
         }
 
@@ -377,11 +417,7 @@
             fetch('/admin/school/delete/' + targetId, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Delete failed.');
-                }
+                if (data.success) window.location.reload();
             });
         }
 

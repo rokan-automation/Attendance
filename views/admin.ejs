@@ -99,7 +99,7 @@
             outline: none;
         }
 
-        /* 2-Row Counts Grid with Total Schools */
+        /* 2-Row Counts Grid */
         .two-row-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -205,32 +205,14 @@
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
         }
 
-        .top-btn-group {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
         .btn-logout {
             background: #fee2e2;
             color: #dc2626;
-            padding: 5px 12px;
+            padding: 5px 14px;
             font-size: 11.5px;
             font-weight: 700;
             text-decoration: none;
             border-radius: 6px;
-        }
-
-        .btn-exit-colorful {
-            background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 50%, #3b82f6 100%);
-            color: #ffffff;
-            padding: 5px 14px;
-            font-size: 11.5px;
-            font-weight: 800;
-            text-decoration: none;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
         }
     </style>
 </head>
@@ -263,15 +245,14 @@
             let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
         %>
 
-        <!-- Header (Only Logout & Exit - Zero Back Button) -->
+        <!-- Header: Only Clean Logout Button -->
         <header class="app-header">
             <div>
                 <h3 style="font-size: 14.5px;">Bochaganj Upazila</h3>
                 <span class="badge">AEO Summary Report</span>
             </div>
-            <div class="top-btn-group">
+            <div>
                 <a href="/logout" class="btn-logout">Logout</a>
-                <button type="button" onclick="performExit()" class="btn-exit-colorful">Exit</button>
             </div>
         </header>
 
@@ -384,15 +365,11 @@
         const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
         let shouldReloadPage = false;
 
-        // Hardware Phone Back Button Intercept - Force Exit to outside/logout
+        // Hardware Phone Back Button Intercept - Force Logout & Exit
         window.history.pushState(null, "", window.location.href);
         window.onpopstate = function () {
             window.location.href = '/logout';
         };
-
-        function performExit() {
-            window.location.href = '/logout';
-        }
 
         function showCustomModal(type, title, message, reload = false) {
             const modal = document.getElementById('customModal');

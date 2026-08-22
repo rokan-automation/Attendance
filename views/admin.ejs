@@ -4,22 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Summary - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
-    <link rel="apple-touch-icon" href="/icon.png?v=5">
+    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
+    <link rel="apple-touch-icon" href="/icon.png?v=6">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=5">
-
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link rel="stylesheet" href="/css/style.css?v=6">
 
     <style>
         html, body {
             background-color: #f3f4f6;
             margin: 0;
             padding: 0;
+            touch-action: manipulation;
         }
 
         .app-container-tight {
@@ -95,7 +92,6 @@
             outline: none;
         }
 
-        /* 3-Column Tight Grids */
         .three-box-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -125,7 +121,6 @@
             font-weight: 700;
         }
 
-        /* 4-Box Row for Teachers Breakdown */
         .four-box-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -155,7 +150,6 @@
             font-weight: 700;
         }
 
-        /* Rates Grid */
         .rates-box-large {
             background: #f8fafc;
             border: 1.5px solid #e2e8f0;
@@ -177,7 +171,6 @@
             font-weight: 800;
         }
 
-        /* 4 Action Buttons */
         .tools-action-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -334,7 +327,7 @@
                 </div>
             </div>
 
-            <!-- Row 2: Teachers, Present, On Leave, Absent (4-Field Complete Row) -->
+            <!-- Row 2: Teachers Breakdown -->
             <div class="four-box-grid">
                 <div class="stat-box-four">
                     <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
@@ -453,11 +446,25 @@
             });
         }
 
-        function exportToAutoFittedExcel() {
+        // On-Demand Dynamic Library Loader for Turbo App Speed
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                if (document.querySelector(`script[src="${src}"]`)) return resolve();
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+
+        async function exportToAutoFittedExcel() {
             if (submittedRecords.length === 0) {
                 showCustomModal('error', 'No Data', 'No submitted data available to export!');
                 return;
             }
+
+            await loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");
 
             const excelRows = [
                 ["Date", "School Name", "Teacher Name", "Status", "Leave Type", "Submission Time", "Latitude", "Longitude"]
@@ -514,6 +521,9 @@
             btn.disabled = true;
 
             try {
+                await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
+                await loadScript("https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js");
+
                 const response = await fetch(`/api/photos-payload?viewType=${currentView}&date=${currentSelected}&month=${currentSelected}&year=${currentSelected}`);
                 const data = await response.json();
 

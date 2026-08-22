@@ -4,13 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Submitted Schools & Search - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
-    <link rel="apple-touch-icon" href="/icon.png?v=5">
+    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
+    <link rel="apple-touch-icon" href="/icon.png?v=6">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=5">
+    <link rel="stylesheet" href="/css/style.css?v=6">
     <style>
+        html, body {
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            touch-action: manipulation;
+        }
+
         .app-container-scrollable {
             max-width: 500px;
             margin: 0 auto;
@@ -109,12 +116,12 @@
             display: inline-flex;
             align-items: center;
             gap: 3px;
-            transition: 0.15s;
+            transition: 0.1s;
             border: 1px solid transparent;
         }
 
-        .t-badge-interactive:hover, .t-badge-interactive:active {
-            transform: scale(1.04);
+        .t-badge-interactive:active {
+            transform: scale(0.96);
         }
 
         .t-present { background: #dcfce7; color: #15803d; border-color: #86efac; }
@@ -132,7 +139,6 @@
             border: 1px solid #c7d2fe;
         }
 
-        /* Teacher Analytics Modal Tabs */
         .t-modal-tabs {
             display: flex;
             justify-content: center;
@@ -267,7 +273,6 @@
                             </div>
                         </div>
 
-                        <!-- Clickable Teacher Badges -->
                         <div class="teacher-mini-badges">
                             <% rec.attendance.forEach(t => { %>
                                 <span class="t-badge-interactive <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>" 
@@ -282,14 +287,13 @@
         <% } %>
     </div>
 
-    <!-- Multi-Mode Teacher Analytics Modal (Daily / Monthly / Yearly) -->
+    <!-- Multi-Mode Teacher Analytics Modal -->
     <div id="teacherAnalyticsModal" class="custom-modal-overlay">
         <div class="custom-modal-box" style="max-width: 380px;">
             <div class="modal-icon-wrapper modal-icon-success">👨‍🏫</div>
             <h3 id="modalTeacherName" style="font-size: 15px; margin-bottom: 2px;">Teacher Profile</h3>
             <p id="modalSchoolName" style="font-size: 11px; color: #64748b; margin-bottom: 4px;"></p>
 
-            <!-- Mode Filter Tabs for Individual Teacher -->
             <div class="t-modal-tabs">
                 <button type="button" id="tabAll" class="t-tab-btn active" onclick="switchTeacherAnalyticsMode('all')">All Time</button>
                 <button type="button" id="tabMonthly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('monthly')">This Month</button>
@@ -316,9 +320,7 @@
             </div>
 
             <p style="font-size: 11px; font-weight: 700; text-align: left; margin: 6px 0 2px 2px; color: #334155;">Attendance Log History:</p>
-            <div class="history-list-box" id="modalHistoryList">
-                <!-- Injected via JS -->
-            </div>
+            <div class="history-list-box" id="modalHistoryList"></div>
 
             <button type="button" class="modal-btn-confirm" onclick="closeTeacherAnalyticsModal()" style="margin-top: 10px;">Close</button>
         </div>
@@ -341,7 +343,6 @@
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
         let currentActiveTeacher = '';
-        let currentActiveSchool = '';
 
         async function openTeacherAnalytics(teacherFullName) {
             currentActiveTeacher = teacherFullName;

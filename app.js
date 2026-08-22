@@ -11,12 +11,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 
-app.use(compression());
-const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+// High-speed Brotli & GZIP compression
+app.use(compression({ level: 6 }));
 
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.json({ limit: '10mb' }));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
+const upload = multer({ 
+    storage: multer.memoryStorage(), 
+    limits: { fileSize: 8 * 1024 * 1024 } 
+});
+
+app.use(express.urlencoded({ extended: true, limit: '8mb' }));
+app.use(express.json({ limit: '8mb' }));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d', immutable: true }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -140,7 +145,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route
+// High Performance Admin Route
 app.get('/admin', async (req, res) => {
     if (req.query.auth !== 'true') return res.redirect('/');
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
@@ -204,15 +209,16 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Teacher Individual Multi-View Analytics API (Daily/Monthly/Yearly/All)
+// Super-Fast Indexed Teacher Analytics
 app.get('/api/teacher-analytics', async (req, res) => {
     const { teacher, mode, month, year } = req.query;
     if (!teacher) return res.json({ success: false, stats: null });
 
     let query = supabase
         .from('attendance_records')
-        .select('school_name, attendance_date, attendance_data, created_at')
-        .order('attendance_date', { ascending: false });
+        .select('school_name, attendance_date, attendance_data')
+        .order('attendance_date', { ascending: false })
+        .limit(150);
 
     if (mode === 'monthly' && month) {
         query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
@@ -253,14 +259,8 @@ app.get('/api/teacher-analytics', async (req, res) => {
         success: true,
         teacherName: teacher,
         schoolName,
-        stats: {
-            totalDays,
-            presentCount,
-            leaveCount,
-            absentCount,
-            presentRate
-        },
-        history
+        stats: { totalDays, presentCount, leaveCount, absentCount, presentRate },
+        history: history.slice(0, 30)
     });
 });
 
@@ -296,14 +296,14 @@ app.post('/admin/teachers/update', async (req, res) => {
 app.post('/admin/school/delete/:id', async (req, res) => {
     const recordId = req.params.id;
     const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
-    if (error) return res.json({ success: false, message: 'Failed to delete record.' });
+    if (error) return res.json({ success: false, message: 'Failed to delete.' });
     res.json({ success: true, message: 'Record deleted successfully!' });
 });
 
 app.post('/admin/toggle-lock', async (req, res) => {
     const { unlock } = req.body;
     const { error } = await supabase.from('system_settings').upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
-    if (error) return res.json({ success: false, message: 'Failed to update lock.' });
+    if (error) return res.json({ success: false, message: 'Failed to update.' });
     res.json({ success: true, isUnlocked: unlock });
 });
 

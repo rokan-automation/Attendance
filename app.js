@@ -83,7 +83,6 @@ async function isSubmissionAllowed() {
     return { allowed: false, reason: 'time_expired' };
 }
 
-// Strict Security Middleware for AEO
 function requireAEOAuth(req, res, next) {
     const token = req.signedCookies.aeo_auth_token;
     if (token === 'aeo_authenticated_session_verified') {
@@ -92,21 +91,10 @@ function requireAEOAuth(req, res, next) {
     return res.redirect('/login');
 }
 
-// Strict Security Middleware for School (Validates password-authenticated cookie for that specific school)
-function requireSchoolAuth(req, res, next) {
-    const schoolId = req.query.schoolId;
-    const schoolToken = req.signedCookies.school_auth_token;
-    
-    if (schoolToken && schoolToken === `school_verified_${schoolId}`) {
-        return next();
-    }
-    return res.redirect('/');
-}
-
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
-// Strict Login Handler with Passwords
+// Login Route
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     
@@ -120,7 +108,7 @@ app.post('/login', (req, res) => {
             });
             return res.redirect('/admin');
         } else {
-            return res.render('login', { error: 'Invalid AEO Password!' });
+            return res.render('login', { error: 'Invalid AEO Secure Password!' });
         }
     } else if (role === 'school') {
         if (password === SCHOOL_PASSWORD) {
@@ -138,59 +126,75 @@ app.post('/login', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/index', requireSchoolAuth, async (req, res) => {
+app.get('/index', async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
+    
+    const schoolToken = req.signedCookies.school_auth_token;
+    if (!schoolToken || schoolToken !== `school_verified_${schoolId}`) {
+        return res.redirect('/');
+    }
+
     const schools = await getDynamicSchoolsData();
     const school = schools.find(s => s.id == schoolId);
     const status = await isSubmissionAllowed();
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-app.post('/submit-attendance', requireSchoolAuth, upload.single('registerPhoto'), async (req, res) => {
-    const status = await isSubmissionAllowed();
-    if (!status.allowed) {
-        return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
+// Robust Attendance Submission (Clean & Direct)
+app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
+    try {
+        const status = await isSubmissionAllowed();
+        if (!status.allowed) {
+            return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
+        }
+
+        const { schoolId, attendance, lat, lng } = req.body;
+        const schools = await getDynamicSchoolsData();
+        const school = schools.find(s => s.id == schoolId);
+        const schoolName = school ? school.name : 'Unknown School';
+        const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+
+        const { data: existing } = await supabase
+            .from('attendance_records')
+            .select('id')
+            .eq('school_name', schoolName)
+            .eq('attendance_date', todayDate)
+            .maybeSingle();
+
+        if (existing) {
+            return res.json({ 
+                success: false, 
+                message: `Attendance for ${schoolName} has already been submitted for today!` 
+            });
+        }
+
+        let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
+
+        const newRecord = {
+            school_name: schoolName,
+            attendance_date: todayDate,
+            attendance_data: JSON.parse(attendance),
+            photo_url: photoDataUrl,
+            latitude: lat || '25.736000',
+            longitude: lng || '88.608000',
+            created_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase.from('attendance_records').insert([newRecord]);
+        if (error) {
+            console.error("Insert Error:", error.message);
+            return res.json({ success: false, message: 'Database insert failed.' });
+        }
+
+        res.json({ success: true, message: 'Attendance Submitted Successfully!' });
+    } catch (err) {
+        console.error("Server Error:", err);
+        res.json({ success: false, message: 'Server processing error.' });
     }
-
-    const { schoolId, attendance, lat, lng } = req.body;
-    const schools = await getDynamicSchoolsData();
-    const school = schools.find(s => s.id == schoolId);
-    const schoolName = school ? school.name : 'Unknown School';
-    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-
-    const { data: existing } = await supabase
-        .from('attendance_records')
-        .select('id')
-        .eq('school_name', schoolName)
-        .eq('attendance_date', todayDate)
-        .maybeSingle();
-
-    if (existing) {
-        return res.json({ 
-            success: false, 
-            message: `Attendance for ${schoolName} has already been submitted for today!` 
-        });
-    }
-
-    let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
-
-    const newRecord = {
-        school_name: schoolName,
-        attendance_date: todayDate,
-        attendance_data: JSON.parse(attendance),
-        photo_url: photoDataUrl,
-        latitude: lat,
-        longitude: lng,
-        created_at: new Date().toISOString()
-    };
-
-    const { error } = await supabase.from('attendance_records').insert([newRecord]);
-    if (error) return res.json({ success: false, message: 'Database error occurred!' });
-    res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route
+// 1st Page: AEO Dashboard
 app.get('/admin', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 

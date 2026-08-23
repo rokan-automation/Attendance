@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
-    <link rel="apple-touch-icon" href="/icon.png?v=5">
+    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
+    <link rel="apple-touch-icon" href="/icon.png?v=6">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=5">
+    <link rel="stylesheet" href="/css/style.css?v=6">
     <style>
         body {
             background-color: #f3f4f6 !important;
@@ -45,10 +45,9 @@
             line-height: 1.3;
         }
 
-        /* Clean Back Button Only */
         .btn-back-school {
             background: #e0e7ff;
-            color: #4338ca;
+            color: #4f46e5;
             padding: 5px 14px;
             font-size: 12px;
             font-weight: 700;
@@ -184,7 +183,6 @@
 <body>
     <div class="app-container-school">
         
-        <!-- Header: ONLY Back Button (Zero Logout/Exit) -->
         <header class="school-header-bar">
             <div>
                 <h3><%= school.id %>. <%= school.name %></h3>
@@ -390,7 +388,7 @@
                         submitBtn.disabled = false;
                     }
                 }).catch(err => {
-                    showCustomModal('error', 'Network Error', 'Please check your internet connection.');
+                    showCustomModal('error', 'Network Error', 'Please check your internet connection and try again.');
                     submitBtn.textContent = "Submit Daily Report";
                     submitBtn.disabled = false;
                 });
@@ -404,12 +402,12 @@
                         sendPayload(latitude, longitude);
                     },
                     (error) => {
-                        sendPayload(25.736000, 88.608000);
+                        sendPayload('25.736000', '88.608000');
                     },
-                    { enableHighAccuracy: true, timeout: 6000 }
+                    { enableHighAccuracy: true, timeout: 5000 }
                 );
             } else {
-                sendPayload(25.736000, 88.608000);
+                sendPayload('25.736000', '88.608000');
             }
         }
     </script>

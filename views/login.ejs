@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Attendance - Bochaganj</title>
     <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
     <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
@@ -11,16 +11,34 @@
     <link rel="manifest" href="/manifest.json">
     <link rel="stylesheet" href="/css/style.css?v=6">
     <style>
+        html, body {
+            background-color: #f3f4f6;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            touch-action: manipulation;
+        }
+
+        .auth-wrapper-solid {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 25px 12px;
+            box-sizing: border-box;
+        }
+
         .gateway-container {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            min-height: 85vh;
+            min-height: 80vh;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             margin: 0 auto;
-            padding: 20px 10px;
             box-sizing: border-box;
         }
 
@@ -61,12 +79,12 @@
             gap: 14px;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
 
-        .role-action-card:hover {
+        .role-action-card:active {
+            transform: scale(0.98);
             border-color: #4f46e5;
-            transform: translateY(-2px);
         }
 
         .role-icon-box {
@@ -128,6 +146,19 @@
             color: #0f172a;
         }
 
+        /* Fixed Login Form Card (Never jumps on keyboard open/close) */
+        .auth-card-fixed {
+            background: #ffffff;
+            width: 100%;
+            max-width: 400px;
+            padding: 20px 18px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            margin-top: 15px;
+            box-sizing: border-box;
+        }
+
         .btn-back-gateway {
             background: #e0e7ff;
             color: #4f46e5;
@@ -141,7 +172,6 @@
             display: inline-block;
         }
 
-        /* Password Input Wrapper with Eye Button */
         .password-field-wrapper {
             position: relative;
             display: flex;
@@ -151,11 +181,10 @@
 
         .password-field-wrapper input {
             width: 100%;
-            padding-right: 40px !important;
+            padding-right: 42px !important;
             box-sizing: border-box;
         }
 
-        /* Pure CSS Text-Security Masking to Stop Chrome Autofill Popups */
         .masked-password {
             -webkit-text-security: disc;
             text-security: disc;
@@ -168,16 +197,35 @@
 
         .btn-toggle-eye {
             position: absolute;
-            right: 10px;
+            right: 8px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 17px;
             color: #64748b;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4px;
+            padding: 6px;
+        }
+
+        .btn-submit-instant {
+            width: 100%;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+            transition: 0.1s;
+        }
+
+        .btn-submit-instant:active {
+            transform: scale(0.98);
+            background: #4338ca;
         }
 
         .school-modal-card {
@@ -232,7 +280,7 @@
     </style>
 </head>
 <body>
-    <div class="auth-wrapper">
+    <div class="auth-wrapper-solid">
         
         <!-- 1. Gateway Screen -->
         <div id="gatewaySection" class="gateway-container">
@@ -267,8 +315,8 @@
             </div>
         </div>
 
-        <!-- 2. Form Card -->
-        <div class="auth-card" id="formCard" style="display: none;">
+        <!-- 2. Solid Fixed Form Card -->
+        <div class="auth-card-fixed" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
             <div class="brand-header">
@@ -280,8 +328,8 @@
                 <div class="alert-error" style="font-size: 12.5px;"><%= error %></div>
             <% } %>
 
-            <!-- School Form without Chrome Autofill Popups -->
-            <form action="/login" method="POST" id="schoolForm" class="auth-form" autocomplete="off">
+            <!-- School Form -->
+            <form action="/login" method="POST" id="schoolForm" autocomplete="off">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
 
@@ -301,11 +349,11 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access School Portal</button>
+                <button type="submit" class="btn-submit-instant">Access School Portal</button>
             </form>
 
-            <!-- Admin Form without Chrome Autofill Popups -->
-            <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;" autocomplete="off">
+            <!-- Admin Form -->
+            <form action="/login" method="POST" id="adminForm" style="display: none;" autocomplete="off">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
                     <label style="font-size: 12.5px;">AEO Secure Password</label>
@@ -314,7 +362,7 @@
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('adminPasswordInput', this)">👁️</button>
                     </div>
                 </div>
-                <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access AEO Dashboard</button>
+                <button type="submit" class="btn-submit-instant">Access AEO Dashboard</button>
             </form>
         </div>
     </div>
@@ -360,7 +408,6 @@
     </div>
 
     <script>
-        // Toggle Password Masking
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (input.classList.contains('masked-password')) {

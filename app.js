@@ -96,7 +96,6 @@ async function isSubmissionAllowed() {
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
-// Simple & Ultra-Reliable Password Verification
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     
@@ -203,7 +202,7 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// Explicit /admin/list route (Fixes Cannot GET Error)
+// List Route
 app.get('/admin/list', async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 

@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Submitted Schools & Search - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=10" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=10">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=10">
-    <link rel="apple-touch-icon" href="/icon.png?v=10">
+    <link rel="shortcut icon" href="/icon.png?v=13" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=13">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=13">
+    <link rel="apple-touch-icon" href="/icon.png?v=13">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=10">
+    <link rel="stylesheet" href="/css/style.css?v=13">
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -23,6 +23,38 @@
             margin: 0 auto;
             padding: 10px 8px;
             min-height: 100vh;
+        }
+
+        /* Clean Right Aligned Header */
+        .app-header-aligned {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .header-title-box h3 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .btn-back-right {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 6px 16px;
+            font-size: 12.5px;
+            font-weight: 800;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #c7d2fe;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .manage-teachers-btn {
@@ -51,7 +83,7 @@
             font-size: 13.5px;
             outline: none;
             background: #ffffff;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .school-list-card {
@@ -140,17 +172,6 @@
             padding: 8px 10px;
             border-radius: 6px;
             text-align: center;
-            cursor: pointer;
-        }
-
-        .btn-back-clean {
-            background: #e0e7ff;
-            color: #4f46e5;
-            padding: 5px 14px;
-            font-size: 12.5px;
-            font-weight: 700;
-            border-radius: 6px;
-            border: 1px solid #c7d2fe;
             cursor: pointer;
         }
 
@@ -251,19 +272,20 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-scrollable">
         
-        <header class="app-header" style="margin-bottom: 8px;">
-            <div>
-                <h3 style="font-size: 15px; margin:0;">Submitted Schools List</h3>
+        <!-- Header: Right-Aligned Back Button -->
+        <header class="app-header-aligned">
+            <div class="header-title-box">
+                <h3>Submitted Schools List</h3>
                 <span class="badge"><%= viewType.toUpperCase() %> Mode</span>
             </div>
             <div>
-                <button type="button" onclick="window.location.replace('/admin')" class="btn-back-clean">Back</button>
+                <a href="/admin?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-back-right">Back</a>
             </div>
         </header>
 
-        <button type="button" onclick="window.location.replace('/admin/teachers')" class="manage-teachers-btn">
+        <a href="/admin/teachers" class="manage-teachers-btn">
             👨‍🏫 Manage Teachers & Staff (Add / Remove) ➔
-        </button>
+        </a>
 
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." onkeyup="performDeepSearch()">
 
@@ -282,7 +304,6 @@
                             <span style="font-size: 11px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                         </div>
 
-                        <!-- Clean Aligned Rows -->
                         <div class="teacher-rows-list">
                             <% rec.attendance.forEach(t => { %>
                                 <div class="teacher-row-item" onclick="openTeacherAnalytics('<%= t.teacher %>')">
@@ -295,7 +316,7 @@
                         </div>
 
                         <div class="card-bottom-actions">
-                            <button type="button" onclick="window.location.replace('/admin/school/<%= rec.id %>')" class="btn-view-card">View & Edit</button>
+                            <a href="/admin/school/<%= rec.id %>" class="btn-view-card" style="text-decoration:none;">View & Edit</a>
                             <button type="button" onclick="openDeleteConfirmModal(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-card">🗑️ Delete</button>
                         </div>
                     </div>

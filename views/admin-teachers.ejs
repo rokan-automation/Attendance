@@ -4,18 +4,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Teacher Management - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=5" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=5">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=5">
-    <link rel="apple-touch-icon" href="/icon.png?v=5">
+    <link rel="shortcut icon" href="/icon.png?v=13" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=13">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=13">
+    <link rel="apple-touch-icon" href="/icon.png?v=13">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=5">
+    <link rel="stylesheet" href="/css/style.css?v=13">
     <style>
         .app-container-teachers {
             max-width: 500px;
             margin: 0 auto;
             padding: 8px;
             min-height: 100vh;
+        }
+
+        /* Clean Right Aligned Header */
+        .app-header-aligned {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+
+        .header-title-box h3 {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .btn-back-right {
+            background: #e0e7ff;
+            color: #4f46e5;
+            padding: 6px 16px;
+            font-size: 12.5px;
+            font-weight: 800;
+            text-decoration: none;
+            border-radius: 6px;
+            border: 1px solid #c7d2fe;
+            cursor: pointer;
+            white-space: nowrap;
         }
 
         .school-select-dropdown {
@@ -94,18 +126,6 @@
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
         }
 
-        .btn-back-clean {
-            background: #e0e7ff;
-            color: #4f46e5;
-            padding: 5px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 6px;
-            border: 1px solid #c7d2fe;
-        }
-
-        /* Modal Action Buttons */
         .modal-btn-confirm-remove {
             background: #dc2626;
             color: #fff;
@@ -133,13 +153,14 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-teachers">
         
-        <header class="app-header" style="margin-bottom: 10px;">
-            <div>
-                <h3 style="font-size: 14.5px; margin:0;">Teacher Management</h3>
+        <!-- Header: Right-Aligned Back Button -->
+        <header class="app-header-aligned">
+            <div class="header-title-box">
+                <h3>Teacher Management</h3>
                 <span class="badge">Add / Edit / Remove</span>
             </div>
             <div>
-                <a href="/admin/list?auth=true" class="btn-back-clean">Back</a>
+                <a href="/admin/list" class="btn-back-right">Back</a>
             </div>
         </header>
 
@@ -154,7 +175,7 @@
             <h4 id="currentSchoolTitle" style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Teachers List:</h4>
             
             <div id="teachersListInputs">
-                <!-- Injected via JavaScript -->
+                <!-- Injected via JS -->
             </div>
 
             <button type="button" class="btn-add-more-teacher" onclick="addNewTeacherRow()">
@@ -167,7 +188,7 @@
         </div>
     </div>
 
-    <!-- Custom Warning Modal for Teacher Removal -->
+    <!-- Warning Modal -->
     <div id="removeWarningModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div class="modal-icon-wrapper modal-icon-error">⚠️</div>
@@ -225,7 +246,6 @@
             container.appendChild(row);
         }
 
-        // Trigger Custom Warning Modal
         function triggerRemoveModal(btnElement, teacherName) {
             targetRowToDelete = btnElement.parentElement;
             document.getElementById('removeWarningText').innerHTML = `Are you sure you want to remove <strong>"${teacherName}"</strong>?<br><br>Their past attendance records will remain <strong>100% safe in history</strong>, but they will not appear in future forms.`;

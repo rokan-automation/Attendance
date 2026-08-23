@@ -130,7 +130,7 @@
 
         .btn-back-gateway {
             background: #e0e7ff;
-            color: #4338ca;
+            color: #4f46e5;
             border: 1px solid #c7d2fe;
             padding: 6px 14px;
             font-size: 12.5px;
@@ -141,7 +141,6 @@
             display: inline-block;
         }
 
-        /* Password Input Wrapper with Eye Button */
         .password-field-wrapper {
             position: relative;
             display: flex;
@@ -169,7 +168,6 @@
             padding: 4px;
         }
 
-        /* School Selector Modal */
         .school-modal-card {
             max-height: 80vh;
             display: flex;
@@ -257,7 +255,7 @@
             </div>
         </div>
 
-        <!-- 2. Form Card with Eye Toggle on Passwords -->
+        <!-- 2. Form Card -->
         <div class="auth-card" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
@@ -271,7 +269,7 @@
             <% } %>
 
             <!-- School Form -->
-            <form action="/login" method="POST" id="schoolForm" class="auth-form">
+            <form action="/login" method="POST" id="schoolForm" class="auth-form" autocomplete="off">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
 
@@ -286,7 +284,7 @@
                 <div class="input-group">
                     <label style="font-size: 12.5px;">School Access Password</label>
                     <div class="password-field-wrapper">
-                        <input type="password" name="password" id="schoolPasswordInput" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <input type="password" name="password" id="schoolPasswordInput" autocomplete="new-password" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('schoolPasswordInput', this)">👁️</button>
                     </div>
                 </div>
@@ -295,12 +293,12 @@
             </form>
 
             <!-- Admin Form -->
-            <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
+            <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;" autocomplete="off">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
                     <label style="font-size: 12.5px;">AEO Secure Password</label>
                     <div class="password-field-wrapper">
-                        <input type="password" name="password" id="adminPasswordInput" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <input type="password" name="password" id="adminPasswordInput" autocomplete="new-password" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('adminPasswordInput', this)">👁️</button>
                     </div>
                 </div>
@@ -309,7 +307,7 @@
         </div>
     </div>
 
-    <!-- School Modal Popup -->
+    <!-- School Modal -->
     <div id="schoolModal" class="school-modal-overlay">
         <div class="school-modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -350,7 +348,6 @@
     </div>
 
     <script>
-        // Toggle Password Visibility (Eye Icon)
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
             if (input.type === 'password') {
@@ -370,6 +367,10 @@
             const adminForm = document.getElementById('adminForm');
             const formTitle = document.getElementById('formTitle');
 
+            // Force Clear Input Fields to prevent browser cross-autofill
+            document.getElementById('schoolPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').value = '';
+
             if(type === 'school') {
                 schoolForm.style.display = 'block';
                 adminForm.style.display = 'none';
@@ -382,6 +383,8 @@
         }
 
         function backToGateway() {
+            document.getElementById('schoolPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').value = '';
             document.getElementById('formCard').style.display = 'none';
             document.getElementById('gatewaySection').style.display = 'flex';
         }

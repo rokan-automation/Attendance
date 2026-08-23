@@ -141,6 +141,7 @@
             display: inline-block;
         }
 
+        /* Password Input Wrapper with Eye Button */
         .password-field-wrapper {
             position: relative;
             display: flex;
@@ -152,6 +153,17 @@
             width: 100%;
             padding-right: 40px !important;
             box-sizing: border-box;
+        }
+
+        /* Pure CSS Text-Security Masking to Stop Chrome Autofill Popups */
+        .masked-password {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
+
+        .unmasked-password {
+            -webkit-text-security: none !important;
+            text-security: none !important;
         }
 
         .btn-toggle-eye {
@@ -268,7 +280,7 @@
                 <div class="alert-error" style="font-size: 12.5px;"><%= error %></div>
             <% } %>
 
-            <!-- School Form -->
+            <!-- School Form without Chrome Autofill Popups -->
             <form action="/login" method="POST" id="schoolForm" class="auth-form" autocomplete="off">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
@@ -284,7 +296,7 @@
                 <div class="input-group">
                     <label style="font-size: 12.5px;">School Access Password</label>
                     <div class="password-field-wrapper">
-                        <input type="password" name="password" id="schoolPasswordInput" autocomplete="new-password" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <input type="text" name="password" id="schoolPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('schoolPasswordInput', this)">👁️</button>
                     </div>
                 </div>
@@ -292,13 +304,13 @@
                 <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access School Portal</button>
             </form>
 
-            <!-- Admin Form -->
+            <!-- Admin Form without Chrome Autofill Popups -->
             <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;" autocomplete="off">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
                     <label style="font-size: 12.5px;">AEO Secure Password</label>
                     <div class="password-field-wrapper">
-                        <input type="password" name="password" id="adminPasswordInput" autocomplete="new-password" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <input type="text" name="password" id="adminPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('adminPasswordInput', this)">👁️</button>
                     </div>
                 </div>
@@ -348,13 +360,16 @@
     </div>
 
     <script>
+        // Toggle Password Masking
         function togglePasswordVisibility(inputId, btn) {
             const input = document.getElementById(inputId);
-            if (input.type === 'password') {
-                input.type = 'text';
+            if (input.classList.contains('masked-password')) {
+                input.classList.remove('masked-password');
+                input.classList.add('unmasked-password');
                 btn.textContent = '🙈';
             } else {
-                input.type = 'password';
+                input.classList.remove('unmasked-password');
+                input.classList.add('masked-password');
                 btn.textContent = '👁️';
             }
         }
@@ -367,7 +382,6 @@
             const adminForm = document.getElementById('adminForm');
             const formTitle = document.getElementById('formTitle');
 
-            // Force Clear Input Fields to prevent browser cross-autofill
             document.getElementById('schoolPasswordInput').value = '';
             document.getElementById('adminPasswordInput').value = '';
 

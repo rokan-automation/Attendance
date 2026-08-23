@@ -141,7 +141,35 @@
             display: inline-block;
         }
 
-        /* Large Font Pop-up for School Selector */
+        /* Password Input Wrapper with Eye Button */
+        .password-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .password-field-wrapper input {
+            width: 100%;
+            padding-right: 40px !important;
+            box-sizing: border-box;
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+        }
+
+        /* School Selector Modal */
         .school-modal-card {
             max-height: 80vh;
             display: flex;
@@ -229,7 +257,7 @@
             </div>
         </div>
 
-        <!-- 2. Form Card with Password -->
+        <!-- 2. Form Card with Eye Toggle on Passwords -->
         <div class="auth-card" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
@@ -257,7 +285,10 @@
 
                 <div class="input-group">
                     <label style="font-size: 12.5px;">School Access Password</label>
-                    <input type="password" name="password" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                    <div class="password-field-wrapper">
+                        <input type="password" name="password" id="schoolPasswordInput" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('schoolPasswordInput', this)">👁️</button>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access School Portal</button>
@@ -268,7 +299,10 @@
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
                     <label style="font-size: 12.5px;">AEO Secure Password</label>
-                    <input type="password" name="password" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                    <div class="password-field-wrapper">
+                        <input type="password" name="password" id="adminPasswordInput" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('adminPasswordInput', this)">👁️</button>
+                    </div>
                 </div>
                 <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access AEO Dashboard</button>
             </form>
@@ -316,6 +350,18 @@
     </div>
 
     <script>
+        // Toggle Password Visibility (Eye Icon)
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
+        }
+
         function openPortal(type) {
             document.getElementById('gatewaySection').style.display = 'none';
             document.getElementById('formCard').style.display = 'block';

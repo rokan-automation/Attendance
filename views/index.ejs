@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=10" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=10">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=10">
-    <link rel="apple-touch-icon" href="/icon.png?v=10">
+    <link rel="shortcut icon" href="/icon.png?v=11" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=11">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=11">
+    <link rel="apple-touch-icon" href="/icon.png?v=11">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=10">
+    <link rel="stylesheet" href="/css/style.css?v=11">
     <style>
         body {
             background-color: #f3f4f6 !important;
@@ -18,13 +18,13 @@
         }
 
         .app-container-school {
-            max-width: 620px;
+            max-width: 500px;
             margin: 0 auto;
             padding: 12px;
             background: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border: 1.5px solid #e2e8f0;
             box-sizing: border-box;
         }
 
@@ -57,55 +57,47 @@
             white-space: nowrap;
         }
 
-        /* Slim Table Layout: Name on Left, Options on Right in Single Row */
-        .modern-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .modern-table th {
+        /* Slim Stacked Teacher Card: Name on top, Buttons underneath */
+        .teacher-attendance-card-slim {
             background: #f8fafc;
-            color: #64748b;
-            font-size: 11.5px;
-            text-transform: uppercase;
-            padding: 8px 6px;
-            border-bottom: 2px solid #e2e8f0;
-            text-align: left;
-        }
-
-        .modern-table td {
-            padding: 9px 6px;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
         .teacher-title-text {
             font-size: 13px;
             font-weight: 800;
             color: #1e293b;
-            white-space: nowrap;
+            line-height: 1.2;
         }
 
-        .status-options-flex {
-            display: flex;
-            gap: 4px;
-            align-items: center;
-            justify-content: flex-end;
-            white-space: nowrap;
+        /* 3 Buttons Grid underneath the teacher name */
+        .status-options-grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            width: 100%;
         }
 
         .radio-pill-custom {
-            display: inline-flex;
+            display: flex;
             align-items: center;
+            justify-content: center;
             gap: 3px;
             font-size: 11px;
             font-weight: 700;
-            padding: 4px 7px;
+            padding: 5px 2px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
             background: #ffffff;
             white-space: nowrap;
+            box-sizing: border-box;
         }
 
         .radio-pill-custom input {
@@ -114,25 +106,24 @@
         }
 
         .form-control-leave {
-            padding: 4px;
+            padding: 4px 6px;
             font-size: 11px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             width: 100%;
-            max-width: 150px;
-            margin-top: 4px;
+            margin-top: 3px;
             outline: none;
             background: #ffffff;
-            display: block;
+            box-sizing: border-box;
         }
 
         .camera-capture-box {
             background: #f8fafc;
             border: 2px dashed #cbd5e1;
-            padding: 12px;
+            padding: 11px;
             text-align: center;
             border-radius: 10px;
-            margin-top: 12px;
+            margin-top: 10px;
             cursor: pointer;
         }
 
@@ -146,9 +137,9 @@
 
         .file-status-text {
             display: block;
-            font-size: 10.5px;
+            font-size: 10px;
             color: #64748b;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         .btn-submit-daily {
@@ -161,7 +152,7 @@
             border-radius: 10px;
             cursor: pointer;
             width: 100%;
-            margin-top: 12px;
+            margin-top: 10px;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
             transition: 0.15s;
         }
@@ -207,49 +198,40 @@
                 </p>
             </div>
         <% } else { %>
+            <!-- Clean Layout: Name on top, 3 Buttons underneath -->
             <form id="attendanceForm">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 
-                <div class="table-responsive">
-                    <table class="modern-table">
-                        <thead>
-                            <tr>
-                                <th>Teacher Name & Designation</th>
-                                <th style="text-align: right;">Daily Attendance Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% school.teachers.forEach((teacher, index) => { %>
-                                <tr>
-                                    <td class="teacher-title-text"><%= teacher %></td>
-                                    <td>
-                                        <div class="status-options-flex">
-                                            <label class="radio-pill-custom">
-                                                <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
-                                                <span>Present</span>
-                                            </label>
-                                            <label class="radio-pill-custom">
-                                                <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
-                                                <span>On Leave</span>
-                                            </label>
-                                            <label class="radio-pill-custom">
-                                                <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
-                                                <span>Absent</span>
-                                            </label>
-                                        </div>
-                                        <div id="leave_div_<%= index %>" style="display:none; text-align: right;">
-                                            <select name="leaveType_<%= index %>" class="form-control-leave" style="margin-left: auto;">
-                                                <option value="Casual Leave">Casual Leave</option>
-                                                <option value="Medical Leave">Medical Leave</option>
-                                                <option value="Maternity Leave">Maternity Leave</option>
-                                                <option value="Other Leave">Other Leave</option>
-                                            </select>
-                                        </div>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
+                <div style="display: flex; flex-direction: column;">
+                    <% school.teachers.forEach((teacher, index) => { %>
+                        <div class="teacher-attendance-card-slim">
+                            <div class="teacher-title-text"><%= teacher %></div>
+                            
+                            <div class="status-options-grid-3">
+                                <label class="radio-pill-custom">
+                                    <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
+                                    <span>Present</span>
+                                </label>
+                                <label class="radio-pill-custom">
+                                    <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
+                                    <span>On Leave</span>
+                                </label>
+                                <label class="radio-pill-custom">
+                                    <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
+                                    <span>Absent</span>
+                                </label>
+                            </div>
+
+                            <div id="leave_div_<%= index %>" style="display:none;">
+                                <select name="leaveType_<%= index %>" class="form-control-leave">
+                                    <option value="Casual Leave">Casual Leave</option>
+                                    <option value="Medical Leave">Medical Leave</option>
+                                    <option value="Maternity Leave">Maternity Leave</option>
+                                    <option value="Other Leave">Other Leave</option>
+                                </select>
+                            </div>
+                        </div>
+                    <% }) %>
                 </div>
 
                 <div class="camera-capture-box">

@@ -18,7 +18,7 @@
             justify-content: space-between;
             min-height: 85vh;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             margin: 0 auto;
             padding: 20px 10px;
             box-sizing: border-box;
@@ -30,14 +30,14 @@
         }
 
         .gateway-title {
-            font-size: 25px;
+            font-size: 26px;
             font-weight: 800;
             color: #1e1b4b;
             letter-spacing: 0.5px;
         }
 
         .gateway-sub {
-            font-size: 12.5px;
+            font-size: 13.5px;
             color: #64748b;
             margin-top: 3px;
             font-weight: 500;
@@ -55,7 +55,7 @@
             background: #ffffff;
             border: 2px solid #e2e8f0;
             border-radius: 14px;
-            padding: 16px 18px;
+            padding: 18px 20px;
             display: flex;
             align-items: center;
             gap: 14px;
@@ -70,13 +70,13 @@
         }
 
         .role-icon-box {
-            width: 46px;
-            height: 46px;
+            width: 48px;
+            height: 48px;
             border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 22px;
+            font-size: 24px;
             flex-shrink: 0;
         }
 
@@ -84,22 +84,22 @@
         .aeo-icon-bg { background: #fef3c7; color: #d97706; }
 
         .role-info-title {
-            font-size: 15.5px;
+            font-size: 16.5px;
             font-weight: 700;
             color: #1e293b;
             display: block;
         }
 
         .role-info-desc {
-            font-size: 11px;
+            font-size: 12px;
             color: #64748b;
             display: block;
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         .role-arrow {
             margin-left: auto;
-            font-size: 16px;
+            font-size: 17px;
             color: #94a3b8;
             font-weight: 700;
         }
@@ -115,7 +115,7 @@
 
         .dev-badge-title {
             display: block;
-            font-size: 9.5px;
+            font-size: 10.5px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: #6366f1;
@@ -123,7 +123,7 @@
         }
 
         .dev-badge-name {
-            font-size: 13.5px;
+            font-size: 14.5px;
             font-weight: 800;
             color: #0f172a;
         }
@@ -132,8 +132,8 @@
             background: #e0e7ff;
             color: #4338ca;
             border: 1px solid #c7d2fe;
-            padding: 5px 12px;
-            font-size: 11.5px;
+            padding: 6px 14px;
+            font-size: 12.5px;
             font-weight: 700;
             cursor: pointer;
             border-radius: 6px;
@@ -141,45 +141,54 @@
             display: inline-block;
         }
 
+        /* Large Font Pop-up for School Selector */
         .school-modal-card {
-            max-height: 75vh;
+            max-height: 80vh;
             display: flex;
             flex-direction: column;
+            padding: 16px;
+            max-width: 380px;
         }
+
         .school-search-box input {
             width: 100%;
-            padding: 8px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 11.5px;
+            padding: 10px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
             outline: none;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
         }
+
         .school-list-container {
             overflow-y: auto;
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
+
         .school-item-btn {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 7px 8px;
+            border-radius: 8px;
+            padding: 9px 10px;
             text-align: left;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 6px;
-            font-size: 11px;
+            gap: 8px;
+            font-size: 12.5px;
             font-weight: 600;
+            color: #1e293b;
         }
+
         .school-serial-tag {
             background: #e2e8f0;
-            padding: 1px 5px;
+            padding: 2px 6px;
             border-radius: 4px;
-            font-size: 9.5px;
+            font-size: 11px;
             font-weight: 700;
         }
     </style>
@@ -225,53 +234,53 @@
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
             <div class="brand-header">
-                <h2 id="formTitle">Attendance</h2>
-                <p id="formSub">Bochaganj Primary Education</p>
+                <h2 id="formTitle" style="font-size: 20px;">Attendance</h2>
+                <p id="formSub" style="font-size: 12.5px;">Bochaganj Primary Education</p>
             </div>
 
             <% if(typeof error !== 'undefined' && error) { %>
-                <div class="alert-error"><%= error %></div>
+                <div class="alert-error" style="font-size: 12.5px;"><%= error %></div>
             <% } %>
 
-            <!-- School Form with Institution & Password -->
+            <!-- School Form -->
             <form action="/login" method="POST" id="schoolForm" class="auth-form">
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
 
                 <div class="input-group">
-                    <label>Select Institution</label>
-                    <div class="custom-select-trigger" onclick="openSchoolModal()">
-                        <span class="trigger-text" id="selectedSchoolText">1. Bochaganj Model Govt. Primary School</span>
+                    <label style="font-size: 12.5px;">Select Institution</label>
+                    <div class="custom-select-trigger" onclick="openSchoolModal()" style="padding: 11px 12px;">
+                        <span class="trigger-text" id="selectedSchoolText" style="font-size: 12.5px;">1. Bochaganj Model Govt. Primary School</span>
                         <span class="trigger-icon">▼</span>
                     </div>
                 </div>
 
                 <div class="input-group">
-                    <label>School Access Password</label>
-                    <input type="password" name="password" placeholder="Enter school password" required>
+                    <label style="font-size: 12.5px;">School Access Password</label>
+                    <input type="password" name="password" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
                 </div>
 
-                <button type="submit" class="btn-submit">Access School Portal</button>
+                <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access School Portal</button>
             </form>
 
             <!-- Admin Form -->
             <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;">
                 <input type="hidden" name="role" value="admin">
                 <div class="input-group">
-                    <label>AEO Secure Password</label>
-                    <input type="password" name="password" placeholder="Enter secure password" required>
+                    <label style="font-size: 12.5px;">AEO Secure Password</label>
+                    <input type="password" name="password" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
                 </div>
-                <button type="submit" class="btn-submit">Access AEO Dashboard</button>
+                <button type="submit" class="btn-submit" style="font-size: 14.5px; padding: 11px;">Access AEO Dashboard</button>
             </form>
         </div>
     </div>
 
-    <!-- School Modal -->
+    <!-- School Modal Popup -->
     <div id="schoolModal" class="school-modal-overlay">
         <div class="school-modal-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <h4 style="font-size: 13px; font-weight: 700;">Select Primary School</h4>
-                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:14px; cursor:pointer;">✕</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="font-size: 14.5px; font-weight: 800;">Select Primary School</h4>
+                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:16px; cursor:pointer; font-weight: bold;">✕</button>
             </div>
             <div class="school-search-box">
                 <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name..." onkeyup="filterSchools()">

@@ -16,17 +16,19 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            height: 100%;
+            min-height: 100%;
             touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
         }
 
+        /* Fixed Top-Aligned Container (Zero Jump on Keyboard Open) */
         .auth-wrapper-solid {
             width: 100%;
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 20px 14px;
+            align-items: flex-start;
+            padding: 40px 14px 20px 14px;
             box-sizing: border-box;
         }
 
@@ -145,21 +147,23 @@
             color: #0f172a;
         }
 
-        /* Large & Attractive Form Card */
+        /* 100% Rock Solid Form Card */
         .auth-card-large {
             background: #ffffff;
             width: 100%;
             max-width: 440px;
-            padding: 26px 24px;
+            padding: 24px 22px;
             border-radius: 18px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
             border: 1.5px solid #e2e8f0;
             box-sizing: border-box;
+            position: relative;
+            transform: none !important;
         }
 
         .btn-back-gateway {
             background: #e0e7ff;
-            color: #4338ca;
+            color: #4f46e5;
             border: 1px solid #c7d2fe;
             padding: 7px 16px;
             font-size: 13.5px;
@@ -221,6 +225,11 @@
             outline: none;
             background: #f8fafc;
             box-sizing: border-box;
+        }
+
+        .password-field-wrapper input:focus {
+            border-color: #4f46e5;
+            background: #ffffff;
         }
 
         .masked-password {
@@ -353,7 +362,7 @@
             </div>
         </div>
 
-        <!-- 2. Attractive Large Form Card -->
+        <!-- 2. Attractive Large Solid Form Card -->
         <div class="auth-card-large" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             

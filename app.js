@@ -32,7 +32,6 @@ app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', '
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-// Official 25 Primary Schools of Bochaganj with Fixed Serial IDs
 const defaultSchools = [
     { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Government Primary School", teachers: ["Profulla Chandra Roy (Head Teacher)", "Farhana Yeasmin (Assistant)", "Biplob Kumar (Assistant)", "Shahnaz Parvin (Assistant)", "Moksed Ali (Assistant)"] },
@@ -61,7 +60,6 @@ const defaultSchools = [
     { id: 25, name: "Chakpara Government Primary School", teachers: ["Md. Khalilur Rahman (Head Teacher)", "Nazma Begum (Assistant)", "Harun-or-Rashid (Assistant)", "Minati Rani (Assistant)", "Abdul Alim (Assistant)"] }
 ];
 
-// Helper to get school ID by name for proper serial sorting
 function getSchoolSerialId(name) {
     const found = defaultSchools.find(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
     return found ? found.id : 999;
@@ -188,7 +186,7 @@ app.post('/submit-attendance', requireSchoolAuth, upload.single('registerPhoto')
     res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route with Serial Order Alignment (1 to 25 Sorting)
+// Admin Route 1: Summary Page
 app.get('/admin', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
@@ -208,7 +206,6 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
     const isAeoUnlocked = (setting && setting.value === 'true');
 
-    // Strict School Serial Sorting (1, 2, 3, 5...)
     const formattedRecords = (records || [])
         .map(rec => ({
             id: rec.id,
@@ -219,12 +216,45 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
             location: { lat: rec.latitude, lng: rec.longitude },
             timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
         }))
-        .sort((a, b) => a.serialId - b.serialId); // Sorts strictly 1 to 25
+        .sort((a, b) => a.serialId - b.serialId);
 
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// Teacher Analytics API
+// Admin Route 2: Search & List Page (Explicit Route Restored)
+app.get('/admin/list', requireAEOAuth, async (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+    const viewType = req.query.viewType || 'daily';
+    const selectedDate = req.query.date || todayDate;
+    const selectedMonth = req.query.month || todayDate.substring(0, 7);
+    const selectedYear = req.query.year || todayDate.substring(0, 4);
+
+    let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
+
+    if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
+    else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+    else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+
+    const { data: records } = await query;
+
+    const formattedRecords = (records || [])
+        .map(rec => ({
+            id: rec.id,
+            serialId: getSchoolSerialId(rec.school_name),
+            schoolName: rec.school_name,
+            date: rec.attendance_date,
+            attendance: rec.attendance_data,
+            location: { lat: rec.latitude, lng: rec.longitude },
+            timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
+        }))
+        .sort((a, b) => a.serialId - b.serialId);
+
+    res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
+});
+
+// Teacher Analytics
 app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
     const { teacher, mode, month, year } = req.query;
     if (!teacher) return res.json({ success: false, stats: null });

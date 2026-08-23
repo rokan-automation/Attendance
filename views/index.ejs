@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=8" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=8">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=8">
-    <link rel="apple-touch-icon" href="/icon.png?v=8">
+    <link rel="shortcut icon" href="/icon.png?v=10" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=10">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=10">
+    <link rel="apple-touch-icon" href="/icon.png?v=10">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=8">
+    <link rel="stylesheet" href="/css/style.css?v=10">
     <style>
         body {
             background-color: #f3f4f6 !important;
@@ -18,13 +18,13 @@
         }
 
         .app-container-school {
-            max-width: 550px;
+            max-width: 620px;
             margin: 0 auto;
             padding: 12px;
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
-            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border: 1px solid #e5e7eb;
             box-sizing: border-box;
         }
 
@@ -34,7 +34,7 @@
             align-items: center;
             border-bottom: 1.5px solid #f1f5f9;
             padding-bottom: 8px;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .school-header-bar h3 {
@@ -57,41 +57,50 @@
             white-space: nowrap;
         }
 
-        /* Stacked Teacher Card Layout (Name on Top, Pills below) */
-        .teacher-attendance-card {
+        /* Slim Table Layout: Name on Left, Options on Right in Single Row */
+        .modern-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .modern-table th {
             background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            color: #64748b;
+            font-size: 11.5px;
+            text-transform: uppercase;
+            padding: 8px 6px;
+            border-bottom: 2px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .modern-table td {
+            padding: 9px 6px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
         }
 
         .teacher-title-text {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 800;
             color: #1e293b;
-            line-height: 1.3;
+            white-space: nowrap;
         }
 
-        /* 3 Radio Pills Side-by-Side */
         .status-options-flex {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 5px;
-            width: 100%;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            justify-content: flex-end;
+            white-space: nowrap;
         }
 
         .radio-pill-custom {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 4px;
-            font-size: 11.5px;
+            gap: 3px;
+            font-size: 11px;
             font-weight: 700;
-            padding: 6px 2px;
+            padding: 4px 7px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
@@ -105,15 +114,16 @@
         }
 
         .form-control-leave {
-            padding: 5px 8px;
-            font-size: 11.5px;
+            padding: 4px;
+            font-size: 11px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             width: 100%;
+            max-width: 150px;
             margin-top: 4px;
             outline: none;
             background: #ffffff;
-            box-sizing: border-box;
+            display: block;
         }
 
         .camera-capture-box {
@@ -127,7 +137,7 @@
         }
 
         .camera-label-btn {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             color: #4f46e5;
             cursor: pointer;
@@ -145,8 +155,8 @@
             background: #10b981;
             color: #ffffff;
             border: none;
-            padding: 13px;
-            font-size: 14px;
+            padding: 12px;
+            font-size: 13.5px;
             font-weight: 800;
             border-radius: 10px;
             cursor: pointer;
@@ -176,7 +186,7 @@
 <body>
     <div class="app-container-school">
         
-        <!-- Header: ONLY Clean Back Button -->
+        <!-- Header -->
         <header class="school-header-bar">
             <div>
                 <h3><%= school.id %>. <%= school.name %></h3>
@@ -197,40 +207,49 @@
                 </p>
             </div>
         <% } else { %>
-            <!-- Clean Stacked Layout: Name on Top, 3 Pills below -->
             <form id="attendanceForm">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 
-                <div style="display: flex; flex-direction: column;">
-                    <% school.teachers.forEach((teacher, index) => { %>
-                        <div class="teacher-attendance-card">
-                            <div class="teacher-title-text"><%= teacher %></div>
-                            
-                            <div class="status-options-flex">
-                                <label class="radio-pill-custom">
-                                    <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
-                                    <span>Present</span>
-                                </label>
-                                <label class="radio-pill-custom">
-                                    <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
-                                    <span>On Leave</span>
-                                </label>
-                                <label class="radio-pill-custom">
-                                    <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
-                                    <span>Absent</span>
-                                </label>
-                            </div>
-
-                            <div id="leave_div_<%= index %>" style="display:none;">
-                                <select name="leaveType_<%= index %>" class="form-control-leave">
-                                    <option value="Casual Leave">Casual Leave</option>
-                                    <option value="Medical Leave">Medical Leave</option>
-                                    <option value="Maternity Leave">Maternity Leave</option>
-                                    <option value="Other Leave">Other Leave</option>
-                                </select>
-                            </div>
-                        </div>
-                    <% }) %>
+                <div class="table-responsive">
+                    <table class="modern-table">
+                        <thead>
+                            <tr>
+                                <th>Teacher Name & Designation</th>
+                                <th style="text-align: right;">Daily Attendance Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% school.teachers.forEach((teacher, index) => { %>
+                                <tr>
+                                    <td class="teacher-title-text"><%= teacher %></td>
+                                    <td>
+                                        <div class="status-options-flex">
+                                            <label class="radio-pill-custom">
+                                                <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
+                                                <span>Present</span>
+                                            </label>
+                                            <label class="radio-pill-custom">
+                                                <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
+                                                <span>On Leave</span>
+                                            </label>
+                                            <label class="radio-pill-custom">
+                                                <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
+                                                <span>Absent</span>
+                                            </label>
+                                        </div>
+                                        <div id="leave_div_<%= index %>" style="display:none; text-align: right;">
+                                            <select name="leaveType_<%= index %>" class="form-control-leave" style="margin-left: auto;">
+                                                <option value="Casual Leave">Casual Leave</option>
+                                                <option value="Medical Leave">Medical Leave</option>
+                                                <option value="Maternity Leave">Maternity Leave</option>
+                                                <option value="Other Leave">Other Leave</option>
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
                 </div>
 
                 <div class="camera-capture-box">

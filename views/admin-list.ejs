@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Submitted Schools & Search - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=7" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=7">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=7">
-    <link rel="apple-touch-icon" href="/icon.png?v=7">
+    <link rel="shortcut icon" href="/icon.png?v=10" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=10">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=10">
+    <link rel="apple-touch-icon" href="/icon.png?v=10">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=10">
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -33,7 +33,6 @@
             font-size: 13.5px;
             font-weight: 700;
             text-align: center;
-            text-decoration: none;
             display: block;
             margin-bottom: 10px;
             box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);
@@ -61,14 +60,13 @@
             padding: 14px;
             border-radius: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .school-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
         }
 
         .school-info-title {
@@ -77,62 +75,73 @@
             color: #1e293b;
         }
 
-        .action-button-group {
+        .teacher-rows-list {
             display: flex;
-            align-items: center;
-            gap: 5px;
+            flex-direction: column;
+            gap: 6px;
+            margin: 8px 0 12px 0;
         }
 
-        .btn-view-compact {
+        .teacher-row-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+
+        .t-name-left {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .t-badge-status {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .t-present { background: #dcfce7; color: #15803d; }
+        .t-absent { background: #fee2e2; color: #dc2626; }
+        .t-leave { background: #fef3c7; color: #d97706; }
+
+        .card-bottom-actions {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+        }
+
+        .btn-view-card {
+            flex: 1;
             background: #e0e7ff;
             color: #4f46e5;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 6px 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 8px 10px;
             border-radius: 6px;
-            text-decoration: none;
-            cursor: pointer;
+            text-align: center;
             border: none;
+            cursor: pointer;
         }
 
-        .btn-delete-compact {
+        .btn-delete-card {
+            flex: 1;
             background: #fee2e2;
             color: #dc2626;
             border: 1px solid #fca5a5;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 6px 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 8px 10px;
             border-radius: 6px;
+            text-align: center;
             cursor: pointer;
         }
-
-        .teacher-mini-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 6px;
-        }
-
-        .t-badge-interactive {
-            font-size: 11.5px;
-            padding: 4px 9px;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            transition: 0.1s;
-            border: 1px solid transparent;
-        }
-
-        .t-badge-interactive:active {
-            transform: scale(0.96);
-        }
-
-        .t-present { background: #dcfce7; color: #15803d; border-color: #86efac; }
-        .t-absent { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
-        .t-leave { background: #fef3c7; color: #d97706; border-color: #fde68a; }
 
         .btn-back-clean {
             background: #e0e7ff;
@@ -140,7 +149,6 @@
             padding: 5px 14px;
             font-size: 12.5px;
             font-weight: 700;
-            text-decoration: none;
             border-radius: 6px;
             border: 1px solid #c7d2fe;
             cursor: pointer;
@@ -249,11 +257,11 @@
                 <span class="badge"><%= viewType.toUpperCase() %> Mode</span>
             </div>
             <div>
-                <button type="button" onclick="goBackToSummary()" class="btn-back-clean">Back</button>
+                <button type="button" onclick="window.location.replace('/admin')" class="btn-back-clean">Back</button>
             </div>
         </header>
 
-        <button type="button" onclick="goToTeachersManage()" class="manage-teachers-btn">
+        <button type="button" onclick="window.location.replace('/admin/teachers')" class="manage-teachers-btn">
             👨‍🏫 Manage Teachers & Staff (Add / Remove) ➔
         </button>
 
@@ -270,23 +278,25 @@
                 <% records.forEach((rec, rIdx) => { %>
                     <div class="school-list-card" id="card_<%= rIdx %>">
                         <div class="school-header-flex">
-                            <div>
-                                <div class="school-info-title">🏫 <%= rec.schoolName %></div>
-                                <span style="font-size: 11px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
-                            </div>
-                            <div class="action-button-group">
-                                <button type="button" onclick="goToSchoolEdit(<%= rec.id %>)" class="btn-view-compact">View & Edit</button>
-                                <button type="button" onclick="openDeleteConfirmModal(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-compact">🗑️ Delete</button>
-                            </div>
+                            <div class="school-info-title">🏫 <%= rec.serialId %>. <%= rec.schoolName %></div>
+                            <span style="font-size: 11px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                         </div>
 
-                        <div class="teacher-mini-badges">
+                        <!-- Clean Aligned Rows -->
+                        <div class="teacher-rows-list">
                             <% rec.attendance.forEach(t => { %>
-                                <span class="t-badge-interactive <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>" 
-                                      onclick="openTeacherAnalytics('<%= t.teacher %>')">
-                                    <%= t.teacher.split('(')[0] %>: <%= t.status %> 📊
-                                </span>
+                                <div class="teacher-row-item" onclick="openTeacherAnalytics('<%= t.teacher %>')">
+                                    <span class="t-name-left"><%= t.teacher.split('(')[0] %></span>
+                                    <span class="t-badge-status <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>">
+                                        <%= t.status %> 📊
+                                    </span>
+                                </div>
                             <% }) %>
+                        </div>
+
+                        <div class="card-bottom-actions">
+                            <button type="button" onclick="window.location.replace('/admin/school/<%= rec.id %>')" class="btn-view-card">View & Edit</button>
+                            <button type="button" onclick="openDeleteConfirmModal(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-card">🗑️ Delete</button>
                         </div>
                     </div>
                 <% }) %>
@@ -350,18 +360,6 @@
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
         let currentActiveTeacher = '';
-
-        function goBackToSummary() {
-            window.location.replace(`/admin?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>`);
-        }
-
-        function goToTeachersManage() {
-            window.location.replace('/admin/teachers');
-        }
-
-        function goToSchoolEdit(schoolId) {
-            window.location.replace('/admin/school/' + schoolId);
-        }
 
         async function openTeacherAnalytics(teacherFullName) {
             currentActiveTeacher = teacherFullName;

@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Verify Attendance - <%= record.schoolName %></title>
-    <link rel="shortcut icon" href="/icon.png?v=7" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=7">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=7">
-    <link rel="apple-touch-icon" href="/icon.png?v=7">
+    <link rel="shortcut icon" href="/icon.png?v=9" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=9">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=9">
+    <link rel="apple-touch-icon" href="/icon.png?v=9">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         .app-container-edit {
-            max-width: 500px;
+            max-width: 520px;
             margin: 0 auto;
             padding: 8px;
             min-height: 100vh;
@@ -114,13 +114,14 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-edit">
         
+        <!-- Header: Back directly to /admin (Zero Error) -->
         <header class="app-header">
             <div>
                 <h3 style="font-size: 13.5px; margin:0;"><%= record.schoolName %></h3>
                 <span class="badge">AEO Verification</span>
             </div>
             <div>
-                <button type="button" onclick="window.location.replace('/admin/list')" class="btn-back-clean">Back</button>
+                <button type="button" onclick="window.location.replace('/admin')" class="btn-back-clean">Back</button>
             </div>
         </header>
 
@@ -131,15 +132,15 @@
                     <thead>
                         <tr>
                             <th>Teacher Name & Designation</th>
-                            <th>Status</th>
+                            <th style="text-align: right;">Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% record.attendance.forEach((item, index) => { %>
                             <tr>
-                                <td class="teacher-name"><%= item.teacher %></td>
+                                <td class="teacher-name" style="font-size: 12.5px; font-weight: 700;"><%= item.teacher %></td>
                                 <td>
-                                    <div class="status-options">
+                                    <div class="status-options" style="justify-content: flex-end;">
                                         <label class="radio-pill present">
                                             <input type="radio" name="status_<%= index %>" value="Present" <%= item.status === 'Present' ? 'checked' : '' %> onchange="toggleLeaveType(<%= index %>)">
                                             <span>Present</span>
@@ -153,8 +154,8 @@
                                             <span>Absent</span>
                                         </label>
                                     </div>
-                                    <div id="leave_div_<%= index %>" style="<%= item.status === 'Leave' ? 'display:block;' : 'display:none;' %>" class="leave-dropdown-box">
-                                        <select name="leaveType_<%= index %>" class="form-control-sm">
+                                    <div id="leave_div_<%= index %>" style="<%= item.status === 'Leave' ? 'display:block;' : 'display:none;' %> text-align: right;" class="leave-dropdown-box">
+                                        <select name="leaveType_<%= index %>" class="form-control-sm" style="margin-left: auto;">
                                             <option value="Casual Leave" <%= item.leaveType === 'Casual Leave' ? 'selected' : '' %>>Casual Leave</option>
                                             <option value="Medical Leave" <%= item.leaveType === 'Medical Leave' ? 'selected' : '' %>>Medical Leave</option>
                                             <option value="Maternity Leave" <%= item.leaveType === 'Maternity Leave' ? 'selected' : '' %>>Maternity Leave</option>
@@ -243,7 +244,7 @@
 
         function closeCustomModal() {
             document.getElementById('customModal').classList.remove('active');
-            window.location.replace('/admin/list');
+            window.location.replace('/admin');
         }
 
         function toggleLeaveType(index) {

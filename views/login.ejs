@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=7" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=7">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=7">
-    <link rel="apple-touch-icon" href="/icon.png?v=7">
+    <link rel="shortcut icon" href="/icon.png?v=9" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=9">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=9">
+    <link rel="apple-touch-icon" href="/icon.png?v=9">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=7">
+    <link rel="stylesheet" href="/css/style.css?v=9">
     <style>
         .gateway-container {
             display: flex;
@@ -141,6 +141,24 @@
             display: inline-block;
         }
 
+        /* Anti-Autofill Pin Box */
+        .masked-pass-input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+            box-sizing: border-box;
+            -webkit-text-security: disc !important;
+            text-security: disc !important;
+        }
+
+        .masked-pass-input:focus {
+            border-color: var(--primary);
+        }
+
         .school-modal-card {
             max-height: 75vh;
             display: flex;
@@ -182,6 +200,18 @@
             font-size: 9.5px;
             font-weight: 700;
         }
+
+        .auth-error-box {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -220,7 +250,7 @@
             </div>
         </div>
 
-        <!-- 2. Form Card with AutoComplete Blocked -->
+        <!-- 2. Pure JS Card (No HTML Form Element to Prevent Google Password Manager) -->
         <div class="auth-card" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
@@ -229,14 +259,11 @@
                 <p id="formSub">Bochaganj Primary Education</p>
             </div>
 
-            <% if(typeof error !== 'undefined' && error) { %>
-                <div class="alert-error"><%= error %></div>
-            <% } %>
+            <div id="authErrorMsg" class="auth-error-box"></div>
 
-            <!-- School Form (Autofill & Password Manager Prompt Completely Blocked) -->
-            <form action="/login" method="POST" id="schoolForm" class="auth-form" autocomplete="off">
-                <input type="hidden" name="role" value="school">
-                <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
+            <!-- School Section -->
+            <div id="schoolSection">
+                <input type="hidden" id="selectedSchoolId" value="1">
 
                 <div class="input-group">
                     <label>Select Institution</label>
@@ -248,21 +275,20 @@
 
                 <div class="input-group">
                     <label>School Access Password</label>
-                    <input type="password" name="password" placeholder="Enter school password" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" required>
+                    <input type="text" id="schoolPassInput" class="masked-pass-input" placeholder="Enter school password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
 
-                <button type="submit" class="btn-submit">Access School Portal</button>
-            </form>
+                <button type="button" class="btn-submit" onclick="submitAuth('school')">Access School Portal</button>
+            </div>
 
-            <!-- Admin Form (Autofill Blocked) -->
-            <form action="/login" method="POST" id="adminForm" class="auth-form" style="display: none;" autocomplete="off">
-                <input type="hidden" name="role" value="admin">
+            <!-- Admin Section -->
+            <div id="adminSection" style="display: none;">
                 <div class="input-group">
                     <label>AEO Secure Password</label>
-                    <input type="password" name="password" placeholder="Enter secure password" autocomplete="new-password" autocorrect="off" autocapitalize="off" spellcheck="false" required>
+                    <input type="text" id="adminPassInput" class="masked-pass-input" placeholder="Enter secure password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
                 </div>
-                <button type="submit" class="btn-submit">Access AEO Dashboard</button>
-            </form>
+                <button type="button" class="btn-submit" onclick="submitAuth('admin')">Access AEO Dashboard</button>
+            </div>
         </div>
     </div>
 
@@ -310,19 +336,22 @@
         function openPortal(type) {
             document.getElementById('gatewaySection').style.display = 'none';
             document.getElementById('formCard').style.display = 'block';
+            document.getElementById('authErrorMsg').style.display = 'none';
 
-            const schoolForm = document.getElementById('schoolForm');
-            const adminForm = document.getElementById('adminForm');
+            const schoolSec = document.getElementById('schoolSection');
+            const adminSec = document.getElementById('adminSection');
             const formTitle = document.getElementById('formTitle');
 
             if(type === 'school') {
-                schoolForm.style.display = 'block';
-                adminForm.style.display = 'none';
+                schoolSec.style.display = 'block';
+                adminSec.style.display = 'none';
                 formTitle.textContent = "School Login";
+                document.getElementById('schoolPassInput').value = '';
             } else {
-                adminForm.style.display = 'block';
-                schoolForm.style.display = 'none';
+                adminSec.style.display = 'block';
+                schoolSec.style.display = 'none';
                 formTitle.textContent = "AEO Portal";
+                document.getElementById('adminPassInput').value = '';
             }
         }
 
@@ -345,6 +374,53 @@
             const items = document.querySelectorAll('.school-item-btn');
             items.forEach(item => {
                 item.style.display = item.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
+            });
+        }
+
+        // Pure JS AJAX Login (100% Blocks Google Password Manager)
+        function submitAuth(role) {
+            const errBox = document.getElementById('authErrorMsg');
+            errBox.style.display = 'none';
+
+            let payload = { role };
+            if (role === 'school') {
+                payload.schoolId = document.getElementById('selectedSchoolId').value;
+                payload.password = document.getElementById('schoolPassInput').value.trim();
+                if (!payload.password) {
+                    errBox.textContent = 'Please enter school password!';
+                    errBox.style.display = 'block';
+                    return;
+                }
+            } else {
+                payload.password = document.getElementById('adminPassInput').value.trim();
+                if (!payload.password) {
+                    errBox.textContent = 'Please enter AEO password!';
+                    errBox.style.display = 'block';
+                    return;
+                }
+            }
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => {
+                if (res.redirected) {
+                    window.location.href = res.url;
+                } else {
+                    return res.text();
+                }
+            })
+            .then(html => {
+                if (html) {
+                    errBox.textContent = role === 'school' ? 'Invalid School Access Password!' : 'Invalid AEO Secure Password!';
+                    errBox.style.display = 'block';
+                }
+            })
+            .catch(() => {
+                errBox.textContent = 'Network connection failed!';
+                errBox.style.display = 'block';
             });
         }
     </script>

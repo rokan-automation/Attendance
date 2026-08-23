@@ -73,31 +73,17 @@ async function getDynamicSchoolsData() {
     });
 }
 
-// Absolute Lock Logic: AEO's manual lock status takes topmost priority
 async function isSubmissionAllowed() {
-    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').maybeSingle();
-    
-    // If AEO has explicitly locked (value === 'false')
-    if (setting && setting.value === 'false') {
-        return { allowed: false, reason: 'locked_by_aeo' };
-    }
+    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
+    if (setting && setting.value === 'true') return { allowed: true, reason: 'unlocked_by_aeo' };
 
-    // If AEO has explicitly unlocked (value === 'true')
-    if (setting && setting.value === 'true') {
-        return { allowed: true, reason: 'unlocked_by_aeo' };
-    }
-
-    // If unset, check 10:00 AM BD Time
     const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
     const [hours] = bdTimeStr.split(':').map(Number);
-
-    if (hours >= 10) {
-        return { allowed: false, reason: 'time_expired' };
-    }
-
-    return { allowed: true, reason: 'regular_time' };
+    if (hours < 10) return { allowed: true, reason: 'regular_time' };
+    return { allowed: false, reason: 'time_expired' };
 }
 
+// Security Middleware to verify AEO Session Cookie
 function requireAEOAuth(req, res, next) {
     const token = req.signedCookies.aeo_auth_token;
     if (token === 'aeo_authenticated_session_verified') {
@@ -106,15 +92,25 @@ function requireAEOAuth(req, res, next) {
     return res.redirect('/login');
 }
 
+// Security Middleware to verify School Session Cookie
+function requireSchoolAuth(req, res, next) {
+    const schoolToken = req.signedCookies.school_auth_token;
+    if (schoolToken && schoolToken.startsWith('school_verified_')) {
+        return next();
+    }
+    return res.redirect('/');
+}
+
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
-// Strict Login Route
+// Secure Login Route with HTTP-Only Cookies
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     
     if (role === 'admin') {
         if (password === AEO_PASSWORD) {
+            // Set 24-Hour Secure HTTP-Only Cookie
             res.cookie('aeo_auth_token', 'aeo_authenticated_session_verified', {
                 signed: true,
                 httpOnly: true,
@@ -123,7 +119,7 @@ app.post('/login', (req, res) => {
             });
             return res.redirect('/admin');
         } else {
-            return res.render('login', { error: 'Invalid AEO Password!' });
+            return res.render('login', { error: 'Invalid AEO Secure Password!' });
         }
     } else if (role === 'school') {
         if (password === SCHOOL_PASSWORD) {
@@ -141,68 +137,59 @@ app.post('/login', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/index', async (req, res) => {
+app.get('/index', requireSchoolAuth, async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
-    
     const schools = await getDynamicSchoolsData();
     const school = schools.find(s => s.id == schoolId);
     const status = await isSubmissionAllowed();
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-// Submit Attendance
-app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
-    try {
-        const status = await isSubmissionAllowed();
-        if (!status.allowed) {
-            return res.json({ success: false, message: 'Attendance submission is currently LOCKED!' });
-        }
-
-        const { schoolId, attendance, lat, lng } = req.body;
-        const schools = await getDynamicSchoolsData();
-        const school = schools.find(s => s.id == schoolId);
-        const schoolName = school ? school.name : 'Unknown School';
-        const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-
-        const { data: existing } = await supabase
-            .from('attendance_records')
-            .select('id')
-            .eq('school_name', schoolName)
-            .eq('attendance_date', todayDate)
-            .maybeSingle();
-
-        if (existing) {
-            return res.json({ 
-                success: false, 
-                message: `Attendance for ${schoolName} has already been submitted for today!` 
-            });
-        }
-
-        let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
-
-        const newRecord = {
-            school_name: schoolName,
-            attendance_date: todayDate,
-            attendance_data: JSON.parse(attendance),
-            photo_url: photoDataUrl,
-            latitude: lat || '25.736000',
-            longitude: lng || '88.608000',
-            created_at: new Date().toISOString()
-        };
-
-        const { error } = await supabase.from('attendance_records').insert([newRecord]);
-        if (error) {
-            return res.json({ success: false, message: 'Database insert failed.' });
-        }
-
-        res.json({ success: true, message: 'Attendance Submitted Successfully!' });
-    } catch (err) {
-        res.json({ success: false, message: 'Server processing error.' });
+app.post('/submit-attendance', requireSchoolAuth, upload.single('registerPhoto'), async (req, res) => {
+    const status = await isSubmissionAllowed();
+    if (!status.allowed) {
+        return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
     }
+
+    const { schoolId, attendance, lat, lng } = req.body;
+    const schools = await getDynamicSchoolsData();
+    const school = schools.find(s => s.id == schoolId);
+    const schoolName = school ? school.name : 'Unknown School';
+    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
+
+    const { data: existing } = await supabase
+        .from('attendance_records')
+        .select('id')
+        .eq('school_name', schoolName)
+        .eq('attendance_date', todayDate)
+        .maybeSingle();
+
+    if (existing) {
+        return res.json({ 
+            success: false, 
+            message: `Attendance for ${schoolName} has already been submitted for today!` 
+        });
+    }
+
+    let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
+
+    const newRecord = {
+        school_name: schoolName,
+        attendance_date: todayDate,
+        attendance_data: JSON.parse(attendance),
+        photo_url: photoDataUrl,
+        latitude: lat,
+        longitude: lng,
+        created_at: new Date().toISOString()
+    };
+
+    const { error } = await supabase.from('attendance_records').insert([newRecord]);
+    if (error) return res.json({ success: false, message: 'Database error occurred!' });
+    res.json({ success: true, message: 'Attendance Submitted Successfully!' });
 });
 
-// Admin Route
+// 1st Page: Secure AEO Dashboard
 app.get('/admin', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
@@ -219,7 +206,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
 
     const { data: records } = await query.order('created_at', { ascending: false });
-    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').maybeSingle();
+    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
     const isAeoUnlocked = (setting && setting.value === 'true');
 
     const formattedRecords = (records || []).map(rec => ({
@@ -234,7 +221,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
 });
 
-// 2nd Page: Search & List
+// 2nd Page: Secure Search & List
 app.get('/admin/list', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 
@@ -264,7 +251,7 @@ app.get('/admin/list', requireAEOAuth, async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Teacher Analytics
+// Teacher Analytics API
 app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
     const { teacher, mode, month, year } = req.query;
     if (!teacher) return res.json({ success: false, stats: null });
@@ -386,6 +373,7 @@ app.post('/admin/school/update/:id', requireAEOAuth, async (req, res) => {
     res.json({ success: true, redirectUrl: '/admin' });
 });
 
+// Secure Logout Route clearing all authentication cookies
 app.get('/logout', (req, res) => {
     res.clearCookie('aeo_auth_token');
     res.clearCookie('school_auth_token');

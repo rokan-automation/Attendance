@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=11" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=11">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=11">
-    <link rel="apple-touch-icon" href="/icon.png?v=11">
+    <link rel="shortcut icon" href="/icon.png?v=12" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=12">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=12">
+    <link rel="apple-touch-icon" href="/icon.png?v=12">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=11">
+    <link rel="stylesheet" href="/css/style.css?v=12">
     <style>
         body {
             background-color: #f3f4f6 !important;
@@ -18,7 +18,7 @@
         }
 
         .app-container-school {
-            max-width: 500px;
+            max-width: 480px;
             margin: 0 auto;
             padding: 12px;
             background: #ffffff;
@@ -57,50 +57,49 @@
             white-space: nowrap;
         }
 
-        /* Slim Stacked Teacher Card: Name on top, Buttons underneath */
+        /* Slim & Tight Teacher Card */
         .teacher-attendance-card-slim {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 8px 10px;
+            padding: 7px 10px;
             margin-bottom: 6px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
 
         .teacher-title-text {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             color: #1e293b;
             line-height: 1.2;
         }
 
-        /* 3 Buttons Grid underneath the teacher name */
-        .status-options-grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 5px;
-            width: 100%;
+        /* Natural Auto-Width Small Buttons (Not Stretching 100%) */
+        .status-options-inline-flex {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .radio-pill-custom {
-            display: flex;
+        .radio-pill-compact {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 3px;
             font-size: 11px;
             font-weight: 700;
-            padding: 5px 2px;
+            padding: 3px 8px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
             background: #ffffff;
             white-space: nowrap;
-            box-sizing: border-box;
+            width: auto; /* Natural small width */
         }
 
-        .radio-pill-custom input {
+        .radio-pill-compact input {
             margin: 0;
             cursor: pointer;
         }
@@ -111,16 +110,17 @@
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             width: 100%;
+            max-width: 160px;
             margin-top: 3px;
             outline: none;
             background: #ffffff;
-            box-sizing: border-box;
+            display: block;
         }
 
         .camera-capture-box {
             background: #f8fafc;
             border: 2px dashed #cbd5e1;
-            padding: 11px;
+            padding: 10px;
             text-align: center;
             border-radius: 10px;
             margin-top: 10px;
@@ -128,7 +128,7 @@
         }
 
         .camera-label-btn {
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 800;
             color: #4f46e5;
             cursor: pointer;
@@ -146,8 +146,8 @@
             background: #10b981;
             color: #ffffff;
             border: none;
-            padding: 12px;
-            font-size: 13.5px;
+            padding: 11px;
+            font-size: 13px;
             font-weight: 800;
             border-radius: 10px;
             cursor: pointer;
@@ -198,7 +198,6 @@
                 </p>
             </div>
         <% } else { %>
-            <!-- Clean Layout: Name on top, 3 Buttons underneath -->
             <form id="attendanceForm">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 
@@ -207,16 +206,17 @@
                         <div class="teacher-attendance-card-slim">
                             <div class="teacher-title-text"><%= teacher %></div>
                             
-                            <div class="status-options-grid-3">
-                                <label class="radio-pill-custom">
+                            <!-- Natural Compact Width Buttons -->
+                            <div class="status-options-inline-flex">
+                                <label class="radio-pill-compact">
                                     <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
                                     <span>Present</span>
                                 </label>
-                                <label class="radio-pill-custom">
+                                <label class="radio-pill-compact">
                                     <input type="radio" name="status_<%= index %>" value="Leave" onchange="toggleLeaveType(<%= index %>)">
                                     <span>On Leave</span>
                                 </label>
-                                <label class="radio-pill-custom">
+                                <label class="radio-pill-compact">
                                     <input type="radio" name="status_<%= index %>" value="Absent" onchange="toggleLeaveType(<%= index %>)">
                                     <span>Absent</span>
                                 </label>

@@ -3,7 +3,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 const express = require('express');
 const path = require('path');
-const compression = require('compression');
 const multer = require('multer');
 const supabase = require('./db');
 
@@ -12,8 +11,6 @@ const PORT = process.env.PORT || 3000;
 const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
 const SCHOOL_PASSWORD = process.env.SCHOOL_PASSWORD || 'School12345';
 
-app.use(compression({ level: 6 }));
-
 const upload = multer({ 
     storage: multer.memoryStorage(), 
     limits: { fileSize: 8 * 1024 * 1024 } 
@@ -21,7 +18,7 @@ const upload = multer({
 
 app.use(express.urlencoded({ extended: true, limit: '8mb' }));
 app.use(express.json({ limit: '8mb' }));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d', immutable: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
@@ -235,7 +232,7 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Teacher Analytics
+// Teacher Analytics API
 app.get('/api/teacher-analytics', async (req, res) => {
     const { teacher, mode, month, year } = req.query;
     if (!teacher) return res.json({ success: false, stats: null });

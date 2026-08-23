@@ -73,14 +73,25 @@ async function getDynamicSchoolsData() {
     });
 }
 
+// Strict Check: Automatically lock after 10:00 AM BD Time unless AEO explicitly unlocks
 async function isSubmissionAllowed() {
-    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
-    if (setting && setting.value === 'true') return { allowed: true, reason: 'unlocked_by_aeo' };
+    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').maybeSingle();
+    
+    // If AEO has unlocked
+    if (setting && setting.value === 'true') {
+        return { allowed: true, reason: 'unlocked_by_aeo' };
+    }
 
+    // Bangladesh Current Time
     const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
-    const [hours] = bdTimeStr.split(':').map(Number);
-    if (hours < 10) return { allowed: true, reason: 'regular_time' };
-    return { allowed: false, reason: 'time_expired' };
+    const [hours, minutes] = bdTimeStr.split(':').map(Number);
+
+    // If 10:00 AM or later, strictly lock
+    if (hours >= 10) {
+        return { allowed: false, reason: 'time_expired' };
+    }
+
+    return { allowed: true, reason: 'regular_time' };
 }
 
 function requireAEOAuth(req, res, next) {
@@ -94,7 +105,7 @@ function requireAEOAuth(req, res, next) {
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
-// Login Route
+// Strict Login Handler with Passwords
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     
@@ -108,16 +119,10 @@ app.post('/login', (req, res) => {
             });
             return res.redirect('/admin');
         } else {
-            return res.render('login', { error: 'Invalid AEO Secure Password!' });
+            return res.render('login', { error: 'Invalid AEO Password!' });
         }
     } else if (role === 'school') {
         if (password === SCHOOL_PASSWORD) {
-            res.cookie('school_auth_token', `school_verified_${schoolId}`, {
-                signed: true,
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                maxAge: 24 * 60 * 60 * 1000
-            });
             return res.redirect(`/index?schoolId=${schoolId}`);
         } else {
             return res.render('login', { error: 'Invalid School Access Password!' });
@@ -130,23 +135,18 @@ app.get('/index', async (req, res) => {
     const schoolId = req.query.schoolId;
     if (!schoolId) return res.redirect('/');
     
-    const schoolToken = req.signedCookies.school_auth_token;
-    if (!schoolToken || schoolToken !== `school_verified_${schoolId}`) {
-        return res.redirect('/');
-    }
-
     const schools = await getDynamicSchoolsData();
     const school = schools.find(s => s.id == schoolId);
     const status = await isSubmissionAllowed();
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-// Robust Attendance Submission (Clean & Direct)
+// Robust Attendance Submission
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     try {
         const status = await isSubmissionAllowed();
         if (!status.allowed) {
-            return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
+            return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance is locked by system!' });
         }
 
         const { schoolId, attendance, lat, lng } = req.body;
@@ -183,13 +183,11 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
 
         const { error } = await supabase.from('attendance_records').insert([newRecord]);
         if (error) {
-            console.error("Insert Error:", error.message);
             return res.json({ success: false, message: 'Database insert failed.' });
         }
 
         res.json({ success: true, message: 'Attendance Submitted Successfully!' });
     } catch (err) {
-        console.error("Server Error:", err);
         res.json({ success: false, message: 'Server processing error.' });
     }
 });
@@ -211,7 +209,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
 
     const { data: records } = await query.order('created_at', { ascending: false });
-    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
+    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').maybeSingle();
     const isAeoUnlocked = (setting && setting.value === 'true');
 
     const formattedRecords = (records || []).map(rec => ({

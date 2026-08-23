@@ -15,13 +15,13 @@ const upload = multer({
 
 app.use(express.urlencoded({ extended: true, limit: '8mb' }));
 app.use(express.json({ limit: '8mb' }));
-app.use(express.static(path.join(process.cwd(), 'public')));
-app.set('views', path.join(process.cwd(), 'views'));
+app.use(express.static(path.join(__dirname, 'public')));
+app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 
-app.get('/icon.png', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'icon.png')));
-app.get('/favicon.ico', (req, res) => res.sendFile(path.join(process.cwd(), 'public', 'icon.png')));
-app.get('/manifest.json', (req, res) => res.sendFile(path.join(process.cwd(), 'manifest.json')));
+app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
+app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
 const defaultSchools = [
     { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },

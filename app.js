@@ -73,20 +73,24 @@ async function getDynamicSchoolsData() {
     });
 }
 
-// Strict Check: Automatically lock after 10:00 AM BD Time unless AEO explicitly unlocks
+// Absolute Lock Logic: AEO's manual lock status takes topmost priority
 async function isSubmissionAllowed() {
     const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').maybeSingle();
     
-    // If AEO has unlocked
+    // If AEO has explicitly locked (value === 'false')
+    if (setting && setting.value === 'false') {
+        return { allowed: false, reason: 'locked_by_aeo' };
+    }
+
+    // If AEO has explicitly unlocked (value === 'true')
     if (setting && setting.value === 'true') {
         return { allowed: true, reason: 'unlocked_by_aeo' };
     }
 
-    // Bangladesh Current Time
+    // If unset, check 10:00 AM BD Time
     const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
-    const [hours, minutes] = bdTimeStr.split(':').map(Number);
+    const [hours] = bdTimeStr.split(':').map(Number);
 
-    // If 10:00 AM or later, strictly lock
     if (hours >= 10) {
         return { allowed: false, reason: 'time_expired' };
     }
@@ -105,7 +109,7 @@ function requireAEOAuth(req, res, next) {
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.render('login', { error: null }));
 
-// Strict Login Handler with Passwords
+// Strict Login Route
 app.post('/login', (req, res) => {
     const { role, password, schoolId } = req.body;
     
@@ -123,6 +127,12 @@ app.post('/login', (req, res) => {
         }
     } else if (role === 'school') {
         if (password === SCHOOL_PASSWORD) {
+            res.cookie('school_auth_token', `school_verified_${schoolId}`, {
+                signed: true,
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                maxAge: 24 * 60 * 60 * 1000
+            });
             return res.redirect(`/index?schoolId=${schoolId}`);
         } else {
             return res.render('login', { error: 'Invalid School Access Password!' });
@@ -141,12 +151,12 @@ app.get('/index', async (req, res) => {
     res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
 });
 
-// Robust Attendance Submission
+// Submit Attendance
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     try {
         const status = await isSubmissionAllowed();
         if (!status.allowed) {
-            return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance is locked by system!' });
+            return res.json({ success: false, message: 'Attendance submission is currently LOCKED!' });
         }
 
         const { schoolId, attendance, lat, lng } = req.body;
@@ -192,7 +202,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     }
 });
 
-// 1st Page: AEO Dashboard
+// Admin Route
 app.get('/admin', requireAEOAuth, async (req, res) => {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
 

@@ -260,7 +260,7 @@
             border-radius: 6px;
         }
 
-        /* View 2 Styles */
+        /* View 2: Clean Aligned Teacher List Styles */
         .manage-teachers-btn {
             background: #0284c7;
             color: #ffffff;
@@ -277,10 +277,6 @@
             width: 100%;
             box-sizing: border-box;
             transition: transform 0.08s ease;
-        }
-
-        .manage-teachers-btn:active {
-            transform: scale(0.97);
         }
 
         .search-school-input {
@@ -301,14 +297,13 @@
             padding: 14px;
             border-radius: 12px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
 
         .school-header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 6px;
         }
 
         .school-info-title {
@@ -317,62 +312,80 @@
             color: #1e293b;
         }
 
-        .action-button-group {
+        /* Clean Aligned Teacher Rows */
+        .teacher-rows-list {
             display: flex;
-            align-items: center;
-            gap: 5px;
+            flex-direction: column;
+            gap: 6px;
+            margin: 8px 0 12px 0;
         }
 
-        .btn-view-compact {
+        .teacher-row-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background: #f8fafc;
+            border-radius: 6px;
+            border: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.1s ease;
+        }
+
+        .teacher-row-item:active {
+            background: #e2e8f0;
+        }
+
+        .t-name-left {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .t-badge-status {
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .t-present { background: #dcfce7; color: #15803d; }
+        .t-absent { background: #fee2e2; color: #dc2626; }
+        .t-leave { background: #fef3c7; color: #d97706; }
+
+        /* Action Buttons at Bottom of Card */
+        .card-bottom-actions {
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+        }
+
+        .btn-view-card {
+            flex: 1;
             background: #e0e7ff;
             color: #4f46e5;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 6px 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 8px 10px;
             border-radius: 6px;
-            text-decoration: none;
+            text-align: center;
             border: none;
             cursor: pointer;
         }
 
-        .btn-delete-compact {
+        .btn-delete-card {
+            flex: 1;
             background: #fee2e2;
             color: #dc2626;
             border: 1px solid #fca5a5;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 6px 10px;
+            font-size: 12.5px;
+            font-weight: 800;
+            padding: 8px 10px;
             border-radius: 6px;
+            text-align: center;
             cursor: pointer;
         }
-
-        .teacher-mini-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 6px;
-        }
-
-        .t-badge-interactive {
-            font-size: 11.5px;
-            padding: 4px 9px;
-            border-radius: 6px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            border: 1px solid transparent;
-            transition: transform 0.05s ease;
-        }
-
-        .t-badge-interactive:active {
-            transform: scale(0.94);
-        }
-
-        .t-present { background: #dcfce7; color: #15803d; border-color: #86efac; }
-        .t-absent { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
-        .t-leave { background: #fef3c7; color: #d97706; border-color: #fde68a; }
 
         .btn-back-clean {
             background: #e0e7ff;
@@ -613,13 +626,13 @@
                 </div>
             </div>
 
-            <!-- Instant 0ms Switch -->
+            <!-- Instant Switch to View 2 -->
             <button type="button" onclick="switchView('list')" class="btn-goto-page2-large">
                 📋 View All Submitted Schools & Search ➔
             </button>
         </div>
 
-        <!-- VIEW 2: Search & Submitted List (Zero Lag) -->
+        <!-- VIEW 2: Search & Submitted List (Clean Aligned Rows + Bottom Actions) -->
         <div id="viewPage2" style="display: none;">
             <header class="app-header" style="margin-bottom: 8px;">
                 <div>
@@ -648,23 +661,26 @@
                     <% records.forEach((rec, rIdx) => { %>
                         <div class="school-list-card" id="card_<%= rIdx %>">
                             <div class="school-header-flex">
-                                <div>
-                                    <div class="school-info-title">🏫 <%= rec.schoolName %></div>
-                                    <span style="font-size: 11px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
-                                </div>
-                                <div class="action-button-group">
-                                    <button type="button" onclick="window.location.replace('/admin/school/<%= rec.id %>')" class="btn-view-compact">View & Edit</button>
-                                    <button type="button" onclick="openDeleteConfirmModal(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-compact">🗑️ Delete</button>
-                                </div>
+                                <div class="school-info-title">🏫 <%= rec.serialId %>. <%= rec.schoolName %></div>
+                                <span style="font-size: 11px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                             </div>
 
-                            <div class="teacher-mini-badges">
+                            <!-- Aligned Teacher Rows: Name on Left, Status on Right -->
+                            <div class="teacher-rows-list">
                                 <% rec.attendance.forEach(t => { %>
-                                    <span class="t-badge-interactive <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>" 
-                                          onclick="openTeacherAnalytics('<%= t.teacher %>')">
-                                        <%= t.teacher.split('(')[0] %>: <%= t.status %> 📊
-                                    </span>
+                                    <div class="teacher-row-item" onclick="openTeacherAnalytics('<%= t.teacher %>')">
+                                        <span class="t-name-left"><%= t.teacher.split('(')[0] %></span>
+                                        <span class="t-badge-status <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>">
+                                            <%= t.status %> 📊
+                                        </span>
+                                    </div>
                                 <% }) %>
+                            </div>
+
+                            <!-- Bottom Action Buttons -->
+                            <div class="card-bottom-actions">
+                                <button type="button" onclick="window.location.replace('/admin/school/<%= rec.id %>')" class="btn-view-card">View & Edit</button>
+                                <button type="button" onclick="openDeleteConfirmModal(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-card">🗑️ Delete</button>
                             </div>
                         </div>
                     <% }) %>
@@ -929,11 +945,12 @@
             await loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");
 
             const excelRows = [
-                ["Date", "School Name", "Teacher Name", "Status", "Leave Type", "Submission Time", "Latitude", "Longitude"]
+                ["Date", "SL", "School Name", "Teacher Name", "Status", "Leave Type", "Submission Time", "Latitude", "Longitude"]
             ];
 
             submittedRecords.forEach(rec => {
                 const date = rec.date;
+                const sl = rec.serialId;
                 const school = rec.schoolName;
                 const time = rec.timestamp;
                 const lat = rec.location ? rec.location.lat : '';
@@ -942,6 +959,7 @@
                 rec.attendance.forEach(item => {
                     excelRows.push([
                         date,
+                        sl,
                         school,
                         item.teacher,
                         item.status,
@@ -1001,11 +1019,11 @@
                 const folderName = `Bochaganj_Registers_${currentSelected}`;
                 const imgFolder = zip.folder(folderName);
 
-                data.photos.forEach((item, idx) => {
+                data.photos.forEach((item) => {
                     if (item.photo) {
                         const base64Data = item.photo.split(',')[1];
                         const sanitizedSchool = item.schoolName.replace(/[^a-zA-Z0-9]/g, '_');
-                        const fileName = `${idx + 1}_${sanitizedSchool}_${item.date}.jpg`;
+                        const fileName = `${item.serialId}_${sanitizedSchool}_${item.date}.jpg`;
                         imgFolder.file(fileName, base64Data, { base64: true });
                     }
                 });
@@ -1013,7 +1031,7 @@
                 const content = await zip.generateAsync({ type: "blob" });
                 saveAs(content, `${folderName}.zip`);
 
-                showCustomModal('success', 'Download Complete', 'All register photos zipped and downloaded successfully!');
+                showCustomModal('success', 'Download Complete', 'All register photos zipped and downloaded in serial order!');
             } catch (err) {
                 showCustomModal('error', 'ZIP Failed', 'Could not create ZIP package.');
             } finally {

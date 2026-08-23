@@ -1,6 +1,3 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
 const express = require('express');
 const path = require('path');
 const multer = require('multer');
@@ -21,10 +18,6 @@ app.use(express.json({ limit: '8mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-
-app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
-app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
-app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
 const defaultSchools = [
     { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },
@@ -232,7 +225,7 @@ app.get('/admin/list', async (req, res) => {
     res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
 });
 
-// Teacher Analytics API
+// Teacher Analytics
 app.get('/api/teacher-analytics', async (req, res) => {
     const { teacher, mode, month, year } = req.query;
     if (!teacher) return res.json({ success: false, stats: null });

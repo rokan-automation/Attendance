@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Summary - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
-    <link rel="apple-touch-icon" href="/icon.png?v=6">
+    <link rel="shortcut icon" href="/icon.png?v=7" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=7">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=7">
+    <link rel="apple-touch-icon" href="/icon.png?v=7">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=6">
+    <link rel="stylesheet" href="/css/style.css?v=7">
 
     <style>
         html, body {
@@ -230,6 +230,7 @@
             box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
             margin-top: 12px;
             letter-spacing: 0.3px;
+            cursor: pointer;
         }
 
         .btn-logout {
@@ -289,9 +290,9 @@
                 <h3>Attendance Summary Report</h3>
                 
                 <div class="filter-mode-tabs">
-                    <a href="/admin?viewType=daily" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</a>
-                    <a href="/admin?viewType=monthly" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</a>
-                    <a href="/admin?viewType=yearly" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</a>
+                    <button type="button" onclick="navigateFilter('daily')" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</button>
+                    <button type="button" onclick="navigateFilter('monthly')" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</button>
+                    <button type="button" onclick="navigateFilter('yearly')" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</button>
                 </div>
 
                 <div class="date-filter-bar">
@@ -380,10 +381,10 @@
             </div>
         </div>
 
-        <!-- 2nd Page Button (No URL Token) -->
-        <a href="/admin/list?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2-large">
+        <!-- 2nd Page Button via History Replacement -->
+        <button type="button" onclick="goToPage2()" class="btn-goto-page2-large">
             📋 View All Submitted Schools & Search ➔
-        </a>
+        </button>
     </div>
 
     <!-- Custom Modal -->
@@ -402,10 +403,29 @@
         const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
         let shouldReloadPage = false;
 
-        window.history.pushState({ page: 1 }, "", "");
-        window.onpopstate = function () {
-            window.location.replace('/logout');
-        };
+        // ZERO-HISTORY HARDWARE BACK TRAP (Direct Exit on Phone Back Button)
+        (function() {
+            window.history.pushState(null, "", window.location.href);
+            window.onpopstate = function () {
+                window.location.replace('/logout');
+            };
+        })();
+
+        function goToPage2() {
+            window.location.replace(`/admin/list?viewType=${currentView}&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>`);
+        }
+
+        function navigateFilter(type) {
+            window.location.replace(`/admin?viewType=${type}`);
+        }
+
+        function changeFilter(type, value) {
+            if (value) {
+                if (type === 'daily') window.location.replace(`/admin?viewType=daily&date=${value}`);
+                else if (type === 'monthly') window.location.replace(`/admin?viewType=monthly&month=${value}`);
+                else if (type === 'yearly') window.location.replace(`/admin?viewType=yearly&year=${value}`);
+            }
+        }
 
         function showCustomModal(type, title, message, reload = false) {
             const modal = document.getElementById('customModal');
@@ -420,14 +440,6 @@
         function closeCustomModal() {
             document.getElementById('customModal').classList.remove('active');
             if (shouldReloadPage) window.location.reload();
-        }
-
-        function changeFilter(type, value) {
-            if (value) {
-                if (type === 'daily') window.location.href = `/admin?viewType=daily&date=${value}`;
-                else if (type === 'monthly') window.location.href = `/admin?viewType=monthly&month=${value}`;
-                else if (type === 'yearly') window.location.href = `/admin?viewType=yearly&year=${value}`;
-            }
         }
 
         function toggleEmergencyLock(unlockStatus) {

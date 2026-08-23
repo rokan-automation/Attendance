@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Submitted Schools & Search - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
-    <link rel="apple-touch-icon" href="/icon.png?v=6">
+    <link rel="shortcut icon" href="/icon.png?v=7" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=7">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=7">
+    <link rel="apple-touch-icon" href="/icon.png?v=7">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=6">
+    <link rel="stylesheet" href="/css/style.css?v=7">
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -37,6 +37,10 @@
             display: block;
             margin-bottom: 10px;
             box-shadow: 0 3px 8px rgba(2, 132, 199, 0.25);
+            cursor: pointer;
+            border: none;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .search-school-input {
@@ -87,6 +91,8 @@
             padding: 6px 10px;
             border-radius: 6px;
             text-decoration: none;
+            cursor: pointer;
+            border: none;
         }
 
         .btn-delete-compact {
@@ -137,6 +143,7 @@
             text-decoration: none;
             border-radius: 6px;
             border: 1px solid #c7d2fe;
+            cursor: pointer;
         }
 
         .t-modal-tabs {
@@ -236,20 +243,19 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-scrollable">
         
-        <!-- Header -->
         <header class="app-header" style="margin-bottom: 8px;">
             <div>
                 <h3 style="font-size: 15px; margin:0;">Submitted Schools List</h3>
                 <span class="badge"><%= viewType.toUpperCase() %> Mode</span>
             </div>
             <div>
-                <a href="/admin?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-back-clean">Back</a>
+                <button type="button" onclick="goBackToSummary()" class="btn-back-clean">Back</button>
             </div>
         </header>
 
-        <a href="/admin/teachers" class="manage-teachers-btn">
+        <button type="button" onclick="goToTeachersManage()" class="manage-teachers-btn">
             👨‍🏫 Manage Teachers & Staff (Add / Remove) ➔
-        </a>
+        </button>
 
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." onkeyup="performDeepSearch()">
 
@@ -269,7 +275,7 @@
                                 <span style="font-size: 11px; color: #6b7280;">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
                             </div>
                             <div class="action-button-group">
-                                <a href="/admin/school/<%= rec.id %>" class="btn-view-compact">View & Edit</a>
+                                <button type="button" onclick="goToSchoolEdit(<%= rec.id %>)" class="btn-view-compact">View & Edit</button>
                                 <button type="button" onclick="openDeleteConfirmModal(<%= rec.id %>, '<%= rec.schoolName %>')" class="btn-delete-compact">🗑️ Delete</button>
                             </div>
                         </div>
@@ -344,6 +350,18 @@
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
         let currentActiveTeacher = '';
+
+        function goBackToSummary() {
+            window.location.replace(`/admin?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>`);
+        }
+
+        function goToTeachersManage() {
+            window.location.replace('/admin/teachers');
+        }
+
+        function goToSchoolEdit(schoolId) {
+            window.location.replace('/admin/school/' + schoolId);
+        }
 
         async function openTeacherAnalytics(teacherFullName) {
             currentActiveTeacher = teacherFullName;

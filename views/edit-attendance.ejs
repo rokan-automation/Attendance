@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Verify Attendance - <%= record.schoolName %></title>
-    <link rel="shortcut icon" href="/icon.png?v=4" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=4">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=4">
-    <link rel="apple-touch-icon" href="/icon.png?v=4">
+    <link rel="shortcut icon" href="/icon.png?v=7" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=7">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=7">
+    <link rel="apple-touch-icon" href="/icon.png?v=7">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=7">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -79,7 +79,6 @@
             font-weight: 600;
         }
 
-        /* Clean Back Button */
         .btn-back-clean {
             background: #e0e7ff;
             color: #4f46e5;
@@ -89,6 +88,7 @@
             text-decoration: none;
             border-radius: 6px;
             border: 1px solid #c7d2fe;
+            cursor: pointer;
         }
 
         #imgViewerModal {
@@ -114,14 +114,13 @@
 <body style="background-color: #f3f4f6;">
     <div class="app-container-edit">
         
-        <!-- Header: ONLY BACK BUTTON -->
         <header class="app-header">
             <div>
                 <h3 style="font-size: 13.5px; margin:0;"><%= record.schoolName %></h3>
                 <span class="badge">AEO Verification</span>
             </div>
             <div>
-                <a href="javascript:history.back()" class="btn-back-clean">Back</a>
+                <button type="button" onclick="window.location.replace('/admin/list')" class="btn-back-clean">Back</button>
             </div>
         </header>
 
@@ -244,7 +243,7 @@
 
         function closeCustomModal() {
             document.getElementById('customModal').classList.remove('active');
-            window.location.href = '/admin?auth=true';
+            window.location.replace('/admin/list');
         }
 
         function toggleLeaveType(index) {

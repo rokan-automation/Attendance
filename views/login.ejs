@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
     <title>Attendance - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=6" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=6">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=6">
-    <link rel="apple-touch-icon" href="/icon.png?v=6">
+    <link rel="shortcut icon" href="/icon.png?v=8" type="image/png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=8">
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=8">
+    <link rel="apple-touch-icon" href="/icon.png?v=8">
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=6">
+    <link rel="stylesheet" href="/css/style.css?v=8">
     <style>
         html, body {
             background-color: #f3f4f6;
@@ -25,8 +25,8 @@
             min-height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: flex-start;
-            padding: 25px 12px;
+            align-items: center;
+            padding: 20px 14px;
             box-sizing: border-box;
         }
 
@@ -35,36 +35,35 @@
             flex-direction: column;
             align-items: center;
             justify-content: space-between;
-            min-height: 80vh;
+            min-height: 75vh;
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
             margin: 0 auto;
             box-sizing: border-box;
         }
 
         .gateway-header {
             text-align: center;
-            margin-top: 10px;
         }
 
         .gateway-title {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 800;
             color: #1e1b4b;
             letter-spacing: 0.5px;
         }
 
         .gateway-sub {
-            font-size: 13.5px;
+            font-size: 14.5px;
             color: #64748b;
-            margin-top: 3px;
-            font-weight: 500;
+            margin-top: 4px;
+            font-weight: 600;
         }
 
         .role-cards-grid {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 16px;
             width: 100%;
             margin: 25px 0;
         }
@@ -72,13 +71,13 @@
         .role-action-card {
             background: #ffffff;
             border: 2px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 18px 20px;
+            border-radius: 16px;
+            padding: 20px 22px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             transition: all 0.15s ease;
         }
 
@@ -88,13 +87,13 @@
         }
 
         .role-icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 26px;
             flex-shrink: 0;
         }
 
@@ -102,14 +101,14 @@
         .aeo-icon-bg { background: #fef3c7; color: #d97706; }
 
         .role-info-title {
-            font-size: 16.5px;
-            font-weight: 700;
+            font-size: 18.5px;
+            font-weight: 800;
             color: #1e293b;
             display: block;
         }
 
         .role-info-desc {
-            font-size: 12px;
+            font-size: 13px;
             color: #64748b;
             display: block;
             margin-top: 2px;
@@ -117,23 +116,23 @@
 
         .role-arrow {
             margin-left: auto;
-            font-size: 17px;
+            font-size: 20px;
             color: #94a3b8;
-            font-weight: 700;
+            font-weight: 800;
         }
 
         .developer-footer {
             text-align: center;
-            padding: 10px 20px;
+            padding: 12px 24px;
             background: #ffffff;
-            border: 1px solid #e2e8f0;
+            border: 1.5px solid #e2e8f0;
             border-radius: 30px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
 
         .dev-badge-title {
             display: block;
-            font-size: 10.5px;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: #6366f1;
@@ -141,35 +140,68 @@
         }
 
         .dev-badge-name {
-            font-size: 14.5px;
+            font-size: 16px;
             font-weight: 800;
             color: #0f172a;
         }
 
-        /* Fixed Login Form Card (Never jumps on keyboard open/close) */
-        .auth-card-fixed {
+        /* Large & Attractive Form Card */
+        .auth-card-large {
             background: #ffffff;
             width: 100%;
-            max-width: 400px;
-            padding: 20px 18px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-            margin-top: 15px;
+            max-width: 440px;
+            padding: 26px 24px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            border: 1.5px solid #e2e8f0;
             box-sizing: border-box;
         }
 
         .btn-back-gateway {
             background: #e0e7ff;
-            color: #4f46e5;
+            color: #4338ca;
             border: 1px solid #c7d2fe;
-            padding: 6px 14px;
-            font-size: 12.5px;
-            font-weight: 700;
+            padding: 7px 16px;
+            font-size: 13.5px;
+            font-weight: 800;
             cursor: pointer;
-            border-radius: 6px;
-            margin-bottom: 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
             display: inline-block;
+        }
+
+        .input-group-large {
+            margin-bottom: 16px;
+        }
+
+        .input-group-large label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .custom-select-trigger-large {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .trigger-text-large {
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .password-field-wrapper {
@@ -181,7 +213,13 @@
 
         .password-field-wrapper input {
             width: 100%;
-            padding-right: 42px !important;
+            padding: 13px 44px 13px 14px !important;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            background: #f8fafc;
             box-sizing: border-box;
         }
 
@@ -197,11 +235,11 @@
 
         .btn-toggle-eye {
             position: absolute;
-            right: 8px;
+            right: 10px;
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 17px;
+            font-size: 20px;
             color: #64748b;
             display: flex;
             align-items: center;
@@ -209,41 +247,41 @@
             padding: 6px;
         }
 
-        .btn-submit-instant {
+        .btn-submit-large {
             width: 100%;
-            background: #4f46e5;
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
             color: white;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14.5px;
-            font-weight: 700;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
             transition: 0.1s;
+            margin-top: 6px;
         }
 
-        .btn-submit-instant:active {
+        .btn-submit-large:active {
             transform: scale(0.98);
-            background: #4338ca;
         }
 
         .school-modal-card {
             max-height: 80vh;
             display: flex;
             flex-direction: column;
-            padding: 16px;
-            max-width: 380px;
+            padding: 18px;
+            max-width: 400px;
         }
 
         .school-search-box input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 12px 14px;
             border: 1.5px solid #cbd5e1;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 14.5px;
             outline: none;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             box-sizing: border-box;
         }
 
@@ -252,30 +290,30 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
         }
 
         .school-item-btn {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
-            padding: 9px 10px;
+            padding: 11px 12px;
             text-align: left;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12.5px;
+            gap: 10px;
+            font-size: 14px;
             font-weight: 600;
             color: #1e293b;
         }
 
         .school-serial-tag {
             background: #e2e8f0;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 800;
         }
     </style>
 </head>
@@ -315,17 +353,17 @@
             </div>
         </div>
 
-        <!-- 2. Solid Fixed Form Card -->
-        <div class="auth-card-fixed" id="formCard" style="display: none;">
+        <!-- 2. Attractive Large Form Card -->
+        <div class="auth-card-large" id="formCard" style="display: none;">
             <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
             
             <div class="brand-header">
-                <h2 id="formTitle" style="font-size: 20px;">Attendance</h2>
-                <p id="formSub" style="font-size: 12.5px;">Bochaganj Primary Education</p>
+                <h2 id="formTitle" style="font-size: 22px; font-weight: 800; color: #1e1b4b;">Attendance</h2>
+                <p id="formSub" style="font-size: 14px; color: #64748b; font-weight: 500;">Bochaganj Primary Education</p>
             </div>
 
             <% if(typeof error !== 'undefined' && error) { %>
-                <div class="alert-error" style="font-size: 12.5px;"><%= error %></div>
+                <div class="alert-error" style="font-size: 13.5px; padding: 10px; margin-bottom: 14px;"><%= error %></div>
             <% } %>
 
             <!-- School Form -->
@@ -333,46 +371,46 @@
                 <input type="hidden" name="role" value="school">
                 <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
 
-                <div class="input-group">
-                    <label style="font-size: 12.5px;">Select Institution</label>
-                    <div class="custom-select-trigger" onclick="openSchoolModal()" style="padding: 11px 12px;">
-                        <span class="trigger-text" id="selectedSchoolText" style="font-size: 12.5px;">1. Bochaganj Model Govt. Primary School</span>
-                        <span class="trigger-icon">▼</span>
+                <div class="input-group-large">
+                    <label>Select Institution</label>
+                    <div class="custom-select-trigger-large" onclick="openSchoolModal()">
+                        <span class="trigger-text-large" id="selectedSchoolText">1. Bochaganj Model Govt. Primary School</span>
+                        <span style="color: #64748b; font-size: 12px;">▼</span>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label style="font-size: 12.5px;">School Access Password</label>
+                <div class="input-group-large">
+                    <label>School Access Password</label>
                     <div class="password-field-wrapper">
-                        <input type="text" name="password" id="schoolPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter school password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <input type="text" name="password" id="schoolPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter school password" required>
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('schoolPasswordInput', this)">👁️</button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn-submit-instant">Access School Portal</button>
+                <button type="submit" class="btn-submit-large">Access School Portal</button>
             </form>
 
             <!-- Admin Form -->
             <form action="/login" method="POST" id="adminForm" style="display: none;" autocomplete="off">
                 <input type="hidden" name="role" value="admin">
-                <div class="input-group">
-                    <label style="font-size: 12.5px;">AEO Secure Password</label>
+                <div class="input-group-large">
+                    <label>AEO Secure Password</label>
                     <div class="password-field-wrapper">
-                        <input type="text" name="password" id="adminPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter secure password" style="font-size: 13.5px; padding: 10px 12px;" required>
+                        <input type="text" name="password" id="adminPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter secure password" required>
                         <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('adminPasswordInput', this)">👁️</button>
                     </div>
                 </div>
-                <button type="submit" class="btn-submit-instant">Access AEO Dashboard</button>
+                <button type="submit" class="btn-submit-large">Access AEO Dashboard</button>
             </form>
         </div>
     </div>
 
-    <!-- School Modal -->
+    <!-- School Modal Popup -->
     <div id="schoolModal" class="school-modal-overlay">
         <div class="school-modal-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                <h4 style="font-size: 14.5px; font-weight: 800;">Select Primary School</h4>
-                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:16px; cursor:pointer; font-weight: bold;">✕</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 16px; font-weight: 800; color: #1e1b4b;">Select Primary School</h4>
+                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:18px; cursor:pointer; font-weight: bold;">✕</button>
             </div>
             <div class="school-search-box">
                 <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name..." onkeyup="filterSchools()">

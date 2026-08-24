@@ -2,18 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Summary - Bochaganj</title>
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=14">
+    <link rel="stylesheet" href="/css/style.css?v=19">
 
     <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         html, body {
             background-color: #f1f5f9;
             margin: 0;
             padding: 0;
             touch-action: manipulation;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            transform: translateZ(0);
         }
 
         .app-container-tight {
@@ -21,6 +24,7 @@
             margin: 0 auto;
             padding: 10px 8px;
             box-sizing: border-box;
+            contain: content;
         }
 
         /* Top Header: Right Aligned Logout Button */
@@ -45,7 +49,7 @@
             text-decoration: none;
             border-radius: 6px;
             border: 1px solid #fca5a5;
-            transition: all 0.1s;
+            transition: transform 0.1s;
         }
         .btn-logout-right:active { transform: scale(0.95); }
 
@@ -88,6 +92,7 @@
             color: #475569;
             cursor: pointer;
             text-decoration: none;
+            transition: all 0.1s;
         }
 
         .mode-tab-btn.active {

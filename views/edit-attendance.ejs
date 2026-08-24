@@ -6,7 +6,7 @@
     <title>Verify Attendance - <%= record.schoolName %></title>
     
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=14">
+    <link rel="stylesheet" href="/css/style.css?v=18">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
@@ -14,11 +14,8 @@
             --primary: #4f46e5;
             --primary-bg: #eef2ff;
             --present: #16a34a;
-            --present-bg: #dcfce7;
             --leave: #d97706;
-            --leave-bg: #fef3c7;
             --absent: #dc2626;
-            --absent-bg: #fee2e2;
             --surface: #ffffff;
             --bg-page: #f8fafc;
             --text-dark: #0f172a;
@@ -122,11 +119,10 @@
             font-weight: 600;
         }
 
-        /* Compact & Natural Sized Buttons */
         .status-button-row {
             display: flex;
             align-items: center;
-            gap: 8px; /* বাটনগুলোর মাঝে নিখুঁত গ্যাপ */
+            gap: 8px;
             flex-wrap: wrap;
         }
 
@@ -145,13 +141,11 @@
             cursor: pointer;
             user-select: none;
             transition: all 0.12s ease;
-            width: auto; /* ফুল স্ক্রিন হবে না, সাইজ অনুযায়ী হবে */
+            width: auto;
         }
         .btn-status-pill:active { transform: scale(0.96); }
-
         .btn-status-pill input[type="radio"] { display: none; }
 
-        /* Active Button Colors */
         .btn-status-pill.active-present {
             background: var(--present);
             color: #ffffff;
@@ -170,7 +164,6 @@
             border-color: var(--absent);
         }
 
-        /* Leave Reason Dropdown */
         .leave-dropdown-box {
             margin-top: 8px;
             background: #fffbeb;
@@ -200,7 +193,6 @@
             flex: 1;
         }
 
-        /* Media / Photo / Map Cards */
         .media-card {
             background: var(--surface);
             border: 1px solid var(--border-color);
@@ -243,7 +235,6 @@
             border-top: 1px solid var(--border-color);
         }
 
-        /* Save Button */
         .btn-save-main {
             width: 100%;
             min-height: 46px;
@@ -264,7 +255,6 @@
         }
         .btn-save-main:active { transform: scale(0.98); }
 
-        /* Modal */
         .custom-modal-overlay {
             position: fixed;
             inset: 0;
@@ -283,7 +273,6 @@
             padding: 18px 16px;
             width: 100%;
             max-width: 340px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
         }
     </style>
@@ -292,7 +281,7 @@
 
 <div class="main-wrapper">
     
-    <!-- Top Clean Header (Right-Aligned Back Button) -->
+    <!-- Top Clean Header -->
     <header class="top-header-bar">
         <div>
             <h2><%= record.schoolName %></h2>
@@ -320,7 +309,6 @@
                         <span class="teacher-desig-sub"><%= designation %></span>
                     </div>
 
-                    <!-- Compact Buttons Row with Gap -->
                     <div class="status-button-row">
                         <label class="btn-status-pill <%= currentStatus.toLowerCase() === 'present' ? 'active-present' : '' %>" onclick="selectStatus(this, 'Present', <%= index %>)">
                             <input type="radio" name="status_<%= index %>" value="Present" <%= currentStatus.toLowerCase() === 'present' ? 'checked' : '' %>>
@@ -338,15 +326,15 @@
                         </label>
                     </div>
 
-                    <!-- Leave Reason Selector (Shown only when On Leave is active) -->
+                    <!-- Leave Reason Selector -->
                     <div id="leaveBox_<%= index %>" class="leave-dropdown-box" style="<%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'display: flex;' : 'display: none;' %>">
                         <span style="font-size: 11px; font-weight: 700; color: #b45309;">Reason:</span>
                         <select class="leave-select-field" id="leaveSelect_<%= index %>">
-                            <option value="Casual Leave" <%= currentLeaveType === 'Casual Leave' ? 'selected' : '' %>>Casual Leave (নৈমিত্তিক)</option>
-                            <option value="Medical Leave" <%= currentLeaveType === 'Medical Leave' ? 'selected' : '' %>>Medical Leave (চিকিৎসা)</option>
-                            <option value="Maternity Leave" <%= currentLeaveType === 'Maternity Leave' ? 'selected' : '' %>>Maternity Leave (মাতৃত্বকালীন)</option>
-                            <option value="Earned Leave" <%= currentLeaveType === 'Earned Leave' ? 'selected' : '' %>>Earned Leave (অর্জিত)</option>
-                            <option value="Other Leave" <%= currentLeaveType === 'Other Leave' ? 'selected' : '' %>>Other Leave (অন্যান্য)</option>
+                            <option value="Casual Leave" <%= currentLeaveType === 'Casual Leave' ? 'selected' : '' %>>Casual Leave</option>
+                            <option value="Medical Leave" <%= currentLeaveType === 'Medical Leave' ? 'selected' : '' %>>Medical Leave</option>
+                            <option value="Maternity Leave" <%= currentLeaveType === 'Maternity Leave' ? 'selected' : '' %>>Maternity Leave</option>
+                            <option value="Earned Leave" <%= currentLeaveType === 'Earned Leave' ? 'selected' : '' %>>Earned Leave</option>
+                            <option value="Other Leave" <%= currentLeaveType === 'Other Leave' ? 'selected' : '' %>>Other Leave</option>
                         </select>
                     </div>
                 </div>

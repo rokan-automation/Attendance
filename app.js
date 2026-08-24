@@ -11,7 +11,7 @@ const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ২৫টি স্কুলের তালিকা
+// 25 Schools Static Registry (Zero DB Overhead)
 const SCHOOLS = [
     { id: 1, name: "Bochaganj Model Govt. Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Md. Kamal Uddin (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Govt. Primary School", teachers: ["Farhana Yeasmin (Head Teacher)", "Anwar Hossain (Assistant)", "Shamima Nasrin (Assistant)", "Rashedul Hasan (Assistant)", "Mst. Kulsum Banu (Assistant)"] },
@@ -53,7 +53,6 @@ function getSafeSchoolId(schoolName) {
     return found ? found.id : 999;
 }
 
-// Bangladesh Current Date & Time Helper
 function getBangladeshDateTime() {
     const now = new Date();
     const bdTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
@@ -67,13 +66,12 @@ function getBangladeshDateTime() {
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
+app.use(express.static(__dirname, { maxAge: '1d' }));
 
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
-// Lightweight Cookie Parser
 app.use((req, res, next) => {
     req.cookies = {};
     const rc = req.headers.cookie;
@@ -86,13 +84,11 @@ app.use((req, res, next) => {
     next();
 });
 
-// PWA Static Assets
 app.get('/icon-192.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-192.png')));
 app.get('/icon-512.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-512.png')));
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-192.png')));
 app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-// Auth Middlewares
 const requireAEOAuth = (req, res, next) => {
     if (req.cookies && req.cookies.admin_session === 'authenticated_aeo_2026') next();
     else res.redirect('/');
@@ -108,7 +104,7 @@ const requireSchoolAuth = (req, res, next) => {
     }
 };
 
-// 1. Gateway & Login
+// 1. Gateway
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.redirect('/'));
 
@@ -145,51 +141,36 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 2. School Attendance Page (১ দিনে ১ বার সাবমিশন ও সকাল ১০টার লক লজিক)
+// 2. School Portal (Ultra Fast Parallel Fetch)
 app.get('/index', requireSchoolAuth, async (req, res) => {
     try {
         const schoolId = parseInt(req.query.schoolId) || req.schoolId || 1;
         const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
-
         const { dateStr, hourBD } = getBangladeshDateTime();
 
-        // চেক করা: আজকে অলরেডি সাবমিট করেছে কি না
-        const { data: existingRecord } = await supabase
-            .from('attendance_records')
-            .select('id, created_at')
-            .eq('school_name', school.name)
-            .eq('attendance_date', dateStr)
-            .maybeSingle();
+        // Run both checks in parallel (50% faster)
+        const [recordRes, lockRes] = await Promise.all([
+            supabase.from('attendance_records').select('id, created_at').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+        ]);
 
-        let alreadySubmitted = !!existingRecord;
+        const existingRecord = recordRes.data;
+        const alreadySubmitted = !!existingRecord;
         let submissionTime = '';
         if (existingRecord && existingRecord.created_at) {
             submissionTime = new Date(existingRecord.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' });
         }
 
-        // সকাল ১০টার সময় চেক ও AEO Override চেক
-        let isWithinTime = hourBD < 10;
-        let isAllowed = isWithinTime;
-        try {
-            const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
-            if (lockSetting && lockSetting.value === 'true') {
-                isAllowed = true;
-            }
-        } catch (e) {}
+        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
+        const isAllowed = hourBD < 10 || isAeoUnlocked;
 
-        res.render('index', { 
-            school, 
-            isAllowed, 
-            alreadySubmitted, 
-            submissionDate: dateStr, 
-            submissionTime 
-        });
+        res.render('index', { school, isAllowed, alreadySubmitted, submissionDate: dateStr, submissionTime });
     } catch (err) {
         res.redirect('/');
     }
 });
 
-// 3. Submit Attendance (ডাবল সাবমিশন প্রটেকশন)
+// 3. Submit Attendance
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     try {
         const { schoolId, lat, lng, attendance } = req.body;
@@ -198,31 +179,18 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
 
         const { dateStr, hourBD } = getBangladeshDateTime();
 
-        // ১. চেক: আজকে অলরেডি সাবমিট হয়েছে কি না
-        const { data: existingRecord } = await supabase
-            .from('attendance_records')
-            .select('id')
-            .eq('school_name', school.name)
-            .eq('attendance_date', dateStr)
-            .maybeSingle();
+        const [existingRes, lockRes] = await Promise.all([
+            supabase.from('attendance_records').select('id').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+        ]);
 
-        if (existingRecord) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'আপনার বিদ্যালয়ের আজকের হাজিরা ইতিমধ্যে একবার সাবমিট করা হয়েছে! দিনে শুধুমাত্র একবারই সাবমিট করা যাবে।' 
-            });
+        if (existingRes.data) {
+            return res.status(400).json({ success: false, message: 'Attendance for your school has already been submitted today! Submission is allowed only once per day.' });
         }
 
-        // ২. চেক: সকাল ১০টার লক আছে কি না
-        if (hourBD >= 10) {
-            const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
-            const isUnlocked = lockSetting && lockSetting.value === 'true';
-            if (!isUnlocked) {
-                return res.status(403).json({ 
-                    success: false, 
-                    message: 'সকাল ১০:০০ টার পর দৈনিক হাজিরা সাবমিশন বন্ধ। অনুগ্রহ করে সহকারী উপজেলা শিক্ষা অফিসারের (AEO) সাথে যোগাযোগ করুন।' 
-                });
-            }
+        const isUnlocked = lockRes.data && lockRes.data.value === 'true';
+        if (hourBD >= 10 && !isUnlocked) {
+            return res.status(403).json({ success: false, message: 'Attendance submission is closed after 10:00 AM. Please contact your Assistant Education Officer (AEO) to unlock.' });
         }
 
         let photoUrl = '';
@@ -247,7 +215,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     }
 });
 
-// 4. Admin Summary Dashboard (সুপার ফাস্ট: ফটো লোড বাদ দেওয়া হয়েছে)
+// 4. Admin Dashboard (Instant Response without heavy images)
 app.get('/admin', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
@@ -257,35 +225,27 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
         const selectedMonth = req.query.month || monthStr;
         const selectedYear = req.query.year || yearStr;
 
-        // দ্রুত লোডের জন্য ভারী photo_url কলাম বাদ দিয়ে কুয়েরি
-        let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
+        let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, created_at');
 
-        if (viewType === 'daily') {
-            query = query.eq('attendance_date', selectedDate);
-        } else if (viewType === 'monthly') {
-            query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-        } else if (viewType === 'yearly') {
-            query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-        }
+        if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
+        else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+        else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
 
-        const { data: rawRecords } = await query;
-        
-        let records = (rawRecords || []).map(r => ({
+        const [recordsRes, lockRes] = await Promise.all([
+            query,
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+        ]);
+
+        let records = (recordsRes.data || []).map(r => ({
             id: r.id,
             schoolName: r.school_name || 'School',
             date: r.attendance_date || '',
             attendance: r.attendance_data || [],
-            location: { lat: r.latitude || '', lng: r.longitude || '' },
             timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
         }));
 
         records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
-
-        let isAeoUnlocked = false;
-        try {
-            const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
-            isAeoUnlocked = lockSetting && lockSetting.value === 'true';
-        } catch(e) {}
+        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
 
         res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
@@ -293,7 +253,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     }
 });
 
-// 5. Admin List View (সুপার ফাস্ট)
+// 5. Admin List View (Zero Lag)
 app.get('/admin/list', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
@@ -435,13 +395,7 @@ app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
         const total = presentCount + leaveCount + absentCount;
         const presentRate = total > 0 ? ((presentCount / total) * 100).toFixed(1) : "0.0";
 
-        res.json({
-            success: true,
-            teacherName: teacher,
-            schoolName,
-            stats: { presentCount, leaveCount, absentCount, presentRate },
-            history
-        });
+        res.json({ success: true, teacherName: teacher, schoolName, stats: { presentCount, leaveCount, absentCount, presentRate }, history });
     } catch(e) {
         res.json({ success: false, message: 'Analytics failed' });
     }
@@ -457,12 +411,7 @@ app.get('/api/photos-payload', requireAEOAuth, async (req, res) => {
         else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
 
         const { data } = await query;
-        const photos = (data || []).map(d => ({
-            schoolName: d.school_name,
-            date: d.attendance_date,
-            photo: d.photo_url
-        }));
-
+        const photos = (data || []).map(d => ({ schoolName: d.school_name, date: d.attendance_date, photo: d.photo_url }));
         res.json({ success: true, photos });
     } catch(e) {
         res.json({ success: false, photos: [] });

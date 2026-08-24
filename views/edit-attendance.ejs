@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title><%= typeof school !== 'undefined' ? school.name : 'Verify Attendance' %> - Bochaganj</title>
+    <title>Verify & Edit Attendance - Bochaganj</title>
     
-    <link rel="shortcut icon" href="/icon.png?v=13" type="image/png">
+    <link rel="shortcut icon" href="/icon-192.png" type="image/png">
     <link rel="stylesheet" href="/css/style.css?v=13">
-    <!-- Leaflet CSS for Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
@@ -15,11 +14,8 @@
             --primary: #4f46e5;
             --primary-hover: #4338ca;
             --present: #16a34a;
-            --present-bg: #dcfce7;
             --leave: #d97706;
-            --leave-bg: #fef3c7;
             --absent: #dc2626;
-            --absent-bg: #fee2e2;
             --surface: #ffffff;
             --bg-page: #f1f5f9;
             --text-dark: #0f172a;
@@ -27,41 +23,39 @@
             --border-color: #e2e8f0;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
             background-color: var(--bg-page);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 12px;
+            padding: 10px;
             color: var(--text-dark);
+            touch-action: manipulation;
         }
 
         .main-wrapper {
-            max-width: 650px;
+            max-width: 540px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 12px;
         }
 
-        /* Top Header */
+        /* Top Clean Header with Right-Aligned Back Button */
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--surface);
-            padding: 14px 16px;
+            padding: 12px 16px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
             box-shadow: 0 1px 3px rgba(0,0,0,0.03);
         }
 
         .top-header h2 {
-            font-size: 15.5px;
+            font-size: 15px;
             font-weight: 800;
             margin: 0;
             color: var(--text-dark);
@@ -73,7 +67,7 @@
             font-size: 11px;
             font-weight: 700;
             color: var(--primary);
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         .btn-back {
@@ -82,34 +76,30 @@
             text-decoration: none;
             padding: 8px 16px;
             font-size: 13px;
-            font-weight: 700;
+            font-weight: 800;
             border-radius: 8px;
             border: 1px solid #c7d2fe;
             white-space: nowrap;
         }
 
-        /* Section Title */
         .section-label {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin: 4px 0 2px 4px;
+            margin: 4px 0 2px 2px;
         }
 
-        /* Teacher Attendance Card */
         .teacher-card {
             background: var(--surface);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 12px 14px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            transition: all 0.2s ease;
         }
 
-        /* 1. Name & Designation (TOP) */
         .teacher-info {
             display: flex;
             align-items: baseline;
@@ -119,29 +109,28 @@
         }
 
         .teacher-name {
-            font-size: 15px;
+            font-size: 14.5px;
             font-weight: 800;
             color: var(--text-dark);
         }
 
         .teacher-designation {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 600;
             color: var(--text-muted);
         }
 
-        /* 2. Status Buttons Underneath (BOTTOM - 3 Segment Buttons) */
         .status-button-group {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
+            gap: 6px;
         }
 
         .status-pill {
             display: flex;
             align-items: center;
             justify-content: center;
-            min-height: 44px; /* Mobile touch friendly target */
+            min-height: 42px;
             padding: 6px;
             font-size: 13px;
             font-weight: 700;
@@ -151,108 +140,84 @@
             color: #475569;
             cursor: pointer;
             user-select: none;
-            transition: all 0.15s ease;
+            transition: all 0.1s ease;
             text-align: center;
         }
 
-        .status-pill input[type="radio"] {
-            display: none; /* Hide default browser radio */
-        }
+        .status-pill input[type="radio"] { display: none; }
 
-        /* Active State Colors */
         .status-pill.active-present {
             background: var(--present);
             color: #ffffff;
             border-color: var(--present);
-            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
         }
 
         .status-pill.active-leave {
             background: var(--leave);
             color: #ffffff;
             border-color: var(--leave);
-            box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3);
         }
 
         .status-pill.active-absent {
             background: var(--absent);
             color: #ffffff;
             border-color: var(--absent);
-            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
         }
 
-        /* Media / Cards (Photo & Map) */
         .media-card {
             background: var(--surface);
             border: 1px solid var(--border-color);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
         .media-header {
             padding: 10px 14px;
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 800;
             background: #f8fafc;
             border-bottom: 1px solid var(--border-color);
-            color: var(--text-dark);
         }
 
         .photo-wrapper {
-            background: #000000;
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 220px;
-            max-height: 380px;
+            min-height: 200px;
+            max-height: 350px;
         }
 
         .photo-wrapper img {
             max-width: 100%;
-            max-height: 360px;
+            max-height: 340px;
             object-fit: contain;
         }
 
-        .map-box {
-            height: 230px;
-            width: 100%;
-            z-index: 1;
-        }
+        .map-box { height: 200px; width: 100%; }
 
         .map-footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 14px;
+            padding: 8px 12px;
             background: #f8fafc;
             border-top: 1px solid var(--border-color);
-        }
-
-        .map-coord-text {
-            font-size: 11.5px;
-            font-weight: 700;
-            color: var(--text-muted);
         }
 
         .btn-open-maps {
             background: #2563eb;
             color: #ffffff;
             text-decoration: none;
-            padding: 6px 12px;
+            padding: 5px 12px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
         }
 
-        /* Modern High-Performance Save Button */
-        .save-container {
-            margin: 10px 0 30px 0;
-        }
-
         .btn-save-modern {
             width: 100%;
-            min-height: 52px;
+            min-height: 50px;
             background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
             color: #ffffff;
             font-size: 15px;
@@ -263,75 +228,102 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.35);
-            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            margin: 10px 0 25px 0;
+            transition: transform 0.1s ease;
         }
 
-        .btn-save-modern:active {
-            transform: scale(0.98);
-            box-shadow: 0 2px 6px rgba(79, 70, 229, 0.2);
+        .btn-save-modern:active { transform: scale(0.98); }
+
+        /* Custom Success / Error Modal */
+        .custom-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            z-index: 9999;
+        }
+
+        .custom-modal-overlay.active { display: flex; }
+
+        .custom-modal-box {
+            background: var(--surface);
+            border-radius: 14px;
+            padding: 20px 16px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            text-align: center;
         }
     </style>
 </head>
 <body>
 
-<form id="attendanceForm" action="/admin/school/update/<%= record.id %>" method="POST" class="main-wrapper">
+<div class="main-wrapper">
     
     <!-- Top Header -->
     <header class="top-header">
         <div>
             <h2><%= record.schoolName %></h2>
-            <span class="sub-badge">AEO Verification</span>
+            <span class="sub-badge">📅 <%= record.date %> | AEO Verification</span>
         </div>
-        <a href="/admin" class="btn-back">Back</a>
+        <a href="/admin/list" class="btn-back">Back</a>
     </header>
 
     <!-- Teacher List Section -->
     <div>
-        <div class="section-label">Teacher Attendance List (<%= record.attendance.length %>)</div>
+        <div class="section-label">Teacher Attendance List (<%= (record.attendance || []).length %>)</div>
 
-        <% record.attendance.forEach((t, index) => { 
-            const currentStatus = (t.status || 'Present').trim();
-            const teacherFullName = t.teacher || '';
-            const match = teacherFullName.match(/^(.*?)\s*(\(.*?\))?$/);
-            const name = match && match[1] ? match[1] : teacherFullName;
-            const designation = match && match[2] ? match[2] : '(Teacher)';
-        %>
-            <div class="teacher-card">
-                <!-- 1. Name & Designation on Top -->
-                <div class="teacher-info">
-                    <span class="teacher-name"><%= name %></span>
-                    <span class="teacher-designation"><%= designation %></span>
+        <form id="saveAttendanceForm">
+            <% (record.attendance || []).forEach((t, index) => { 
+                const currentStatus = (t.status || 'Present').trim();
+                const teacherFullName = t.teacher || '';
+                const match = teacherFullName.match(/^(.*?)\s*(\(.*?\))?$/);
+                const name = match && match[1] ? match[1] : teacherFullName;
+                const designation = match && match[2] ? match[2] : '(Teacher)';
+            %>
+                <div class="teacher-card" data-teacher-full="<%= teacherFullName %>" data-leave-type="<%= t.leaveType || '' %>">
+                    <div class="teacher-info">
+                        <span class="teacher-name"><%= name %></span>
+                        <span class="teacher-designation"><%= designation %></span>
+                    </div>
+
+                    <div class="status-button-group">
+                        <label class="status-pill <%= currentStatus.toLowerCase() === 'present' ? 'active-present' : '' %>" onclick="selectStatus(this, 'Present')">
+                            <input type="radio" name="status_<%= index %>" value="Present" <%= currentStatus.toLowerCase() === 'present' ? 'checked' : '' %>>
+                            Present
+                        </label>
+
+                        <label class="status-pill <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'active-leave' : '' %>" onclick="selectStatus(this, 'Leave')">
+                            <input type="radio" name="status_<%= index %>" value="Leave" <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'checked' : '' %>>
+                            On Leave
+                        </label>
+
+                        <label class="status-pill <%= currentStatus.toLowerCase() === 'absent' ? 'active-absent' : '' %>" onclick="selectStatus(this, 'Absent')">
+                            <input type="radio" name="status_<%= index %>" value="Absent" <%= currentStatus.toLowerCase() === 'absent' ? 'checked' : '' %>>
+                            Absent
+                        </label>
+                    </div>
                 </div>
+            <% }) %>
 
-                <!-- 2. Status Buttons Directly Underneath -->
-                <div class="status-button-group">
-                    <label class="status-pill <%= currentStatus.toLowerCase() === 'present' ? 'active-present' : '' %>" onclick="selectStatus(this, 'present')">
-                        <input type="radio" name="teacher_status_<%= index %>" value="Present" <%= currentStatus.toLowerCase() === 'present' ? 'checked' : '' %>>
-                        Present
-                    </label>
-
-                    <label class="status-pill <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'active-leave' : '' %>" onclick="selectStatus(this, 'leave')">
-                        <input type="radio" name="teacher_status_<%= index %>" value="On Leave" <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'checked' : '' %>>
-                        On Leave
-                    </label>
-
-                    <label class="status-pill <%= currentStatus.toLowerCase() === 'absent' ? 'active-absent' : '' %>" onclick="selectStatus(this, 'absent')">
-                        <input type="radio" name="teacher_status_<%= index %>" value="Absent" <%= currentStatus.toLowerCase() === 'absent' ? 'checked' : '' %>>
-                        Absent
-                    </label>
-                </div>
-            </div>
-        <% }) %>
+            <!-- Save Changes Button -->
+            <button type="button" onclick="submitAttendanceChanges()" id="btnSaveMain" class="btn-save-modern">
+                💾 Save Changes
+            </button>
+        </form>
     </div>
 
     <!-- 1. Photo Section -->
     <div class="media-card">
         <div class="media-header">📷 1. Attendance Register Photo</div>
         <div class="photo-wrapper">
-            <% if(record.photoUrl) { %>
-                <img src="<%= record.photoUrl %>" alt="Attendance Register">
+            <% if(record.photo || record.photoUrl) { %>
+                <img src="<%= record.photo || record.photoUrl %>" alt="Attendance Register">
             <% } else { %>
                 <p style="color: #94a3b8; font-size: 13px;">No Photo Submitted</p>
             <% } %>
@@ -340,59 +332,102 @@
 
     <!-- 2. Map Section -->
     <div class="media-card">
-        <div class="media-header">📍 2. Exact Submission Spot (360° View)</div>
+        <div class="media-header">📍 2. Submission Spot</div>
         <div id="map" class="map-box"></div>
         <div class="map-footer">
-            <span class="map-coord-text">📍 <%= record.latitude || 25.866279 %>, <%= record.longitude || 88.651559 %></span>
-            <a href="https://maps.google.com/?q=<%= record.latitude %>,<%= record.longitude %>" target="_blank" class="btn-open-maps">Open Maps ↗</a>
+            <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">
+                📍 <%= (record.location && record.location.lat) ? record.location.lat : (record.latitude || '25.866279') %>, 
+                   <%= (record.location && record.location.lng) ? record.location.lng : (record.longitude || '88.651559') %>
+            </span>
+            <a href="https://maps.google.com/?q=<%= (record.location && record.location.lat) || record.latitude %>,<%= (record.location && record.location.lng) || record.longitude %>" target="_blank" class="btn-open-maps">Open Maps ↗</a>
         </div>
     </div>
 
-    <!-- Modern Save Changes Button -->
-    <div class="save-container">
-        <button type="submit" class="btn-save-modern">
-            💾 Save Changes
-        </button>
+</div>
+
+<!-- Modal Status -->
+<div id="customModal" class="custom-modal-overlay">
+    <div class="custom-modal-box">
+        <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">✓</div>
+        <h3 id="modalTitle" style="margin: 0 0 6px 0; font-size: 16px;">Saved!</h3>
+        <p id="modalMessage" style="font-size: 13px; color: #475569; margin: 0 0 14px 0;">Attendance record updated successfully.</p>
+        <button type="button" onclick="closeModalAndRedirect()" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer;">OK</button>
     </div>
+</div>
 
-</form>
-
-<!-- Leaflet JS for Map -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    // Smooth, instant touch selection for Status pills
     function selectStatus(selectedLabel, statusType) {
         const parentGroup = selectedLabel.closest('.status-button-group');
-        
-        // Remove all active states in this group
         parentGroup.querySelectorAll('.status-pill').forEach(pill => {
             pill.classList.remove('active-present', 'active-leave', 'active-absent');
         });
 
-        // Add corresponding active class
-        if (statusType === 'present') selectedLabel.classList.add('active-present');
-        if (statusType === 'leave') selectedLabel.classList.add('active-leave');
-        if (statusType === 'absent') selectedLabel.classList.add('active-absent');
+        if (statusType === 'Present') selectedLabel.classList.add('active-present');
+        if (statusType === 'Leave') selectedLabel.classList.add('active-leave');
+        if (statusType === 'Absent') selectedLabel.classList.add('active-absent');
 
-        // Check the radio input
         const radio = selectedLabel.querySelector('input[type="radio"]');
         if (radio) radio.checked = true;
     }
 
-    // Leaflet Map Init
-    const lat = Number('<%= record.latitude %>') || 25.866279;
-        const lng = Number('<%= record.longitude %>') || 88.651559;
-        const schoolTitle = "<%= record.schoolName %>";
+    async function submitAttendanceChanges() {
+        const saveBtn = document.getElementById('btnSaveMain');
+        const originalText = saveBtn.innerHTML;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = "⏳ Saving Updates...";
 
-    const map = L.map('map', { attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 16);
+        const teacherCards = document.querySelectorAll('.teacher-card');
+        const updatedAttendance = [];
 
-    L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-        maxZoom: 20
-    }).addTo(map);
+        teacherCards.forEach(card => {
+            const teacherFullName = card.getAttribute('data-teacher-full');
+            const leaveType = card.getAttribute('data-leave-type') || '';
+            const checkedRadio = card.querySelector('input[type="radio"]:checked');
+            const status = checkedRadio ? checkedRadio.value : 'Present';
 
-    L.marker([lat, lng]).addTo(map)
-        .bindPopup(`<b>${schoolTitle}</b>`)
-        .openPopup();
+            updatedAttendance.push({
+                teacher: teacherFullName,
+                status: status,
+                leaveType: status === 'Leave' ? (leaveType || 'Casual Leave') : ''
+            });
+        });
+
+        try {
+            const response = await fetch('/admin/school/update/<%= record.id %>', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ attendance: JSON.stringify(updatedAttendance) })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                document.getElementById('modalIcon').textContent = '✅';
+                document.getElementById('modalTitle').textContent = 'Data Saved!';
+                document.getElementById('modalMessage').textContent = 'Attendance record updated successfully.';
+                document.getElementById('customModal').classList.add('active');
+            } else {
+                alert('Save failed: ' + (data.message || 'Unknown error'));
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = originalText;
+            }
+        } catch (err) {
+            alert('Network error. Please try again.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalText;
+        }
+    }
+
+    function closeModalAndRedirect() {
+        window.location.href = '/admin/list';
+    }
+
+    // Leaflet Init
+    const lat = Number('<%= (record.location && record.location.lat) || record.latitude || 25.866279 %>');
+    const lng = Number('<%= (record.location && record.location.lng) || record.longitude || 88.651559 %>');
+    const map = L.map('map', { attributionControl: false, scrollWheelZoom: false }).setView([lat, lng], 15);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 20 }).addTo(map);
+    L.marker([lat, lng]).addTo(map).bindPopup("<b><%= record.schoolName %></b>").openPopup();
 </script>
 
 </body>

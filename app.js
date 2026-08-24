@@ -55,11 +55,13 @@ function getSafeSchoolId(schoolName) {
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
-// বিল্ট-ইন লাইটওয়েট কুকি পার্সার মিডলওয়্যার (জিরো ক্র্যাশ)
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Lightweight Cookie Parser
 app.use((req, res, next) => {
     req.cookies = {};
     const rc = req.headers.cookie;
@@ -72,33 +74,16 @@ app.use((req, res, next) => {
     next();
 });
 
-// আইকন ও ম্যানিফেস্ট সরাসরি সার্ভ
-app.get('/icon-192.png', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'icon-192.png'));
-});
+// PWA Static Assets
+app.get('/icon-192.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-192.png')));
+app.get('/icon-512.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-512.png')));
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-192.png')));
+app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
 
-app.get('/icon-512.png', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'icon-512.png'));
-});
-
-app.get('/favicon.ico', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'icon-192.png'));
-});
-
-app.get('/manifest.json', (req, res) => {
-    res.sendFile(path.join(__dirname, 'manifest.json'));
-});
-
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
-
-// Authentication Helpers
+// Auth Middlewares
 const requireAEOAuth = (req, res, next) => {
-    if (req.cookies && req.cookies.admin_session === 'authenticated_aeo_2026') {
-        next();
-    } else {
-        res.redirect('/');
-    }
+    if (req.cookies && req.cookies.admin_session === 'authenticated_aeo_2026') next();
+    else res.redirect('/');
 };
 
 const requireSchoolAuth = (req, res, next) => {
@@ -112,13 +97,8 @@ const requireSchoolAuth = (req, res, next) => {
 };
 
 // 1. Gateway & Login
-app.get('/', (req, res) => {
-    res.render('login', { error: null });
-});
-
-app.get('/login', (req, res) => {
-    res.redirect('/');
-});
+app.get('/', (req, res) => res.render('login', { error: null }));
+app.get('/login', (req, res) => res.redirect('/'));
 
 app.post('/login', (req, res) => {
     try {
@@ -161,14 +141,11 @@ app.get('/index', requireSchoolAuth, async (req, res) => {
 
         const now = new Date();
         const bdHours = (now.getUTCHours() + 6) % 24;
-        const isWithinTime = bdHours < 10;
+        let isAllowed = bdHours < 10;
 
-        let isAllowed = isWithinTime;
         try {
             const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
-            if (lockSetting && lockSetting.value === 'true') {
-                isAllowed = true;
-            }
+            if (lockSetting && lockSetting.value === 'true') isAllowed = true;
         } catch (e) {}
 
         res.render('index', { school, isAllowed });
@@ -186,8 +163,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
 
         let photoUrl = '';
         if (req.file) {
-            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-            photoUrl = base64Image;
+            photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
         }
 
         const now = new Date();
@@ -197,7 +173,7 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         const { error } = await supabase.from('attendance_records').insert([{
             school_name: school.name,
             attendance_date: todayDate,
-            attendance_data: JSON.parse(attendance),
+            attendance_data: typeof attendance === 'string' ? JSON.parse(attendance) : attendance,
             photo_url: photoUrl,
             latitude: lat,
             longitude: lng,
@@ -224,13 +200,9 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
 
         let query = supabase.from('attendance_records').select('*');
 
-        if (viewType === 'daily') {
-            query = query.eq('attendance_date', selectedDate);
-        } else if (viewType === 'monthly') {
-            query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-        } else if (viewType === 'yearly') {
-            query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-        }
+        if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
+        else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+        else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
 
         const { data: rawRecords } = await query;
         
@@ -252,14 +224,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
             isAeoUnlocked = lockSetting && lockSetting.value === 'true';
         } catch(e) {}
 
-        res.render('admin', {
-            records,
-            viewType,
-            selectedDate,
-            selectedMonth,
-            selectedYear,
-            isAeoUnlocked
-        });
+        res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
         res.render('admin', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
     }
@@ -278,13 +243,9 @@ app.get('/admin/list', requireAEOAuth, async (req, res) => {
 
         let query = supabase.from('attendance_records').select('*');
 
-        if (viewType === 'daily') {
-            query = query.eq('attendance_date', selectedDate);
-        } else if (viewType === 'monthly') {
-            query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-        } else if (viewType === 'yearly') {
-            query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-        }
+        if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
+        else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+        else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
 
         const { data: rawRecords } = await query;
 
@@ -298,19 +259,13 @@ app.get('/admin/list', requireAEOAuth, async (req, res) => {
 
         records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
 
-        res.render('admin-list', {
-            records,
-            viewType,
-            selectedDate,
-            selectedMonth,
-            selectedYear
-        });
+        res.render('admin-list', { records, viewType, selectedDate, selectedMonth, selectedYear });
     } catch (e) {
         res.render('admin-list', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '' });
     }
 });
 
-// 6. Teacher Management Page
+// 6. Teacher Management
 app.get('/admin/teachers', requireAEOAuth, (req, res) => {
     res.render('admin-teachers', { schools: SCHOOLS });
 });
@@ -319,13 +274,13 @@ app.post('/admin/teachers/update', requireAEOAuth, (req, res) => {
     const { schoolId, teachers } = req.body;
     const school = SCHOOLS.find(s => s.id === parseInt(schoolId));
     if (school) {
-        school.teachers = teachers;
+        school.teachers = typeof teachers === 'string' ? JSON.parse(teachers) : teachers;
         return res.json({ success: true });
     }
     res.status(400).json({ success: false, message: 'School not found' });
 });
 
-// 7. Verify & Edit Record
+// 7. Verify & Edit Record (Save Changes Backend Fix)
 app.get('/admin/school/:id', requireAEOAuth, async (req, res) => {
     try {
         const recordId = req.params.id;
@@ -336,7 +291,7 @@ app.get('/admin/school/:id', requireAEOAuth, async (req, res) => {
             id: data.id,
             schoolName: data.school_name,
             date: data.attendance_date,
-            attendance: data.attendance_data,
+            attendance: data.attendance_data || [],
             photo: data.photo_url,
             location: { lat: data.latitude, lng: data.longitude },
             timestamp: new Date(data.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })
@@ -353,14 +308,16 @@ app.post('/admin/school/update/:id', requireAEOAuth, async (req, res) => {
         const recordId = req.params.id;
         const { attendance } = req.body;
 
+        const parsedAttendance = typeof attendance === 'string' ? JSON.parse(attendance) : attendance;
+
         const { error } = await supabase.from('attendance_records').update({
-            attendance_data: JSON.parse(attendance)
+            attendance_data: parsedAttendance
         }).eq('id', recordId);
 
         if (error) return res.json({ success: false, message: error.message });
         res.json({ success: true });
     } catch(e) {
-        res.json({ success: false, message: 'Update failed' });
+        res.json({ success: false, message: 'Update failed: ' + e.message });
     }
 });
 
@@ -392,11 +349,8 @@ app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
         const { teacher, mode, month, year } = req.query;
         let query = supabase.from('attendance_records').select('*');
 
-        if (mode === 'monthly') {
-            query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
-        } else if (mode === 'yearly') {
-            query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
-        }
+        if (mode === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+        else if (mode === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
 
         const { data: rawRecords } = await query;
         let history = [];
@@ -408,12 +362,7 @@ app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
                 const found = r.attendance_data.find(t => t.teacher.trim() === teacher.trim());
                 if (found) {
                     schoolName = r.school_name;
-                    history.push({
-                        date: r.attendance_date,
-                        status: found.status,
-                        leaveType: found.leaveType || ''
-                    });
-
+                    history.push({ date: r.attendance_date, status: found.status, leaveType: found.leaveType || '' });
                     if (found.status === 'Present') presentCount++;
                     else if (found.status === 'Leave') leaveCount++;
                     else if (found.status === 'Absent') absentCount++;
@@ -442,13 +391,9 @@ app.get('/api/photos-payload', requireAEOAuth, async (req, res) => {
         const { viewType, date, month, year } = req.query;
         let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
 
-        if (viewType === 'daily') {
-            query = query.eq('attendance_date', date);
-        } else if (viewType === 'monthly') {
-            query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
-        } else if (viewType === 'yearly') {
-            query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
-        }
+        if (viewType === 'daily') query = query.eq('attendance_date', date);
+        else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+        else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
 
         const { data } = await query;
         const photos = (data || []).map(d => ({
@@ -465,9 +410,7 @@ app.get('/api/photos-payload', requireAEOAuth, async (req, res) => {
 
 if (process.env.NODE_ENV !== 'production') {
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-    });
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
 module.exports = app;

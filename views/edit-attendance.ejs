@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Verify & Edit Attendance - Bochaganj</title>
+    <title>Verify Attendance - <%= record.schoolName %></title>
     
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=13">
+    <link rel="stylesheet" href="/css/style.css?v=14">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
         :root {
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
+            --primary-bg: #eef2ff;
             --present: #16a34a;
+            --present-bg: #dcfce7;
             --leave: #d97706;
+            --leave-bg: #fef3c7;
             --absent: #dc2626;
+            --absent-bg: #fee2e2;
             --surface: #ffffff;
-            --bg-page: #f1f5f9;
+            --bg-page: #f8fafc;
             --text-dark: #0f172a;
             --text-muted: #64748b;
             --border-color: #e2e8f0;
@@ -35,55 +38,57 @@
         }
 
         .main-wrapper {
-            max-width: 540px;
+            max-width: 500px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
 
-        /* Top Clean Header with Right-Aligned Back Button */
-        .top-header {
+        /* Top Header - Right Aligned Back Button */
+        .top-header-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--surface);
-            padding: 12px 16px;
+            padding: 12px 14px;
             border-radius: 12px;
             border: 1px solid var(--border-color);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
-        .top-header h2 {
-            font-size: 15px;
+        .top-header-bar h2 {
+            font-size: 14.5px;
             font-weight: 800;
             margin: 0;
             color: var(--text-dark);
-            line-height: 1.3;
+            line-height: 1.2;
         }
 
-        .top-header .sub-badge {
-            display: inline-block;
+        .sub-badge-date {
             font-size: 11px;
             font-weight: 700;
             color: var(--primary);
             margin-top: 2px;
+            display: block;
         }
 
-        .btn-back {
-            background: #eef2ff;
+        .btn-back-right {
+            background: var(--primary-bg);
             color: var(--primary);
             text-decoration: none;
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 6px 16px;
+            font-size: 12.5px;
             font-weight: 800;
             border-radius: 8px;
             border: 1px solid #c7d2fe;
             white-space: nowrap;
+            transition: all 0.1s;
         }
+        .btn-back-right:active { transform: scale(0.95); }
 
         .section-label {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -91,89 +96,122 @@
             margin: 4px 0 2px 2px;
         }
 
-        .teacher-card {
+        /* Slim Teacher Card */
+        .teacher-edit-card {
             background: var(--surface);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px 14px;
+            border-radius: 10px;
+            padding: 10px 12px;
             margin-bottom: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
         }
 
-        .teacher-info {
+        .teacher-name-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #1e293b;
+            margin-bottom: 8px;
             display: flex;
             align-items: baseline;
-            gap: 6px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
+            gap: 5px;
         }
 
-        .teacher-name {
-            font-size: 14.5px;
-            font-weight: 800;
-            color: var(--text-dark);
-        }
-
-        .teacher-designation {
-            font-size: 12.5px;
-            font-weight: 600;
+        .teacher-desig-sub {
+            font-size: 11.5px;
             color: var(--text-muted);
+            font-weight: 600;
         }
 
-        .status-button-group {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-        }
-
-        .status-pill {
+        /* Compact & Natural Sized Buttons */
+        .status-button-row {
             display: flex;
             align-items: center;
+            gap: 8px; /* বাটনগুলোর মাঝে নিখুঁত গ্যাপ */
+            flex-wrap: wrap;
+        }
+
+        .btn-status-pill {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
-            min-height: 42px;
-            padding: 6px;
-            font-size: 13px;
+            padding: 6px 14px;
+            min-height: 34px;
+            font-size: 12px;
             font-weight: 700;
-            border-radius: 8px;
+            border-radius: 6px;
             border: 1.5px solid #cbd5e1;
             background: #f8fafc;
             color: #475569;
             cursor: pointer;
             user-select: none;
-            transition: all 0.1s ease;
-            text-align: center;
+            transition: all 0.12s ease;
+            width: auto; /* ফুল স্ক্রিন হবে না, সাইজ অনুযায়ী হবে */
         }
+        .btn-status-pill:active { transform: scale(0.96); }
 
-        .status-pill input[type="radio"] { display: none; }
+        .btn-status-pill input[type="radio"] { display: none; }
 
-        .status-pill.active-present {
+        /* Active Button Colors */
+        .btn-status-pill.active-present {
             background: var(--present);
             color: #ffffff;
             border-color: var(--present);
         }
 
-        .status-pill.active-leave {
+        .btn-status-pill.active-leave {
             background: var(--leave);
             color: #ffffff;
             border-color: var(--leave);
         }
 
-        .status-pill.active-absent {
+        .btn-status-pill.active-absent {
             background: var(--absent);
             color: #ffffff;
             border-color: var(--absent);
         }
 
+        /* Leave Reason Dropdown */
+        .leave-dropdown-box {
+            margin-top: 8px;
+            background: #fffbeb;
+            border: 1px dashed #fde68a;
+            padding: 6px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .leave-select-field {
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            outline: none;
+            background: #ffffff;
+            color: #1e293b;
+            flex: 1;
+        }
+
+        /* Media / Photo / Map Cards */
         .media-card {
             background: var(--surface);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
+            margin-top: 4px;
         }
 
         .media-header {
-            padding: 10px 14px;
-            font-size: 13px;
+            padding: 8px 12px;
+            font-size: 12.5px;
             font-weight: 800;
             background: #f8fafc;
             border-bottom: 1px solid var(--border-color);
@@ -184,17 +222,17 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 200px;
-            max-height: 350px;
+            min-height: 180px;
+            max-height: 320px;
         }
 
         .photo-wrapper img {
             max-width: 100%;
-            max-height: 340px;
+            max-height: 310px;
             object-fit: contain;
         }
 
-        .map-box { height: 200px; width: 100%; }
+        .map-box { height: 180px; width: 100%; }
 
         .map-footer {
             display: flex;
@@ -205,37 +243,28 @@
             border-top: 1px solid var(--border-color);
         }
 
-        .btn-open-maps {
-            background: #2563eb;
-            color: #ffffff;
-            text-decoration: none;
-            padding: 5px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .btn-save-modern {
+        /* Save Button */
+        .btn-save-main {
             width: 100%;
-            min-height: 50px;
+            min-height: 46px;
             background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
             color: #ffffff;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-            margin: 10px 0 25px 0;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            margin: 10px 0 20px 0;
             transition: transform 0.1s ease;
         }
+        .btn-save-main:active { transform: scale(0.98); }
 
-        .btn-save-modern:active { transform: scale(0.98); }
-
-        /* Custom Success / Error Modal */
+        /* Modal */
         .custom-modal-overlay {
             position: fixed;
             inset: 0;
@@ -247,15 +276,13 @@
             padding: 14px;
             z-index: 9999;
         }
-
         .custom-modal-overlay.active { display: flex; }
-
         .custom-modal-box {
             background: var(--surface);
             border-radius: 14px;
-            padding: 20px 16px;
+            padding: 18px 16px;
             width: 100%;
-            max-width: 360px;
+            max-width: 340px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.15);
             text-align: center;
         }
@@ -265,13 +292,13 @@
 
 <div class="main-wrapper">
     
-    <!-- Top Header -->
-    <header class="top-header">
+    <!-- Top Clean Header (Right-Aligned Back Button) -->
+    <header class="top-header-bar">
         <div>
             <h2><%= record.schoolName %></h2>
-            <span class="sub-badge">📅 <%= record.date %> | AEO Verification</span>
+            <span class="sub-badge-date">📅 <%= record.date %> | AEO Verification</span>
         </div>
-        <a href="/admin/list" class="btn-back">Back</a>
+        <a href="/admin/list" class="btn-back-right">Back</a>
     </header>
 
     <!-- Teacher List Section -->
@@ -285,34 +312,48 @@
                 const match = teacherFullName.match(/^(.*?)\s*(\(.*?\))?$/);
                 const name = match && match[1] ? match[1] : teacherFullName;
                 const designation = match && match[2] ? match[2] : '(Teacher)';
+                const currentLeaveType = t.leaveType || 'Casual Leave';
             %>
-                <div class="teacher-card" data-teacher-full="<%= teacherFullName %>" data-leave-type="<%= t.leaveType || '' %>">
-                    <div class="teacher-info">
-                        <span class="teacher-name"><%= name %></span>
-                        <span class="teacher-designation"><%= designation %></span>
+                <div class="teacher-edit-card" data-teacher-full="<%= teacherFullName %>" id="teacherCard_<%= index %>">
+                    <div class="teacher-name-title">
+                        <span><%= name %></span>
+                        <span class="teacher-desig-sub"><%= designation %></span>
                     </div>
 
-                    <div class="status-button-group">
-                        <label class="status-pill <%= currentStatus.toLowerCase() === 'present' ? 'active-present' : '' %>" onclick="selectStatus(this, 'Present')">
+                    <!-- Compact Buttons Row with Gap -->
+                    <div class="status-button-row">
+                        <label class="btn-status-pill <%= currentStatus.toLowerCase() === 'present' ? 'active-present' : '' %>" onclick="selectStatus(this, 'Present', <%= index %>)">
                             <input type="radio" name="status_<%= index %>" value="Present" <%= currentStatus.toLowerCase() === 'present' ? 'checked' : '' %>>
                             Present
                         </label>
 
-                        <label class="status-pill <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'active-leave' : '' %>" onclick="selectStatus(this, 'Leave')">
+                        <label class="btn-status-pill <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'active-leave' : '' %>" onclick="selectStatus(this, 'Leave', <%= index %>)">
                             <input type="radio" name="status_<%= index %>" value="Leave" <%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'checked' : '' %>>
                             On Leave
                         </label>
 
-                        <label class="status-pill <%= currentStatus.toLowerCase() === 'absent' ? 'active-absent' : '' %>" onclick="selectStatus(this, 'Absent')">
+                        <label class="btn-status-pill <%= currentStatus.toLowerCase() === 'absent' ? 'active-absent' : '' %>" onclick="selectStatus(this, 'Absent', <%= index %>)">
                             <input type="radio" name="status_<%= index %>" value="Absent" <%= currentStatus.toLowerCase() === 'absent' ? 'checked' : '' %>>
                             Absent
                         </label>
+                    </div>
+
+                    <!-- Leave Reason Selector (Shown only when On Leave is active) -->
+                    <div id="leaveBox_<%= index %>" class="leave-dropdown-box" style="<%= (currentStatus.toLowerCase() === 'on leave' || currentStatus.toLowerCase() === 'leave') ? 'display: flex;' : 'display: none;' %>">
+                        <span style="font-size: 11px; font-weight: 700; color: #b45309;">Reason:</span>
+                        <select class="leave-select-field" id="leaveSelect_<%= index %>">
+                            <option value="Casual Leave" <%= currentLeaveType === 'Casual Leave' ? 'selected' : '' %>>Casual Leave (নৈমিত্তিক)</option>
+                            <option value="Medical Leave" <%= currentLeaveType === 'Medical Leave' ? 'selected' : '' %>>Medical Leave (চিকিৎসা)</option>
+                            <option value="Maternity Leave" <%= currentLeaveType === 'Maternity Leave' ? 'selected' : '' %>>Maternity Leave (মাতৃত্বকালীন)</option>
+                            <option value="Earned Leave" <%= currentLeaveType === 'Earned Leave' ? 'selected' : '' %>>Earned Leave (অর্জিত)</option>
+                            <option value="Other Leave" <%= currentLeaveType === 'Other Leave' ? 'selected' : '' %>>Other Leave (অন্যান্য)</option>
+                        </select>
                     </div>
                 </div>
             <% }) %>
 
             <!-- Save Changes Button -->
-            <button type="button" onclick="submitAttendanceChanges()" id="btnSaveMain" class="btn-save-modern">
+            <button type="button" onclick="submitAttendanceChanges()" id="btnSaveMain" class="btn-save-main">
                 💾 Save Changes
             </button>
         </form>
@@ -325,21 +366,20 @@
             <% if(record.photo || record.photoUrl) { %>
                 <img src="<%= record.photo || record.photoUrl %>" alt="Attendance Register">
             <% } else { %>
-                <p style="color: #94a3b8; font-size: 13px;">No Photo Submitted</p>
+                <p style="color: #94a3b8; font-size: 12px;">No Photo Submitted</p>
             <% } %>
         </div>
     </div>
 
     <!-- 2. Map Section -->
     <div class="media-card">
-        <div class="media-header">📍 2. Submission Spot</div>
+        <div class="media-header">📍 2. Exact Submission Spot</div>
         <div id="map" class="map-box"></div>
         <div class="map-footer">
-            <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">
-                📍 <%= (record.location && record.location.lat) ? record.location.lat : (record.latitude || '25.866279') %>, 
-                   <%= (record.location && record.location.lng) ? record.location.lng : (record.longitude || '88.651559') %>
+            <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">
+                📍 <%= (record.location && record.location.lat) || record.latitude || '25.866279' %>, <%= (record.location && record.location.lng) || record.longitude || '88.651559' %>
             </span>
-            <a href="https://maps.google.com/?q=<%= (record.location && record.location.lat) || record.latitude %>,<%= (record.location && record.location.lng) || record.longitude %>" target="_blank" class="btn-open-maps">Open Maps ↗</a>
+            <a href="https://maps.google.com/?q=<%= (record.location && record.location.lat) || record.latitude %>,<%= (record.location && record.location.lng) || record.longitude %>" target="_blank" style="background:#2563eb; color:#fff; text-decoration:none; padding:4px 10px; border-radius:6px; font-size:11.5px; font-weight:700;">Open Maps ↗</a>
         </div>
     </div>
 
@@ -348,24 +388,33 @@
 <!-- Modal Status -->
 <div id="customModal" class="custom-modal-overlay">
     <div class="custom-modal-box">
-        <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">✓</div>
-        <h3 id="modalTitle" style="margin: 0 0 6px 0; font-size: 16px;">Saved!</h3>
-        <p id="modalMessage" style="font-size: 13px; color: #475569; margin: 0 0 14px 0;">Attendance record updated successfully.</p>
-        <button type="button" onclick="closeModalAndRedirect()" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer;">OK</button>
+        <div id="modalIcon" style="font-size: 30px; margin-bottom: 4px;">✓</div>
+        <h3 id="modalTitle" style="margin: 0 0 4px 0; font-size: 15px;">Saved!</h3>
+        <p id="modalMessage" style="font-size: 12.5px; color: #475569; margin: 0 0 12px 0;">Attendance record updated successfully.</p>
+        <button type="button" onclick="closeModalAndRedirect()" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 9px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px;">OK</button>
     </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    function selectStatus(selectedLabel, statusType) {
-        const parentGroup = selectedLabel.closest('.status-button-group');
-        parentGroup.querySelectorAll('.status-pill').forEach(pill => {
+    function selectStatus(selectedLabel, statusType, index) {
+        const parentRow = selectedLabel.closest('.status-button-row');
+        parentRow.querySelectorAll('.btn-status-pill').forEach(pill => {
             pill.classList.remove('active-present', 'active-leave', 'active-absent');
         });
 
-        if (statusType === 'Present') selectedLabel.classList.add('active-present');
-        if (statusType === 'Leave') selectedLabel.classList.add('active-leave');
-        if (statusType === 'Absent') selectedLabel.classList.add('active-absent');
+        const leaveBox = document.getElementById('leaveBox_' + index);
+
+        if (statusType === 'Present') {
+            selectedLabel.classList.add('active-present');
+            if (leaveBox) leaveBox.style.display = 'none';
+        } else if (statusType === 'Leave') {
+            selectedLabel.classList.add('active-leave');
+            if (leaveBox) leaveBox.style.display = 'flex';
+        } else if (statusType === 'Absent') {
+            selectedLabel.classList.add('active-absent');
+            if (leaveBox) leaveBox.style.display = 'none';
+        }
 
         const radio = selectedLabel.querySelector('input[type="radio"]');
         if (radio) radio.checked = true;
@@ -377,19 +426,20 @@
         saveBtn.disabled = true;
         saveBtn.innerHTML = "⏳ Saving Updates...";
 
-        const teacherCards = document.querySelectorAll('.teacher-card');
+        const teacherCards = document.querySelectorAll('.teacher-edit-card');
         const updatedAttendance = [];
 
-        teacherCards.forEach(card => {
+        teacherCards.forEach((card, index) => {
             const teacherFullName = card.getAttribute('data-teacher-full');
-            const leaveType = card.getAttribute('data-leave-type') || '';
             const checkedRadio = card.querySelector('input[type="radio"]:checked');
             const status = checkedRadio ? checkedRadio.value : 'Present';
+            const leaveSelect = document.getElementById('leaveSelect_' + index);
+            const leaveType = (status === 'Leave' && leaveSelect) ? leaveSelect.value : '';
 
             updatedAttendance.push({
                 teacher: teacherFullName,
                 status: status,
-                leaveType: status === 'Leave' ? (leaveType || 'Casual Leave') : ''
+                leaveType: leaveType
             });
         });
 
@@ -404,7 +454,7 @@
             if (data.success) {
                 document.getElementById('modalIcon').textContent = '✅';
                 document.getElementById('modalTitle').textContent = 'Data Saved!';
-                document.getElementById('modalMessage').textContent = 'Attendance record updated successfully.';
+                document.getElementById('modalMessage').textContent = 'Attendance changes saved successfully.';
                 document.getElementById('customModal').classList.add('active');
             } else {
                 alert('Save failed: ' + (data.message || 'Unknown error'));

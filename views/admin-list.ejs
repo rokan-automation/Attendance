@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Submitted Schools & Search - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=13" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=13">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=13">
-    <link rel="apple-touch-icon" href="/icon.png?v=13">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=13">
+    <title>Submitted Schools - Bochaganj</title>
+    <link rel="shortcut icon" href="/icon-192.png" type="image/png">
+    <link rel="stylesheet" href="/css/style.css?v=14">
     
     <style>
         :root {
             --primary: #4f46e5;
-            --primary-hover: #4338ca;
             --primary-bg: #eef2ff;
-            --bg-body: #f8fafc;
             --surface: #ffffff;
+            --bg-body: #f8fafc;
             --text-main: #0f172a;
             --text-muted: #64748b;
             --border: #e2e8f0;
@@ -27,206 +22,124 @@
             --warning-bg: #fef3c7;
             --danger: #dc2626;
             --danger-bg: #fee2e2;
-            --radius-md: 10px;
-            --radius-lg: 14px;
         }
 
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        html, body {
+        body {
             background-color: var(--bg-body);
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: var(--text-main);
             touch-action: manipulation;
         }
 
         .app-container-scrollable {
-            max-width: 540px;
+            max-width: 500px;
             margin: 0 auto;
-            padding: 12px;
+            padding: 10px 8px;
             min-height: 100vh;
         }
 
-        /* Modern Mobile-Optimized Header */
+        /* Top Header: Right Aligned Back Button */
         .app-header-aligned {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--surface);
-            padding: 12px 14px;
-            border-radius: var(--radius-lg);
+            padding: 10px 14px;
+            border-radius: 12px;
             border: 1px solid var(--border);
-            margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-        }
-
-        .header-title-box h3 {
-            font-size: 15px;
-            font-weight: 800;
-            color: var(--text-main);
-            margin: 0 0 2px 0;
-            line-height: 1.2;
-        }
-
-        .badge-mode {
-            display: inline-block;
-            font-size: 10px;
-            font-weight: 800;
-            color: var(--primary);
-            background: var(--primary-bg);
-            padding: 2px 8px;
-            border-radius: 20px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
         .btn-back-right {
             background: var(--primary-bg);
             color: var(--primary);
-            padding: 8px 16px;
-            min-height: 40px;
+            padding: 6px 16px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
+            font-size: 12.5px;
+            font-weight: 800;
             text-decoration: none;
-            border-radius: var(--radius-md);
+            border-radius: 8px;
             border: 1px solid #c7d2fe;
-            transition: all 0.15s ease;
+            transition: all 0.1s;
         }
+        .btn-back-right:active { transform: scale(0.95); }
 
-        .btn-back-right:active {
-            transform: scale(0.96);
-            background: #e0e7ff;
-        }
-
-        /* Action Buttons */
         .manage-teachers-btn {
             background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
             color: #ffffff;
-            padding: 12px 16px;
-            min-height: 48px;
-            border-radius: var(--radius-md);
-            font-size: 13.5px;
+            padding: 10px 14px;
+            min-height: 44px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: 700;
             text-align: center;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
-            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
+            margin-bottom: 10px;
+            box-shadow: 0 3px 8px rgba(2, 132, 199, 0.2);
             text-decoration: none;
-            border: none;
-            width: 100%;
-            transition: transform 0.1s ease;
         }
 
-        .manage-teachers-btn:active {
-            transform: scale(0.98);
-        }
-
-        /* Instant Search Input */
         .search-school-input {
             width: 100%;
-            height: 46px;
-            padding: 10px 14px;
+            height: 44px;
+            padding: 8px 12px;
             border: 1.5px solid #cbd5e1;
-            border-radius: var(--radius-md);
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 13.5px;
             outline: none;
             background: var(--surface);
-            margin-bottom: 14px;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            margin-bottom: 10px;
         }
 
-        .search-school-input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
-        }
-
-        .section-count-title {
-            font-size: 13.5px;
-            font-weight: 800;
-            margin: 0 0 10px 4px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* School Cards */
         .school-list-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            padding: 14px;
-            border-radius: var(--radius-lg);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-            margin-bottom: 12px;
-            contain: content; /* Ultra-fast browser rendering */
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            margin-bottom: 10px;
         }
 
         .school-header-flex {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             border-bottom: 1px solid var(--border);
-            padding-bottom: 8px;
+            padding-bottom: 6px;
         }
 
-        .school-info-title {
-            font-size: 14.5px;
-            font-weight: 800;
-            color: var(--text-main);
-            line-height: 1.3;
-        }
-
-        .school-info-subtitle {
-            font-size: 11.5px;
-            color: var(--text-muted);
-            margin-top: 3px;
-            display: block;
-        }
-
-        /* Teacher Items with Touch Feedback */
         .teacher-rows-list {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-            margin: 10px 0 14px 0;
+            gap: 5px;
+            margin: 8px 0 10px 0;
         }
 
         .teacher-row-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
-            min-height: 42px;
+            padding: 6px 10px;
+            min-height: 36px;
             background: #f8fafc;
-            border-radius: var(--radius-md);
+            border-radius: 6px;
             border: 1px solid #f1f5f9;
             cursor: pointer;
-            transition: all 0.15s ease;
         }
-
-        .teacher-row-item:active {
-            background: #e2e8f0;
-            transform: scale(0.99);
-        }
-
-        .t-name-left {
-            font-size: 13px;
-            font-weight: 700;
-            color: #334155;
-        }
+        .teacher-row-item:active { background: #e2e8f0; }
 
         .t-badge-status {
             font-size: 11px;
             font-weight: 800;
-            padding: 4px 10px;
-            border-radius: 20px;
+            padding: 3px 8px;
+            border-radius: 14px;
             display: inline-flex;
             align-items: center;
             gap: 3px;
@@ -236,34 +149,25 @@
         .t-absent { background: var(--danger-bg); color: var(--danger); }
         .t-leave { background: var(--warning-bg); color: var(--warning); }
 
-        /* Card Action Buttons */
         .card-bottom-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             border-top: 1px solid var(--border);
-            padding-top: 12px;
+            padding-top: 8px;
         }
 
         .btn-view-card {
             flex: 1;
             background: var(--primary-bg);
             color: var(--primary);
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
-            padding: 10px 12px;
-            min-height: 44px;
+            padding: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: var(--radius-md);
-            border: none;
-            cursor: pointer;
+            border-radius: 6px;
             text-decoration: none;
-            transition: background 0.15s;
-        }
-
-        .btn-view-card:active {
-            background: #e0e7ff;
         }
 
         .btn-delete-card {
@@ -271,179 +175,36 @@
             background: var(--danger-bg);
             color: var(--danger);
             border: 1px solid #fca5a5;
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
-            padding: 10px 12px;
-            min-height: 44px;
+            padding: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: var(--radius-md);
+            border-radius: 6px;
             cursor: pointer;
-            transition: background 0.15s;
         }
 
-        .btn-delete-card:active {
-            background: #fecaca;
-        }
-
-        /* Modern Modals */
+        /* Modal */
         .custom-modal-overlay {
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(3px);
             display: none;
             align-items: center;
             justify-content: center;
             padding: 14px;
             z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.2s ease;
         }
-
-        .custom-modal-overlay.active {
-            display: flex;
-            opacity: 1;
-        }
-
+        .custom-modal-overlay.active { display: flex; }
         .custom-modal-box {
             background: var(--surface);
-            border-radius: var(--radius-lg);
-            padding: 18px 16px;
+            border-radius: 14px;
+            padding: 16px;
             width: 100%;
-            max-width: 400px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            max-width: 360px;
             text-align: center;
-            animation: modalPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalPop {
-            from { transform: scale(0.92); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-
-        .modal-icon-wrapper {
-            font-size: 28px;
-            margin-bottom: 6px;
-        }
-
-        .t-modal-tabs {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin: 12px 0 8px 0;
-        }
-
-        .t-tab-btn {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 6px 14px;
-            min-height: 36px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #475569;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-
-        .t-tab-btn.active {
-            background: var(--primary);
-            color: #ffffff;
-            border-color: var(--primary);
-        }
-
-        .analytics-grid-row {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin: 12px 0;
-        }
-
-        .analytics-stat-item {
-            background: #f8fafc;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 10px 4px;
-            text-align: center;
-        }
-
-        .analytics-stat-item .num {
-            display: block;
-            font-size: 18px;
-            font-weight: 800;
-            line-height: 1.1;
-        }
-
-        .analytics-stat-item .lbl {
-            font-size: 10.5px;
-            color: var(--text-muted);
-            font-weight: 700;
-            margin-top: 2px;
-        }
-
-        .history-list-box {
-            max-height: 190px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            padding: 8px;
-            text-align: left;
-            margin-top: 8px;
-            background: #fafafa;
-        }
-
-        .history-item-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 7px 8px;
-            font-size: 12px;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .history-item-row:last-child {
-            border-bottom: none;
-        }
-
-        .modal-btn-confirm {
-            width: 100%;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 12px;
-            min-height: 44px;
-            border-radius: var(--radius-md);
-            font-size: 13.5px;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 14px;
-        }
-
-        .modal-btn-delete {
-            background: var(--danger);
-            color: #fff;
-            border: none;
-            padding: 10px 14px;
-            min-height: 44px;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            flex: 1;
-        }
-
-        .modal-btn-cancel {
-            background: #e2e8f0;
-            color: #334155;
-            border: none;
-            padding: 10px 14px;
-            min-height: 44px;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            flex: 1;
         }
     </style>
 </head>
@@ -452,9 +213,9 @@
         
         <!-- Header: Right-Aligned Back Button -->
         <header class="app-header-aligned">
-            <div class="header-title-box">
-                <h3>Submitted Schools List</h3>
-                <span class="badge-mode"><%= viewType.toUpperCase() %> Mode</span>
+            <div>
+                <h3 style="font-size: 14.5px; font-weight:800; margin:0; color:#0f172a;">Submitted Schools List</h3>
+                <span style="font-size: 11px; font-weight:700; color:var(--primary);"><%= viewType.toUpperCase() %> Mode</span>
             </div>
             <div>
                 <a href="/admin?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-back-right">Back</a>
@@ -467,12 +228,12 @@
 
         <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." oninput="handleSearchInput()">
 
-        <h4 class="section-count-title">
+        <h4 style="font-size: 12.5px; font-weight: 800; margin: 4px 0 8px 2px; color: var(--text-muted); text-transform: uppercase;">
             Submitted Reports List (<%= records.length %>)
         </h4>
 
         <% if(records.length === 0) { %>
-            <div style="font-size: 13px; color: var(--text-muted); text-align: center; padding: 28px 16px; background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+            <div style="font-size: 12.5px; color: var(--text-muted); text-align: center; padding: 24px; background: var(--surface); border-radius: 12px; border: 1px solid var(--border);">
                 No attendance records found for this period.
             </div>
         <% } else { %>
@@ -480,15 +241,15 @@
                 <% records.forEach((rec, rIdx) => { %>
                     <div class="school-list-card" id="card_<%= rIdx %>">
                         <div class="school-header-flex">
-                            <div class="school-info-title">🏫 <%= rec.serialId %>. <%= rec.schoolName %></div>
-                            <span class="school-info-subtitle">📅 Date: <%= rec.date %> | Time: <%= rec.timestamp %></span>
+                            <div style="font-size: 14px; font-weight: 800; color: #1e293b;">🏫 <%= rec.schoolName %></div>
+                            <span style="font-size: 11px; color: var(--text-muted);">📅 <%= rec.date %> | ⏰ <%= rec.timestamp %></span>
                         </div>
 
                         <div class="teacher-rows-list">
-                            <% rec.attendance.forEach(t => { %>
+                            <% (rec.attendance || []).forEach(t => { %>
                                 <div class="teacher-row-item" onclick="openTeacherAnalytics('<%= t.teacher %>')">
-                                    <span class="t-name-left"><%= t.teacher.split('(')[0] %></span>
-                                    <span class="t-badge-status <%= t.status === 'Present' ? 't-present' : (t.status === 'Leave' ? 't-leave' : 't-absent') %>">
+                                    <span style="font-size: 12.5px; font-weight: 700; color: #334155;"><%= t.teacher.split('(')[0] %></span>
+                                    <span class="t-badge-status <%= t.status === 'Present' ? 't-present' : ((t.status === 'Leave' || t.status === 'On Leave') ? 't-leave' : 't-absent') %>">
                                         <%= t.status %> 📊
                                     </span>
                                 </div>
@@ -505,125 +266,27 @@
         <% } %>
     </div>
 
-    <!-- Teacher Analytics Modal -->
-    <div id="teacherAnalyticsModal" class="custom-modal-overlay" onclick="handleBackdropClick(event, 'teacherAnalyticsModal')">
-        <div class="custom-modal-box">
-            <div class="modal-icon-wrapper">👨‍🏫</div>
-            <h3 id="modalTeacherName" style="font-size: 16px; margin: 0 0 2px 0;">Teacher Profile</h3>
-            <p id="modalSchoolName" style="font-size: 12px; color: #64748b; margin: 0 0 4px 0;"></p>
-
-            <div class="t-modal-tabs">
-                <button type="button" id="tabAll" class="t-tab-btn active" onclick="switchTeacherAnalyticsMode('all')">All Time</button>
-                <button type="button" id="tabMonthly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('monthly')">This Month</button>
-                <button type="button" id="tabYearly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('yearly')">This Year</button>
-            </div>
-
-            <div class="analytics-grid-row">
-                <div class="analytics-stat-item">
-                    <span class="num" id="statPresent" style="color: #16a34a;">0</span>
-                    <span class="lbl">Present</span>
-                </div>
-                <div class="analytics-stat-item">
-                    <span class="num" id="statLeave" style="color: #d97706;">0</span>
-                    <span class="lbl">Leave</span>
-                </div>
-                <div class="analytics-stat-item">
-                    <span class="num" id="statAbsent" style="color: #dc2626;">0</span>
-                    <span class="lbl">Absent</span>
-                </div>
-                <div class="analytics-stat-item">
-                    <span class="num" id="statRate" style="color: #2563eb;">0%</span>
-                    <span class="lbl">Rate</span>
-                </div>
-            </div>
-
-            <p style="font-size: 12px; font-weight: 700; text-align: left; margin: 8px 0 4px 2px; color: #334155;">Attendance Log History:</p>
-            <div class="history-list-box" id="modalHistoryList"></div>
-
-            <button type="button" class="modal-btn-confirm" onclick="closeTeacherAnalyticsModal()">Close</button>
-        </div>
-    </div>
-
     <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" class="custom-modal-overlay" onclick="handleBackdropClick(event, 'deleteConfirmModal')">
+    <div id="deleteConfirmModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
-            <div class="modal-icon-wrapper">🗑️</div>
-            <h3 style="font-size: 16px; margin: 0 0 6px 0;">Confirm Delete</h3>
-            <p id="deleteModalMessage" style="font-size: 13px; color: #475569; margin: 0 0 14px 0; line-height: 1.4;">Are you sure you want to delete this record?</p>
-            <div style="display: flex; gap: 10px;">
-                <button type="button" class="modal-btn-cancel" onclick="closeDeleteConfirmModal()">Cancel</button>
-                <button type="button" class="modal-btn-delete" onclick="executeDelete()">Delete</button>
+            <div style="font-size: 28px; margin-bottom: 4px;">🗑️</div>
+            <h3 style="font-size: 15px; margin: 0 0 4px 0;">Confirm Delete</h3>
+            <p id="deleteModalMessage" style="font-size: 12.5px; color: #475569; margin: 0 0 12px 0;">Are you sure you want to delete this record?</p>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:8px; border-radius:6px; font-weight:700;" onclick="closeDeleteConfirmModal()">Cancel</button>
+                <button type="button" style="flex:1; background:#dc2626; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700;" onclick="executeDelete()">Delete</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 100% Core Logic Preserved
         const submittedRecords = <%- JSON.stringify(records) %>;
         let selectedRecordIdToDelete = null;
-        let currentActiveTeacher = '';
         let searchDebounceTimer = null;
-
-        async function openTeacherAnalytics(teacherFullName) {
-            currentActiveTeacher = teacherFullName;
-            switchTeacherAnalyticsMode('all');
-            document.getElementById('teacherAnalyticsModal').classList.add('active');
-        }
-
-        async function switchTeacherAnalyticsMode(mode) {
-            document.querySelectorAll('.t-tab-btn').forEach(b => b.classList.remove('active'));
-            if (mode === 'all') document.getElementById('tabAll').classList.add('active');
-            else if (mode === 'monthly') document.getElementById('tabMonthly').classList.add('active');
-            else if (mode === 'yearly') document.getElementById('tabYearly').classList.add('active');
-
-            const now = new Date();
-            const month = now.toISOString().substring(0, 7);
-            const year = now.getFullYear();
-
-            try {
-                const res = await fetch(`/api/teacher-analytics?teacher=${encodeURIComponent(currentActiveTeacher)}&mode=${mode}&month=${month}&year=${year}`);
-                const data = await res.json();
-
-                if (!data.success || !data.stats) return;
-
-                document.getElementById('modalTeacherName').textContent = data.teacherName;
-                document.getElementById('modalSchoolName').textContent = `🏫 ${data.schoolName}`;
-                document.getElementById('statPresent').textContent = data.stats.presentCount;
-                document.getElementById('statLeave').textContent = data.stats.leaveCount;
-                document.getElementById('statAbsent').textContent = data.stats.absentCount;
-                document.getElementById('statRate').textContent = `${data.stats.presentRate}%`;
-
-                const historyBox = document.getElementById('modalHistoryList');
-                historyBox.innerHTML = '';
-
-                if (!data.history || data.history.length === 0) {
-                    historyBox.innerHTML = '<p style="font-size:12px; color:#94a3b8; text-align:center; padding:12px 0;">No attendance found for this period.</p>';
-                } else {
-                    const fragment = document.createDocumentFragment();
-                    data.history.forEach(h => {
-                        const statusColor = h.status === 'Present' ? '#16a34a' : (h.status === 'Leave' ? '#d97706' : '#dc2626');
-                        const row = document.createElement('div');
-                        row.className = 'history-item-row';
-                        row.innerHTML = `
-                            <span>📅 ${h.date}</span>
-                            <span style="font-weight:700; color:${statusColor};">${h.status} ${h.leaveType ? `(${h.leaveType})` : ''}</span>
-                        `;
-                        fragment.appendChild(row);
-                    });
-                    historyBox.appendChild(fragment);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        function closeTeacherAnalyticsModal() {
-            document.getElementById('teacherAnalyticsModal').classList.remove('active');
-        }
 
         function openDeleteConfirmModal(recordId, schoolName) {
             selectedRecordIdToDelete = recordId;
-            document.getElementById('deleteModalMessage').textContent = `Are you sure you want to delete attendance record of "${schoolName}"?`;
+            document.getElementById('deleteModalMessage').textContent = `Delete attendance record of "${schoolName}"?`;
             document.getElementById('deleteConfirmModal').classList.add('active');
         }
 
@@ -634,34 +297,24 @@
 
         function executeDelete() {
             if (!selectedRecordIdToDelete) return;
-            const targetId = selectedRecordIdToDelete;
-            closeDeleteConfirmModal();
-
-            fetch('/admin/school/delete/' + targetId, { method: 'POST' })
+            fetch('/admin/school/delete/' + selectedRecordIdToDelete, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
                 if (data.success) window.location.reload();
-            })
-            .catch(err => console.error(err));
+            });
         }
 
-        // High-Performance Debounced Search (Zero lag on mobile)
         function handleSearchInput() {
             clearTimeout(searchDebounceTimer);
-            searchDebounceTimer = setTimeout(performDeepSearch, 120);
+            searchDebounceTimer = setTimeout(performDeepSearch, 100);
         }
 
         function performDeepSearch() {
             const query = document.getElementById('searchKeyword').value.toLowerCase().trim();
-
             submittedRecords.forEach((rec, index) => {
                 const card = document.getElementById(`card_${index}`);
                 if (!card) return;
-
-                if (query === "") {
-                    card.style.display = "block";
-                    return;
-                }
+                if (query === "") { card.style.display = "block"; return; }
 
                 let isMatch = false;
                 if (rec.schoolName && rec.schoolName.toLowerCase().includes(query)) isMatch = true;
@@ -673,16 +326,8 @@
                         }
                     }
                 }
-
                 card.style.display = isMatch ? "block" : "none";
             });
-        }
-
-        // Close modal when tapping outside the box (Mobile UX improvement)
-        function handleBackdropClick(event, modalId) {
-            if (event.target.id === modalId) {
-                document.getElementById(modalId).classList.remove('active');
-            }
         }
     </script>
 </body>

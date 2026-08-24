@@ -4,17 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
-    <link rel="shortcut icon" href="/icon.png?v=12" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=12">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=12">
-    <link rel="apple-touch-icon" href="/icon.png?v=12">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=12">
+    <link rel="shortcut icon" href="/icon-192.png" type="image/png">
+    <link rel="stylesheet" href="/css/style.css?v=15">
     <style>
         body {
-            background-color: #f3f4f6 !important;
+            background-color: #f1f5f9;
             margin: 0;
-            padding: 8px;
+            padding: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: manipulation;
         }
 
         .app-container-school {
@@ -22,8 +20,8 @@
             margin: 0 auto;
             padding: 12px;
             background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            border-radius: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
             border: 1.5px solid #e2e8f0;
             box-sizing: border-box;
         }
@@ -38,7 +36,7 @@
         }
 
         .school-header-bar h3 {
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 800;
             color: #0f172a;
             margin: 0;
@@ -46,9 +44,9 @@
         }
 
         .btn-back-school {
-            background: #e0e7ff;
+            background: #eef2ff;
             color: #4f46e5;
-            padding: 5px 14px;
+            padding: 6px 14px;
             font-size: 12px;
             font-weight: 800;
             text-decoration: none;
@@ -57,26 +55,43 @@
             white-space: nowrap;
         }
 
-        /* Slim & Tight Teacher Card */
+        /* Success Already Submitted Card */
+        .already-submitted-card {
+            background: #f0fdf4;
+            border: 2px solid #86efac;
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        /* Lock Notice Box */
+        .lock-notice-box {
+            background: #fff1f2;
+            border: 2px dashed #f43f5e;
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            margin: 10px 0;
+        }
+
         .teacher-attendance-card-slim {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 7px 10px;
+            border-radius: 8px;
+            padding: 8px 10px;
             margin-bottom: 6px;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 5px;
         }
 
         .teacher-title-text {
             font-size: 12.5px;
             font-weight: 800;
             color: #1e293b;
-            line-height: 1.2;
         }
 
-        /* Natural Auto-Width Small Buttons (Not Stretching 100%) */
         .status-options-inline-flex {
             display: flex;
             gap: 6px;
@@ -90,31 +105,24 @@
             gap: 3px;
             font-size: 11px;
             font-weight: 700;
-            padding: 3px 8px;
+            padding: 4px 8px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
             background: #ffffff;
-            white-space: nowrap;
-            width: auto; /* Natural small width */
-        }
-
-        .radio-pill-compact input {
-            margin: 0;
-            cursor: pointer;
+            user-select: none;
         }
 
         .form-control-leave {
-            padding: 4px 6px;
+            padding: 4px 8px;
             font-size: 11px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             width: 100%;
-            max-width: 160px;
+            max-width: 180px;
             margin-top: 3px;
             outline: none;
             background: #ffffff;
-            display: block;
         }
 
         .camera-capture-box {
@@ -122,24 +130,9 @@
             border: 2px dashed #cbd5e1;
             padding: 10px;
             text-align: center;
-            border-radius: 10px;
+            border-radius: 8px;
             margin-top: 10px;
             cursor: pointer;
-        }
-
-        .camera-label-btn {
-            font-size: 12px;
-            font-weight: 800;
-            color: #4f46e5;
-            cursor: pointer;
-            display: block;
-        }
-
-        .file-status-text {
-            display: block;
-            font-size: 10px;
-            color: #64748b;
-            margin-top: 2px;
         }
 
         .btn-submit-daily {
@@ -147,31 +140,36 @@
             color: #ffffff;
             border: none;
             padding: 11px;
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 800;
             border-radius: 10px;
             cursor: pointer;
             width: 100%;
             margin-top: 10px;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
-            transition: 0.15s;
         }
 
-        .btn-submit-daily:hover {
-            background: #059669;
+        /* Modal */
+        .custom-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            z-index: 9999;
         }
-
-        .lock-notice-box {
-            background: #fff1f2;
-            border: 2px dashed #f43f5e;
-            border-radius: 12px;
-            padding: 24px 16px;
+        .custom-modal-overlay.active { display: flex; }
+        .custom-modal-box {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 18px 16px;
+            width: 100%;
+            max-width: 340px;
             text-align: center;
-            margin-top: 20px;
         }
-        .lock-icon { font-size: 40px; margin-bottom: 8px; display: block; }
-        .lock-title { font-size: 16px; font-weight: 800; color: #be123c; margin-bottom: 6px; }
-        .lock-desc { font-size: 12px; color: #475569; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -181,23 +179,39 @@
         <header class="school-header-bar">
             <div>
                 <h3><%= school.id %>. <%= school.name %></h3>
-                <span class="badge" style="margin-top: 2px;">Teacher Attendance Portal</span>
+                <span style="font-size: 11px; font-weight: 700; color: #4f46e5;">Teacher Attendance Portal</span>
             </div>
             <div>
-                <a href="/" class="btn-back-school">Back</a>
+                <a href="/logout" class="btn-back-school">Logout</a>
             </div>
         </header>
 
-        <% if (!isAllowed) { %>
-            <div class="lock-notice-box">
-                <span class="lock-icon">🔒</span>
-                <h4 class="lock-title">Attendance Submission Closed</h4>
-                <p class="lock-desc">
-                    Daily attendance submission is allowed until <strong>10:00 AM</strong>.<br>
-                    Submission is currently locked. Please contact your <strong>Assistant Education Officer (AEO)</strong> to unlock permission.
+        <% if (alreadySubmitted) { %>
+            <!-- অলরেডি সাবমিট করা হয়ে গেলে এই সুন্দর মেসেজ কার্ড দেখাবে -->
+            <div class="already-submitted-card">
+                <span style="font-size: 40px; display: block; margin-bottom: 6px;">✅</span>
+                <h4 style="font-size: 16px; font-weight: 800; color: #166534; margin: 0 0 6px 0;">আজকের হাজিরা জমা হয়েছে!</h4>
+                <p style="font-size: 12.5px; color: #374151; line-height: 1.4; margin: 0 0 14px 0;">
+                    আপনার বিদ্যালয়ের আজকের (<strong><%= submissionDate %></strong>) দৈনিক হাজিরা <strong><%= submissionTime %></strong> মিনিটে সফলভাবে জমা হয়েছে।<br><br>
+                    <span style="color: #64748b; font-size: 11.5px;">(দিনে শুধুমাত্র একবারই ফরম সাবমিট করা যাবে। আগামীকাল রাত ১২:০০ টার পর ফরমটি আবার ওপেন হবে।)</span>
                 </p>
+                <a href="/logout" style="display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 800;">ঠিক আছে</a>
             </div>
+
+        <% } else if (!isAllowed) { %>
+            <!-- সকাল ১০টার পর বন্ধ থাকলে এই কার্ড দেখাবে -->
+            <div class="lock-notice-box">
+                <span style="font-size: 38px; display: block; margin-bottom: 6px;">🔒</span>
+                <h4 style="font-size: 15px; font-weight: 800; color: #be123c; margin: 0 0 6px 0;">হাজিরা সাবমিশন বন্ধ</h4>
+                <p style="font-size: 12px; color: #475569; line-height: 1.4; margin: 0 0 12px 0;">
+                    দৈনিক হাজিরা সাবমিশনের নির্ধারিত সময় সকাল <strong>১০:০০ টা</strong> পর্যন্ত।<br>
+                    নির্ধারিত সময় পার হওয়ায় সাবমিশন লক করা হয়েছে। বিশেষ প্রয়োজনে <strong>সহকারী উপজেলা শিক্ষা অফিসারের (AEO)</strong> সাথে যোগাযোগ করুন।
+                </p>
+                <a href="/logout" style="display: inline-block; background: #dc2626; color: white; text-decoration: none; padding: 8px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 800;">লগআউট</a>
+            </div>
+
         <% } else { %>
+            <!-- ফ্রেশ সাবমিশন ফর্ম -->
             <form id="attendanceForm">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 
@@ -206,7 +220,6 @@
                         <div class="teacher-attendance-card-slim">
                             <div class="teacher-title-text"><%= teacher %></div>
                             
-                            <!-- Natural Compact Width Buttons -->
                             <div class="status-options-inline-flex">
                                 <label class="radio-pill-compact">
                                     <input type="radio" name="status_<%= index %>" value="Present" checked onchange="toggleLeaveType(<%= index %>)">
@@ -224,22 +237,23 @@
 
                             <div id="leave_div_<%= index %>" style="display:none;">
                                 <select name="leaveType_<%= index %>" class="form-control-leave">
-                                    <option value="Casual Leave">Casual Leave</option>
-                                    <option value="Medical Leave">Medical Leave</option>
-                                    <option value="Maternity Leave">Maternity Leave</option>
-                                    <option value="Other Leave">Other Leave</option>
+                                    <option value="Casual Leave">Casual Leave (নৈমিত্তিক)</option>
+                                    <option value="Medical Leave">Medical Leave (চিকিৎসা)</option>
+                                    <option value="Maternity Leave">Maternity Leave (মাতৃত্বকালীন)</option>
+                                    <option value="Earned Leave">Earned Leave (অর্জিত)</option>
+                                    <option value="Other Leave">Other Leave (অন্যান্য)</option>
                                 </select>
                             </div>
                         </div>
                     <% }) %>
                 </div>
 
-                <div class="camera-capture-box">
-                    <label for="registerPhoto" class="camera-label-btn">
-                        📷 Capture Attendance Register
-                    </label>
+                <div class="camera-capture-box" onclick="document.getElementById('registerPhoto').click()">
+                    <span style="font-size: 12px; font-weight: 800; color: #4f46e5; display: block;">
+                        📷 Capture Attendance Register Photo
+                    </span>
                     <input type="file" id="registerPhoto" accept="image/*" capture="environment" required style="display: none;" onchange="handleImageSelection(this)">
-                    <span id="fileNameDisplay" class="file-status-text">No photo captured</span>
+                    <span id="fileNameDisplay" style="font-size: 11px; color: #64748b; margin-top: 2px; display: block;">No photo captured</span>
                 </div>
 
                 <button type="button" onclick="submitData()" class="btn-submit-daily" id="submitBtnMain">Submit Daily Report</button>
@@ -247,13 +261,13 @@
         <% } %>
     </div>
 
-    <!-- Custom Modal Popup -->
+    <!-- Custom Modal -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
-            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
-            <h3 id="modalTitle">Success</h3>
-            <p id="modalMessage">Attendance submitted successfully!</p>
-            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
+            <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">✓</div>
+            <h3 id="modalTitle" style="font-size: 16px; margin: 0 0 4px 0;">Status</h3>
+            <p id="modalMessage" style="font-size: 12.5px; color: #475569; margin: 0 0 12px 0;">Action message</p>
+            <button type="button" id="modalBtn" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer;" onclick="closeCustomModal()">OK</button>
         </div>
     </div>
 
@@ -262,30 +276,24 @@
         let redirectOnClose = false;
         let compressedBlob = null;
 
-        function showCustomModal(type, title, message, shouldReload = false) {
-            const modal = document.getElementById('customModal');
-            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
-            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+        function showCustomModal(type, title, message, shouldRedirect = false) {
+            document.getElementById('modalIcon').textContent = type === 'success' ? "✅" : "⚠️";
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalMessage').textContent = message;
-            redirectOnClose = shouldReload;
-            modal.classList.add('active');
+            redirectOnClose = shouldRedirect;
+            document.getElementById('customModal').classList.add('active');
         }
 
         function closeCustomModal() {
             document.getElementById('customModal').classList.remove('active');
-            if (redirectOnClose) {
-                window.location.href = '/';
-            }
+            if (redirectOnClose) window.location.reload();
         }
 
         function toggleLeaveType(index) {
             let radios = document.getElementsByName('status_' + index);
             let leaveDiv = document.getElementById('leave_div_' + index);
             let selectedValue = '';
-            for(let r of radios) {
-                if(r.checked) selectedValue = r.value;
-            }
+            for(let r of radios) { if(r.checked) selectedValue = r.value; }
             leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
         }
 
@@ -303,7 +311,7 @@
                     img.src = e.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const maxWidth = 1000;
+                        const maxWidth = 900;
                         const scaleSize = maxWidth / img.width;
                         canvas.width = (img.width > maxWidth) ? maxWidth : img.width;
                         canvas.height = (img.width > maxWidth) ? (img.height * scaleSize) : img.height;
@@ -315,7 +323,7 @@
                             compressedBlob = blob;
                             display.textContent = "✅ Photo ready (" + Math.round(blob.size / 1024) + " KB)";
                             display.style.color = "#16a34a";
-                        }, 'image/jpeg', 0.7);
+                        }, 'image/jpeg', 0.65);
                     };
                 };
             }
@@ -323,12 +331,12 @@
 
         function submitData() {
             if (!compressedBlob && !document.getElementById('registerPhoto').files[0]) {
-                showCustomModal('error', 'Photo Required', 'Please capture or upload the attendance register photo first!');
+                showCustomModal('error', 'Photo Required', 'অনুগ্রহ করে হাজিরা খাতার ছবি তুলুন!');
                 return;
             }
 
             const submitBtn = document.getElementById('submitBtnMain');
-            submitBtn.textContent = "📍 Acquiring GPS Location...";
+            submitBtn.textContent = "📍 Acquiring GPS...";
             submitBtn.disabled = true;
 
             const sendPayload = (lat, lng) => {
@@ -367,14 +375,14 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        showCustomModal('success', 'Submitted!', 'Daily attendance report submitted successfully!', true);
+                        showCustomModal('success', 'জমা হয়েছে!', 'দৈনিক হাজিরা সফলভাবে জমা নেওয়া হয়েছে!', true);
                     } else {
-                        showCustomModal('error', 'Submission Failed', data.message);
+                        showCustomModal('error', 'ব্যর্থ হয়েছে', data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }
                 }).catch(err => {
-                    showCustomModal('error', 'Network Error', 'Please check your internet connection.');
+                    showCustomModal('error', 'নেটওয়ার্ক সমস্যা', 'ইন্টারনেট কানেকশন চেক করুন।');
                     submitBtn.textContent = "Submit Daily Report";
                     submitBtn.disabled = false;
                 });
@@ -382,15 +390,9 @@
 
             if ("geolocation" in navigator) {
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const latitude = position.coords.latitude.toFixed(6);
-                        const longitude = position.coords.longitude.toFixed(6);
-                        sendPayload(latitude, longitude);
-                    },
-                    (error) => {
-                        sendPayload(25.736000, 88.608000);
-                    },
-                    { enableHighAccuracy: true, timeout: 6000 }
+                    (pos) => sendPayload(pos.coords.latitude.toFixed(6), pos.coords.longitude.toFixed(6)),
+                    () => sendPayload(25.736000, 88.608000),
+                    { enableHighAccuracy: true, timeout: 5000 }
                 );
             } else {
                 sendPayload(25.736000, 88.608000);

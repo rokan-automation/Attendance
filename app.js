@@ -53,6 +53,18 @@ function getSafeSchoolId(schoolName) {
     return found ? found.id : 999;
 }
 
+// Bangladesh Current Date & Time Helper
+function getBangladeshDateTime() {
+    const now = new Date();
+    const bdTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+    return {
+        dateStr: bdTime.toISOString().split('T')[0],
+        monthStr: bdTime.toISOString().substring(0, 7),
+        yearStr: String(bdTime.getUTCFullYear()),
+        hourBD: bdTime.getUTCHours()
+    };
+}
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -133,46 +145,94 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 2. School Attendance Page
+// 2. School Attendance Page (১ দিনে ১ বার সাবমিশন ও সকাল ১০টার লক লজিক)
 app.get('/index', requireSchoolAuth, async (req, res) => {
     try {
         const schoolId = parseInt(req.query.schoolId) || req.schoolId || 1;
         const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
 
-        const now = new Date();
-        const bdHours = (now.getUTCHours() + 6) % 24;
-        let isAllowed = bdHours < 10;
+        const { dateStr, hourBD } = getBangladeshDateTime();
 
+        // চেক করা: আজকে অলরেডি সাবমিট করেছে কি না
+        const { data: existingRecord } = await supabase
+            .from('attendance_records')
+            .select('id, created_at')
+            .eq('school_name', school.name)
+            .eq('attendance_date', dateStr)
+            .maybeSingle();
+
+        let alreadySubmitted = !!existingRecord;
+        let submissionTime = '';
+        if (existingRecord && existingRecord.created_at) {
+            submissionTime = new Date(existingRecord.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' });
+        }
+
+        // সকাল ১০টার সময় চেক ও AEO Override চেক
+        let isWithinTime = hourBD < 10;
+        let isAllowed = isWithinTime;
         try {
             const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
-            if (lockSetting && lockSetting.value === 'true') isAllowed = true;
+            if (lockSetting && lockSetting.value === 'true') {
+                isAllowed = true;
+            }
         } catch (e) {}
 
-        res.render('index', { school, isAllowed });
+        res.render('index', { 
+            school, 
+            isAllowed, 
+            alreadySubmitted, 
+            submissionDate: dateStr, 
+            submissionTime 
+        });
     } catch (err) {
         res.redirect('/');
     }
 });
 
-// 3. Submit Attendance
+// 3. Submit Attendance (ডাবল সাবমিশন প্রটেকশন)
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     try {
         const { schoolId, lat, lng, attendance } = req.body;
         const school = SCHOOLS.find(s => s.id === parseInt(schoolId));
         if (!school) return res.status(400).json({ success: false, message: 'Invalid School' });
 
+        const { dateStr, hourBD } = getBangladeshDateTime();
+
+        // ১. চেক: আজকে অলরেডি সাবমিট হয়েছে কি না
+        const { data: existingRecord } = await supabase
+            .from('attendance_records')
+            .select('id')
+            .eq('school_name', school.name)
+            .eq('attendance_date', dateStr)
+            .maybeSingle();
+
+        if (existingRecord) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'আপনার বিদ্যালয়ের আজকের হাজিরা ইতিমধ্যে একবার সাবমিট করা হয়েছে! দিনে শুধুমাত্র একবারই সাবমিট করা যাবে।' 
+            });
+        }
+
+        // ২. চেক: সকাল ১০টার লক আছে কি না
+        if (hourBD >= 10) {
+            const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
+            const isUnlocked = lockSetting && lockSetting.value === 'true';
+            if (!isUnlocked) {
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'সকাল ১০:০০ টার পর দৈনিক হাজিরা সাবমিশন বন্ধ। অনুগ্রহ করে সহকারী উপজেলা শিক্ষা অফিসারের (AEO) সাথে যোগাযোগ করুন।' 
+                });
+            }
+        }
+
         let photoUrl = '';
         if (req.file) {
             photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
         }
 
-        const now = new Date();
-        const bangladeshTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
-        const todayDate = bangladeshTime.toISOString().split('T')[0];
-
         const { error } = await supabase.from('attendance_records').insert([{
             school_name: school.name,
-            attendance_date: todayDate,
+            attendance_date: dateStr,
             attendance_data: typeof attendance === 'string' ? JSON.parse(attendance) : attendance,
             photo_url: photoUrl,
             latitude: lat,
@@ -187,22 +247,26 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
     }
 });
 
-// 4. Admin Summary Dashboard
+// 4. Admin Summary Dashboard (সুপার ফাস্ট: ফটো লোড বাদ দেওয়া হয়েছে)
 app.get('/admin', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
-        const now = new Date();
-        const bdTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+        const { dateStr, monthStr, yearStr } = getBangladeshDateTime();
         
-        const selectedDate = req.query.date || bdTime.toISOString().split('T')[0];
-        const selectedMonth = req.query.month || bdTime.toISOString().substring(0, 7);
-        const selectedYear = req.query.year || String(bdTime.getFullYear());
+        const selectedDate = req.query.date || dateStr;
+        const selectedMonth = req.query.month || monthStr;
+        const selectedYear = req.query.year || yearStr;
 
-        let query = supabase.from('attendance_records').select('*');
+        // দ্রুত লোডের জন্য ভারী photo_url কলাম বাদ দিয়ে কুয়েরি
+        let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
 
-        if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
-        else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-        else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+        if (viewType === 'daily') {
+            query = query.eq('attendance_date', selectedDate);
+        } else if (viewType === 'monthly') {
+            query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+        } else if (viewType === 'yearly') {
+            query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+        }
 
         const { data: rawRecords } = await query;
         
@@ -211,7 +275,6 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
             schoolName: r.school_name || 'School',
             date: r.attendance_date || '',
             attendance: r.attendance_data || [],
-            photo: r.photo_url || '',
             location: { lat: r.latitude || '', lng: r.longitude || '' },
             timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
         }));
@@ -230,18 +293,17 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     }
 });
 
-// 5. Admin List View
+// 5. Admin List View (সুপার ফাস্ট)
 app.get('/admin/list', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
-        const now = new Date();
-        const bdTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+        const { dateStr, monthStr, yearStr } = getBangladeshDateTime();
 
-        const selectedDate = req.query.date || bdTime.toISOString().split('T')[0];
-        const selectedMonth = req.query.month || bdTime.toISOString().substring(0, 7);
-        const selectedYear = req.query.year || String(bdTime.getFullYear());
+        const selectedDate = req.query.date || dateStr;
+        const selectedMonth = req.query.month || monthStr;
+        const selectedYear = req.query.year || yearStr;
 
-        let query = supabase.from('attendance_records').select('*');
+        let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, created_at');
 
         if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
         else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
@@ -280,7 +342,7 @@ app.post('/admin/teachers/update', requireAEOAuth, (req, res) => {
     res.status(400).json({ success: false, message: 'School not found' });
 });
 
-// 7. Verify & Edit Record (Save Changes Backend Fix)
+// 7. Verify & Edit Record
 app.get('/admin/school/:id', requireAEOAuth, async (req, res) => {
     try {
         const recordId = req.params.id;
@@ -307,7 +369,6 @@ app.post('/admin/school/update/:id', requireAEOAuth, async (req, res) => {
     try {
         const recordId = req.params.id;
         const { attendance } = req.body;
-
         const parsedAttendance = typeof attendance === 'string' ? JSON.parse(attendance) : attendance;
 
         const { error } = await supabase.from('attendance_records').update({
@@ -347,7 +408,7 @@ app.post('/admin/toggle-lock', requireAEOAuth, async (req, res) => {
 app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
     try {
         const { teacher, mode, month, year } = req.query;
-        let query = supabase.from('attendance_records').select('*');
+        let query = supabase.from('attendance_records').select('school_name, attendance_date, attendance_data');
 
         if (mode === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
         else if (mode === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
@@ -364,7 +425,7 @@ app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
                     schoolName = r.school_name;
                     history.push({ date: r.attendance_date, status: found.status, leaveType: found.leaveType || '' });
                     if (found.status === 'Present') presentCount++;
-                    else if (found.status === 'Leave') leaveCount++;
+                    else if (found.status === 'Leave' || found.status === 'On Leave') leaveCount++;
                     else if (found.status === 'Absent') absentCount++;
                 }
             }

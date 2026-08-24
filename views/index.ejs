@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=16">
+    <link rel="stylesheet" href="/css/style.css?v=17">
     
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -119,17 +119,13 @@
             user-select: none;
         }
 
-        /* সুন্দর কালারফুল On Leave ড্রপডাউন বক্স */
-        .leave-select-container {
+        /* ইনলাইন ছুটির ধরন বাটন কনটেইনার (কোনো পপআপ আসবে না) */
+        .leave-inline-container {
             margin-top: 6px;
             background: #fffbeb;
             border: 1.5px solid #fde68a;
             border-radius: 8px;
-            padding: 6px 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 1px 3px rgba(217, 119, 6, 0.08);
+            padding: 8px 10px;
             animation: fadeInDrop 0.15s ease-out;
         }
 
@@ -138,24 +134,41 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .leave-badge-lbl {
-            font-size: 11.5px;
+        .leave-inline-title {
+            font-size: 11px;
             font-weight: 800;
             color: #b45309;
-            white-space: nowrap;
+            display: block;
+            margin-bottom: 6px;
         }
 
-        .leave-dropdown-colorful {
-            flex: 1;
-            padding: 5px 8px;
-            font-size: 11.5px;
-            font-weight: 700;
-            border-radius: 6px;
-            border: 1px solid #fcd34d;
+        .leave-chips-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .leave-chip {
             background: #ffffff;
-            color: #92400e;
-            outline: none;
+            border: 1px solid #cbd5e1;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 8px;
+            border-radius: 6px;
             cursor: pointer;
+            user-select: none;
+            transition: all 0.1s ease;
+        }
+
+        .leave-chip:active { transform: scale(0.96); }
+
+        /* একটিভ ছুটির বাটন */
+        .leave-chip.active {
+            background: #d97706;
+            color: #ffffff;
+            border-color: #d97706;
+            box-shadow: 0 1px 3px rgba(217, 119, 6, 0.25);
         }
 
         .camera-capture-box {
@@ -184,7 +197,7 @@
         }
         .btn-submit-daily:active { transform: scale(0.98); }
 
-        /* একক ও পরিচ্ছন্ন কাস্টম পপআপ (ডিফল্টভাবে সম্পূর্ণ হাইড থাকবে) */
+        /* একক কাস্টম স্ট্যাটাস পপআপ */
         .single-modal-overlay {
             position: fixed;
             inset: 0;
@@ -275,16 +288,17 @@
                                 </label>
                             </div>
 
-                            <!-- কালারফুল On Leave ড্রপডাউন বক্স -->
-                            <div id="leave_div_<%= index %>" class="leave-select-container" style="display:none;">
-                                <span class="leave-badge-lbl">📝 ছুটির ধরন:</span>
-                                <select name="leaveType_<%= index %>" class="leave-dropdown-colorful">
-                                    <option value="Casual Leave">Casual Leave (নৈমিত্তিক ছুটি)</option>
-                                    <option value="Medical Leave">Medical Leave (চিকিৎসা ছুটি)</option>
-                                    <option value="Maternity Leave">Maternity Leave (মাতৃত্বকালীন ছুটি)</option>
-                                    <option value="Earned Leave">Earned Leave (অর্জিত ছুটি)</option>
-                                    <option value="Other Leave">Other Leave (অন্যান্য ছুটি)</option>
-                                </select>
+                            <!-- কার্ডের ভেতরে ইনলাইন ছুটির অপশন (কোনো পপআপ ছাড়া) -->
+                            <div id="leave_div_<%= index %>" class="leave-inline-container" style="display:none;">
+                                <span class="leave-inline-title">📝 ছুটির ধরন নির্বাচন করুন:</span>
+                                <div class="leave-chips-grid">
+                                    <button type="button" class="leave-chip active" onclick="setLeaveType(<%= index %>, 'Casual Leave', this)">নৈমিত্তিক (Casual)</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Medical Leave', this)">চিকিৎসা (Medical)</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Maternity Leave', this)">মাতৃত্বকালীন (Maternity)</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Earned Leave', this)">অর্জিত (Earned)</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Other Leave', this)">অন্যান্য (Other)</button>
+                                </div>
+                                <input type="hidden" id="leaveInput_<%= index %>" value="Casual Leave">
                             </div>
                         </div>
                     <% }) %>
@@ -303,7 +317,7 @@
         <% } %>
     </div>
 
-    <!-- একক কাস্টম পপআপ (Single Popup Only) -->
+    <!-- একক কাস্টম সাবমিট স্ট্যাটাস পপআপ -->
     <div id="singleCustomModal" class="single-modal-overlay">
         <div class="single-modal-box">
             <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">✓</div>
@@ -336,7 +350,15 @@
             let leaveDiv = document.getElementById('leave_div_' + index);
             let selectedValue = '';
             for(let r of radios) { if(r.checked) selectedValue = r.value; }
-            leaveDiv.style.display = (selectedValue === 'Leave') ? 'flex' : 'none';
+            leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
+        }
+
+        // ইনলাইন ছুটির ধরন বাটন ট্যাপ লজিক (০ পপআপ)
+        function setLeaveType(index, leaveType, chipElement) {
+            const container = chipElement.closest('.leave-chips-grid');
+            container.querySelectorAll('.leave-chip').forEach(chip => chip.classList.remove('active'));
+            chipElement.classList.add('active');
+            document.getElementById('leaveInput_' + index).value = leaveType;
         }
 
         function handleImageSelection(input) {
@@ -403,7 +425,8 @@
                     
                     let leaveType = '';
                     if(status === 'Leave') {
-                        leaveType = document.querySelector(`[name="leaveType_${index}"]`).value;
+                        const leaveInput = document.getElementById('leaveInput_' + index);
+                        leaveType = leaveInput ? leaveInput.value : 'Casual Leave';
                     }
                     attendanceArr.push({ teacher, status, leaveType });
                 });

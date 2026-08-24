@@ -4,69 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Teacher Management - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=13" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=13">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=13">
-    <link rel="apple-touch-icon" href="/icon.png?v=13">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=13">
+    <link rel="shortcut icon" href="/icon-192.png" type="image/png">
+    <link rel="stylesheet" href="/css/style.css?v=23">
+    
     <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: #f1f5f9;
+            margin: 0;
+            padding: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: manipulation;
+        }
+
         .app-container-teachers {
             max-width: 500px;
             margin: 0 auto;
-            padding: 8px;
             min-height: 100vh;
         }
 
-        /* Clean Right Aligned Header */
+        /* Top Header: Right Aligned Back Button */
         .app-header-aligned {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1.5px solid #e2e8f0;
-            padding-bottom: 8px;
+            background: #ffffff;
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
             margin-bottom: 10px;
-            width: 100%;
-        }
-
-        .header-title-box h3 {
-            font-size: 14.5px;
-            font-weight: 800;
-            color: #0f172a;
-            margin: 0;
-            line-height: 1.2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
         .btn-back-right {
-            background: #e0e7ff;
+            background: #eef2ff;
             color: #4f46e5;
             padding: 6px 16px;
             font-size: 12.5px;
             font-weight: 800;
             text-decoration: none;
-            border-radius: 6px;
+            border-radius: 8px;
             border: 1px solid #c7d2fe;
-            cursor: pointer;
             white-space: nowrap;
+            transition: transform 0.1s;
+        }
+        .btn-back-right:active { transform: scale(0.95); }
+
+        /* Custom Selector Trigger (No Mobile Native Picker) */
+        .custom-select-trigger {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            background: #ffffff;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
-        .school-select-dropdown {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 12.5px;
+        .trigger-school-text {
+            font-size: 13.5px;
             font-weight: 700;
-            background: #ffffff;
-            margin-bottom: 12px;
-            outline: none;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .teacher-edit-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 14px;
+            padding: 14px 12px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.02);
             margin-bottom: 12px;
         }
@@ -81,11 +94,16 @@
         .teacher-input-field {
             flex: 1;
             padding: 8px 10px;
-            border: 1px solid #cbd5e1;
+            border: 1.5px solid #cbd5e1;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 12.5px;
+            font-weight: 600;
             outline: none;
             background: #f8fafc;
+        }
+        .teacher-input-field:focus {
+            border-color: #4f46e5;
+            background: #ffffff;
         }
 
         .btn-remove-teacher {
@@ -94,137 +112,241 @@
             border: 1px solid #fca5a5;
             padding: 7px 10px;
             border-radius: 6px;
-            font-size: 11px;
+            font-size: 11.5px;
             font-weight: 700;
             cursor: pointer;
+            white-space: nowrap;
         }
 
         .btn-add-more-teacher {
-            background: #f1f5f9;
+            background: #f8fafc;
             color: #4f46e5;
             border: 1.5px dashed #c7d2fe;
-            padding: 8px;
+            padding: 9px;
             border-radius: 8px;
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 700;
             width: 100%;
             cursor: pointer;
             margin-top: 6px;
+            transition: all 0.1s;
         }
+        .btn-add-more-teacher:active { background: #eef2ff; }
 
         .btn-save-teachers-main {
-            background: #10b981;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: #ffffff;
             border: none;
             padding: 12px;
             border-radius: 10px;
-            font-size: 13.5px;
+            font-size: 14px;
             font-weight: 800;
             width: 100%;
             cursor: pointer;
             margin-top: 14px;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+            transition: transform 0.1s;
+        }
+        .btn-save-teachers-main:active { transform: scale(0.98); }
+
+        /* Custom Modal Overlay */
+        .custom-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(3px);
+            display: none !important;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            z-index: 99999;
+        }
+        .custom-modal-overlay.active { display: flex !important; }
+
+        .custom-modal-box {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 18px 16px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+            display: flex;
+            flex-direction: column;
+            max-height: 82vh;
         }
 
-        .modal-btn-confirm-remove {
-            background: #dc2626;
-            color: #fff;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 700;
-            cursor: pointer;
-            flex: 1;
+        .school-search-box input {
+            width: 100%;
+            padding: 9px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+            margin-bottom: 10px;
         }
-        .modal-btn-cancel-remove {
-            background: #e2e8f0;
-            color: #334155;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 6px;
-            font-size: 11.5px;
-            font-weight: 700;
-            cursor: pointer;
+
+        .school-list-container {
+            overflow-y: auto;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding-right: 2px;
+        }
+
+        .school-item-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 9px 10px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            transition: all 0.1s;
+        }
+        .school-item-btn:active { background: #e2e8f0; }
+
+        .school-serial-tag {
+            background: #e2e8f0;
+            padding: 2px 7px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #475569;
         }
     </style>
 </head>
-<body style="background-color: #f3f4f6;">
+<body>
     <div class="app-container-teachers">
         
         <!-- Header: Right-Aligned Back Button -->
         <header class="app-header-aligned">
-            <div class="header-title-box">
-                <h3>Teacher Management</h3>
-                <span class="badge">Add / Edit / Remove</span>
+            <div>
+                <h3 style="font-size: 14.5px; font-weight:800; margin:0; color:#0f172a;">Teacher Management</h3>
+                <span style="font-size: 11px; font-weight:700; color:#4f46e5;">Add / Edit / Remove Staff</span>
             </div>
             <div>
                 <a href="/admin/list" class="btn-back-right">Back</a>
             </div>
         </header>
 
-        <label style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 4px; display: block;">Select School to Manage Staff:</label>
-        <select id="schoolSelector" class="school-select-dropdown" onchange="renderTeachersForSchool()">
-            <% schools.forEach(s => { %>
-                <option value="<%= s.id %>"><%= s.id %>. <%= s.name %></option>
-            <% }) %>
-        </select>
+        <label style="font-size: 12px; font-weight: 700; color: #334155; margin-bottom: 5px; display: block;">Select Institution to Manage:</label>
+        
+        <!-- Custom School Trigger (Tapping opens custom modal) -->
+        <div class="custom-select-trigger" onclick="openSchoolModal()">
+            <span class="trigger-school-text" id="selectedSchoolDisplay">1. Bochaganj Model Govt. Primary School</span>
+            <span style="color: #64748b; font-size: 11px;">▼</span>
+        </div>
+        <input type="hidden" id="currentSelectedSchoolId" value="1">
 
         <div class="teacher-edit-card">
-            <h4 id="currentSchoolTitle" style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 10px;">Teachers List:</h4>
+            <h4 id="currentSchoolTitle" style="font-size: 13px; font-weight: 800; color: #1e293b; margin: 0 0 10px 0;">Staff List:</h4>
             
             <div id="teachersListInputs">
-                <!-- Injected via JS -->
+                <!-- Teacher Rows Injected via JS -->
             </div>
 
             <button type="button" class="btn-add-more-teacher" onclick="addNewTeacherRow()">
-                ➕ Add New Teacher / Assistant
+                ➕ Add New Teacher / Staff
             </button>
 
-            <button type="button" class="btn-save-teachers-main" onclick="saveTeachersList()">
-                💾 Save Updated Teacher List
+            <button type="button" class="btn-save-teachers-main" id="btnSaveStaff" onclick="saveTeachersList()">
+                💾 Save Changes
             </button>
         </div>
     </div>
 
-    <!-- Warning Modal -->
-    <div id="removeWarningModal" class="custom-modal-overlay">
+    <!-- 1. Custom School Selector Modal with Search -->
+    <div id="schoolSelectorModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
-            <div class="modal-icon-wrapper modal-icon-error">⚠️</div>
-            <h3>Remove Teacher?</h3>
-            <p id="removeWarningText" style="color: #475569; font-size: 12px; line-height: 1.4;">
-                Are you sure you want to remove this teacher? Their past attendance records will remain <strong>100% safe in history</strong>, but they will not appear in future attendance forms.
-            </p>
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
-                <button type="button" class="modal-btn-cancel-remove" onclick="closeRemoveWarningModal()">Cancel</button>
-                <button type="button" class="modal-btn-confirm-remove" onclick="confirmTeacherRemoval()">Yes, Remove</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <h4 style="font-size: 14.5px; font-weight: 800; color: #0f172a; margin: 0;">Select Primary School</h4>
+                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:16px; cursor:pointer; font-weight:bold; color:#64748b;">✕</button>
+            </div>
+            
+            <div class="school-search-box">
+                <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name..." oninput="filterSchools()">
+            </div>
+
+            <div class="school-list-container" id="modalSchoolList">
+                <% schools.forEach(s => { %>
+                    <button type="button" class="school-item-btn" onclick="selectSchool(<%= s.id %>, '<%= s.id %>. <%= s.name %>')">
+                        <span class="school-serial-tag"><%= s.id %></span>
+                        <span><%= s.name %></span>
+                    </button>
+                <% }) %>
             </div>
         </div>
     </div>
 
-    <!-- Status Feedback Modal -->
+    <!-- 2. Remove Confirmation Modal -->
+    <div id="removeWarningModal" class="custom-modal-overlay">
+        <div class="custom-modal-box" style="max-width: 320px; text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 4px;">⚠️</div>
+            <h3 style="font-size: 15px; margin: 0 0 6px 0;">Remove Teacher?</h3>
+            <p id="removeWarningText" style="color: #475569; font-size: 12px; line-height: 1.4; margin: 0 0 12px 0;">
+                Are you sure you want to remove this teacher? Their previous attendance logs will remain <strong>100% safe in history</strong>.
+            </p>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:8px; border-radius:6px; font-weight:700; font-size:12px;" onclick="closeRemoveWarningModal()">Cancel</button>
+                <button type="button" style="flex:1; background:#dc2626; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; font-size:12px;" onclick="confirmTeacherRemoval()">Yes, Remove</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Status Modal -->
     <div id="customModal" class="custom-modal-overlay">
-        <div class="custom-modal-box">
-            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
-            <h3 id="modalTitle">Status</h3>
-            <p id="modalMessage">Action completed successfully!</p>
-            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeStatusModal()">OK</button>
+        <div class="custom-modal-box" style="max-width: 320px; text-align: center;">
+            <div id="modalIcon" style="font-size: 30px; margin-bottom: 4px;">✓</div>
+            <h3 id="modalTitle" style="font-size: 15px; margin: 0 0 4px 0;">Status</h3>
+            <p id="modalMessage" style="font-size: 12px; color: #475569; margin: 0 0 12px 0;">Action completed successfully!</p>
+            <button type="button" id="modalBtn" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 9px; border-radius: 8px; font-weight: 700; font-size: 12.5px; cursor: pointer;" onclick="closeStatusModal()">OK</button>
         </div>
     </div>
 
     <script>
         const allSchoolsData = <%- JSON.stringify(schools) %>;
         let targetRowToDelete = null;
+        let shouldReloadPage = false;
+
+        function openSchoolModal() {
+            document.getElementById('schoolSearchInput').value = '';
+            filterSchools();
+            document.getElementById('schoolSelectorModal').classList.add('active');
+        }
+
+        function closeSchoolModal() {
+            document.getElementById('schoolSelectorModal').classList.remove('active');
+        }
+
+        function selectSchool(schoolId, fullText) {
+            document.getElementById('currentSelectedSchoolId').value = schoolId;
+            document.getElementById('selectedSchoolDisplay').textContent = fullText;
+            closeSchoolModal();
+            renderTeachersForSchool();
+        }
+
+        function filterSchools() {
+            const query = document.getElementById('schoolSearchInput').value.toLowerCase().trim();
+            const buttons = document.querySelectorAll('#modalSchoolList .school-item-btn');
+            buttons.forEach(btn => {
+                btn.style.display = btn.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
+            });
+        }
 
         function renderTeachersForSchool() {
-            const schoolId = document.getElementById('schoolSelector').value;
-            const school = allSchoolsData.find(s => s.id == schoolId);
+            const schoolId = document.getElementById('currentSelectedSchoolId').value;
+            const school = allSchoolsData.find(s => s.id == schoolId) || allSchoolsData[0];
             const container = document.getElementById('teachersListInputs');
             document.getElementById('currentSchoolTitle').textContent = `Staff of ${school.name}:`;
 
             container.innerHTML = '';
-            school.teachers.forEach((t) => {
+            (school.teachers || []).forEach((t) => {
                 const row = document.createElement('div');
                 row.className = 'teacher-item-row';
                 row.innerHTML = `
@@ -240,7 +362,7 @@
             const row = document.createElement('div');
             row.className = 'teacher-item-row';
             row.innerHTML = `
-                <input type="text" class="teacher-input-field" value="" placeholder="e.g. Md. New Teacher (Assistant)">
+                <input type="text" class="teacher-input-field" value="" placeholder="e.g. New Teacher (Assistant)">
                 <button type="button" class="btn-remove-teacher" onclick="triggerRemoveModal(this, 'New Teacher')">✕ Remove</button>
             `;
             container.appendChild(row);
@@ -248,7 +370,7 @@
 
         function triggerRemoveModal(btnElement, teacherName) {
             targetRowToDelete = btnElement.parentElement;
-            document.getElementById('removeWarningText').innerHTML = `Are you sure you want to remove <strong>"${teacherName}"</strong>?<br><br>Their past attendance records will remain <strong>100% safe in history</strong>, but they will not appear in future forms.`;
+            document.getElementById('removeWarningText').innerHTML = `Are you sure you want to remove <strong>"${teacherName}"</strong>?<br><br>Their past attendance records will remain safe in history.`;
             document.getElementById('removeWarningModal').classList.add('active');
         }
 
@@ -265,8 +387,8 @@
             closeRemoveWarningModal();
         }
 
-        function saveTeachersList() {
-            const schoolId = document.getElementById('schoolSelector').value;
+        async function saveTeachersList() {
+            const schoolId = document.getElementById('currentSelectedSchoolId').value;
             const inputElements = document.querySelectorAll('.teacher-input-field');
             const teachersArray = [];
 
@@ -276,35 +398,43 @@
             });
 
             if (teachersArray.length === 0) {
-                showStatusModal('error', 'Error', 'A school must have at least 1 teacher!');
+                showStatusModal('error', 'Validation Error', 'A school must have at least 1 teacher!');
                 return;
             }
 
-            fetch('/admin/teachers/update', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ schoolId, teachers: JSON.stringify(teachersArray) })
-            })
-            .then(res => res.json())
-            .then(data => {
+            const btn = document.getElementById('btnSaveStaff');
+            const orig = btn.innerHTML;
+            btn.innerHTML = "⏳ Saving...";
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/admin/teachers/update', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ schoolId, teachers: JSON.stringify(teachersArray) })
+                });
+
+                const data = await res.json();
                 if (data.success) {
-                    showStatusModal('success', 'Staff Saved', 'Teacher list updated successfully! Changes are live immediately.', true);
+                    const schoolObj = allSchoolsData.find(s => s.id == schoolId);
+                    if (schoolObj) schoolObj.teachers = teachersArray;
+                    showStatusModal('success', 'Staff Saved', 'Teacher list updated successfully! Changes are live immediately.');
                 } else {
-                    showStatusModal('error', 'Failed', data.message);
+                    showStatusModal('error', 'Update Failed', data.message);
                 }
-            });
+            } catch(e) {
+                showStatusModal('error', 'Network Error', 'Please check your connection and try again.');
+            } finally {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+            }
         }
 
-        function showStatusModal(type, title, message, reload = false) {
-            const modal = document.getElementById('customModal');
-            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
-            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
+        function showStatusModal(type, title, message) {
+            document.getElementById('modalIcon').textContent = type === 'success' ? "✅" : "⚠️";
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalMessage').textContent = message;
-            modal.classList.add('active');
-            if (reload) {
-                document.getElementById('modalBtn').onclick = () => window.location.reload();
-            }
+            document.getElementById('customModal').classList.add('active');
         }
 
         function closeStatusModal() {

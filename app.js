@@ -1,363 +1,464 @@
-if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
-}
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const multer = require('multer');
-const supabase = require('./db');
+const { createClient } = require('@supabase/supabase-js');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const AEO_PASSWORD = process.env.AEO_PASSWORD || 'Aeo12345';
-const SCHOOL_PASSWORD = process.env.SCHOOL_PASSWORD || 'School12345';
+const upload = multer({ limits: { fileSize: 15 * 1024 * 1024 } });
 
-const upload = multer({ 
-    storage: multer.memoryStorage(), 
-    limits: { fileSize: 8 * 1024 * 1024 } 
-});
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseKey = process.env.SUPABASE_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-app.use(express.urlencoded({ extended: true, limit: '8mb' }));
-app.use(express.json({ limit: '8mb' }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.get('/icon.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
-app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon.png')));
-app.get('/manifest.json', (req, res) => res.sendFile(path.join(__dirname, 'manifest.json')));
-
-const defaultSchools = [
-    { id: 1, name: "Bochaganj Model Government Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Mofizur Rahman (Assistant)"] },
-    { id: 2, name: "Setabganj Upashahar Government Primary School", teachers: ["Profulla Chandra Roy (Head Teacher)", "Farhana Yeasmin (Assistant)", "Biplob Kumar (Assistant)", "Shahnaz Parvin (Assistant)", "Moksed Ali (Assistant)"] },
-    { id: 3, name: "Bochaganj Central Government Primary School", teachers: ["Shah Alam (Head Teacher)", "Parul Rani (Assistant)", "Jahangir Alam (Assistant)", "Sultana Razia (Assistant)", "Kamal Hossain (Assistant)"] },
-    { id: 4, name: "Muraripur Government Primary School", teachers: ["Animesh Roy (Head Teacher)", "Nasrin Sultana (Assistant)", "Belal Hossain (Assistant)", "Rina Begum (Assistant)", "Anisur Rahman (Assistant)"] },
-    { id: 5, name: "Chawk Rampur Government Primary School", teachers: ["Moniruzzaman (Head Teacher)", "Rita Rani (Assistant)", "Sazzad Hossain (Assistant)", "Monwara Khatun (Assistant)", "Nazrul Islam (Assistant)"] },
-    { id: 6, name: "Bogula Government Primary School", teachers: ["Haradhan Chandra (Head Teacher)", "Rokeya Begum (Assistant)", "Abdul Mannan (Assistant)", "Geeta Rani (Assistant)", "Sohel Rana (Assistant)"] },
-    { id: 7, name: "Chira Government Primary School", teachers: ["Mozammel Haque (Head Teacher)", "Shikha Rani (Assistant)", "Enamul Haque (Assistant)", "Kohinoor Begum (Assistant)", "Liton Kumar (Assistant)"] },
-    { id: 8, name: "Gopalpur Government Primary School", teachers: ["Subhash Chandra (Head Teacher)", "Hosne Ara (Assistant)", "Azizar Rahman (Assistant)", "Champa Rani (Assistant)", "Mizanur Rahman (Assistant)"] },
-    { id: 9, name: "Ishania Government Primary School", teachers: ["Nur Mohammad (Head Teacher)", "Archana Rani (Assistant)", "Mahbub Alam (Assistant)", "Firoza Begum (Assistant)", "Aminul Islam (Assistant)"] },
-    { id: 10, name: "Nandigram Government Primary School", teachers: ["Bimal Chandra Roy (Head Teacher)", "Lipi Akter (Assistant)", "Shariful Islam (Assistant)", "Rekha Rani (Assistant)", "Dulal Hossain (Assistant)"] },
-    { id: 11, name: "Shibpur Government Primary School", teachers: ["Zillur Rahman (Head Teacher)", "Swapna Rani (Assistant)", "Mamunur Rashid (Assistant)", "Josna Begum (Assistant)", "Selim Reza (Assistant)"] },
-    { id: 12, name: "Ratanpur Government Primary School", teachers: ["Tarani Kanta Roy (Head Teacher)", "Bulbul Akhter (Assistant)", "Shahidul Islam (Assistant)", "Anjana Rani (Assistant)", "Rahim Uddin (Assistant)"] },
-    { id: 13, name: "Chak Kalikapur Government Primary School", teachers: ["Akhtar Hossain (Head Teacher)", "Momena Begum (Assistant)", "Nazmul Huda (Assistant)", "Sumita Rani (Assistant)", "Al-Mamun (Assistant)"] },
-    { id: 14, name: "Bara Maheshtpur Government Primary School", teachers: ["Dhirendra Nath (Head Teacher)", "Hasina Khatun (Assistant)", "Rafique Uddin (Assistant)", "Purnima Rani (Assistant)", "Joynal Abedin (Assistant)"] },
-    { id: 15, name: "Chatra Government Primary School", teachers: ["Abu Bakar Siddique (Head Teacher)", "Khadija Begum (Assistant)", "Delwar Hossain (Assistant)", "Bithi Rani (Assistant)", "Mokbul Hossain (Assistant)"] },
-    { id: 16, name: "Jagannathpur Government Primary School", teachers: ["Sudhir Chandra Roy (Head Teacher)", "Sultana Parvin (Assistant)", "Shahjahan Ali (Assistant)", "Srabani Rani (Assistant)", "Monir Hossain (Assistant)"] },
-    { id: 17, name: "Kashipur Government Primary School", teachers: ["Golam Mostafa (Head Teacher)", "Sabina Yasmin (Assistant)", "Rashedul Islam (Assistant)", "Kanika Rani (Assistant)", "Sohag Ali (Assistant)"] },
-    { id: 18, name: "Ramnagar Government Primary School", teachers: ["Nikhilesh Roy (Head Teacher)", "Farida Begum (Assistant)", "Tariqul Islam (Assistant)", "Ratna Rani (Assistant)", "Moslem Uddin (Assistant)"] },
-    { id: 19, name: "Kismat Bogula Government Primary School", teachers: ["Sirajul Islam (Head Teacher)", "Amena Khatun (Assistant)", "Ziaur Rahman (Assistant)", "Alo Rani (Assistant)", "Belayet Hossain (Assistant)"] },
-    { id: 20, name: "Bahadurpur Government Primary School", teachers: ["Prabhat Chandra (Head Teacher)", "Shahana Parvin (Assistant)", "Ariful Islam (Assistant)", "Mala Rani (Assistant)", "Asaduzzaman (Assistant)"] },
-    { id: 21, name: "Bhatgaon Government Primary School", teachers: ["Abdul Jabbar (Head Teacher)", "Suraiya Begum (Assistant)", "Mostafizur Rahman (Assistant)", "Shila Rani (Assistant)", "Easin Ali (Assistant)"] },
-    { id: 22, name: "Salandar Government Primary School", teachers: ["Kshitish Chandra (Head Teacher)", "Beauty Akhter (Assistant)", "Nazim Uddin (Assistant)", "Putul Rani (Assistant)", "Shah Alam (Assistant)"] },
-    { id: 23, name: "Nayaghat Government Primary School", teachers: ["Lutfar Rahman (Head Teacher)", "Rozina Begum (Assistant)", "Mizanur Rahman (Assistant)", "Shampa Rani (Assistant)", "Hridoy Hossain (Assistant)"] },
-    { id: 24, name: "Sahapur Government Primary School", teachers: ["Birendra Nath Roy (Head Teacher)", "Parveen Sultana (Assistant)", "Zahidul Islam (Assistant)", "Basana Rani (Assistant)", "Akram Hossain (Assistant)"] },
-    { id: 25, name: "Chakpara Government Primary School", teachers: ["Md. Khalilur Rahman (Head Teacher)", "Nazma Begum (Assistant)", "Harun-or-Rashid (Assistant)", "Minati Rani (Assistant)", "Abdul Alim (Assistant)"] }
+// ২৫টি স্কুলের তালিকা
+const SCHOOLS = [
+    { id: 1, name: "Bochaganj Model Govt. Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Md. Kamal Uddin (Assistant)"] },
+    { id: 2, name: "Setabganj Upashahar Govt. Primary School", teachers: ["Farhana Yeasmin (Head Teacher)", "Anwar Hossain (Assistant)", "Shamima Nasrin (Assistant)", "Rashedul Hasan (Assistant)", "Mst. Kulsum Banu (Assistant)"] },
+    { id: 3, name: "Bochaganj Central Govt. Primary School", teachers: ["Md. Shahidul Islam (Head Teacher)", "Ruma Rani Das (Assistant)", "Md. Mizanur Rahman (Assistant)", "Sultana Razia (Assistant)", "Md. Asaduzzaman (Assistant)"] },
+    { id: 4, name: "Muraripur Govt. Primary School", teachers: ["Animesh Roy (Head Teacher)", "Nasrin Sultana (Assistant)", "Belal Hossain (Assistant)", "Rina Begum (Assistant)", "Anisur Rahman (Assistant)"] },
+    { id: 5, name: "Chawk Rampur Govt. Primary School", teachers: ["Mahbuba Khatun (Head Teacher)", "Md. Abu Taleb (Assistant)", "Mst. Jannatun Nayeem (Assistant)", "Golam Rabbani (Assistant)", "Tapasi Rani (Assistant)"] },
+    { id: 6, name: "Bogula Govt. Primary School", teachers: ["Haradhan Chandra (Head Teacher)", "Rokeya Begum (Assistant)", "Abdul Mannan (Assistant)", "Geeta Rani (Assistant)", "Sohel Rana (Assistant)"] },
+    { id: 7, name: "Chira Govt. Primary School", teachers: ["Mozammel Haque (Head Teacher)", "Shikha Rani (Assistant)", "Enamul Haque (Assistant)", "Kohinoor Begum (Assistant)", "Liton Kumar (Assistant)"] },
+    { id: 8, name: "Gopalpur Govt. Primary School", teachers: ["Bipul Chandra Roy (Head Teacher)", "Khadiza Akhter (Assistant)", "Md. Zakir Hossain (Assistant)", "Arati Rani (Assistant)", "Monirul Islam (Assistant)"] },
+    { id: 9, name: "Ishania Govt. Primary School", teachers: ["Nurul Huda (Head Teacher)", "Shampa Rani (Assistant)", "Al Amin (Assistant)", "Taslima Nasrin (Assistant)", "Pankaj Kumar (Assistant)"] },
+    { id: 10, name: "Nandigram Govt. Primary School", teachers: ["Md. Jahangir Alam (Head Teacher)", "Momotaz Begum (Assistant)", "Biplob Kumar (Assistant)", "Mst. Shahnaz Parvin (Assistant)", "Sujon Ali (Assistant)"] },
+    { id: 11, name: "Shibpur Govt. Primary School", teachers: ["Abdul Latif (Head Teacher)", "Sabina Yasmin (Assistant)", "Uttam Kumar (Assistant)", "Rubina Akhter (Assistant)", "Shahidul Islam (Assistant)"] },
+    { id: 12, name: "Ratanpur Govt. Primary School", teachers: ["Mst. Morium Begum (Head Teacher)", "Prosenjit Roy (Assistant)", "Nargis Banu (Assistant)", "Ashraful Alam (Assistant)", "Rehana Khatun (Assistant)"] },
+    { id: 13, name: "Chak Kalikapur Govt. Primary School", teachers: ["Subodh Chandra (Head Teacher)", "Pori Rani (Assistant)", "Md. Habibur Rahman (Assistant)", "Shirin Akhter (Assistant)", "Tariqul Islam (Assistant)"] },
+    { id: 14, name: "Bara Maheshtpur Govt. Primary School", teachers: ["Md. Abdur Razzak (Head Teacher)", "Afroza Begum (Assistant)", "Sujit Kumar (Assistant)", "Mst. Parvin Akhter (Assistant)", "Mahmudul Hasan (Assistant)"] },
+    { id: 15, name: "Chatra Govt. Primary School", teachers: ["Narayan Chandra (Head Teacher)", "Beauty Rani (Assistant)", "Md. Aminul Islam (Assistant)", "Shahanara Begum (Assistant)", "Dipak Roy (Assistant)"] },
+    { id: 16, name: "Jagannathpur Govt. Primary School", teachers: ["Md. Moksed Ali (Head Teacher)", "Nasima Akhter (Assistant)", "Pranab Kumar (Assistant)", "Fatema Khatun (Assistant)", "Kamrul Hasan (Assistant)"] },
+    { id: 17, name: "Kashipur Govt. Primary School", teachers: ["Mst. Rahela Khatun (Head Teacher)", "Dinesh Chandra (Assistant)", "Sultana Parvin (Assistant)", "Md. Mostafizur Rahman (Assistant)", "Barnali Rani (Assistant)"] },
+    { id: 18, name: "Ramnagar Govt. Primary School", teachers: ["Md. Ayub Ali (Head Teacher)", "Shefali Rani (Assistant)", "Shariful Islam (Assistant)", "Jesmin Ara (Assistant)", "Nirmal Chandra (Assistant)"] },
+    { id: 19, name: "Kismat Bogula Govt. Primary School", teachers: ["Manoranjan Roy (Head Teacher)", "Ferdousi Begum (Assistant)", "Md. Saiful Islam (Assistant)", "Minati Rani (Assistant)", "Golam Azam (Assistant)"] },
+    { id: 20, name: "Bahadurpur Govt. Primary School", teachers: ["Md. Golam Sarwar (Head Teacher)", "Hosne Ara (Assistant)", "Dulal Chandra (Assistant)", "Mst. Bilkis Banu (Assistant)", "Rabiul Islam (Assistant)"] },
+    { id: 21, name: "Bhatgaon Govt. Primary School", teachers: ["Sudhir Chandra (Head Teacher)", "Ruksana Parvin (Assistant)", "Md. Jahid Hasan (Assistant)", "Kalyani Rani (Assistant)", "Shahinur Alam (Assistant)"] },
+    { id: 22, name: "Salandar Govt. Primary School", teachers: ["Md. Anwarul Islam (Head Teacher)", "Taslima Begum (Assistant)", "Bikash Roy (Assistant)", "Mst. Sharmin Sultana (Assistant)", "Firoz Ali (Assistant)"] },
+    { id: 23, name: "Nayaghat Govt. Primary School", teachers: ["Amal Chandra Roy (Head Teacher)", "Salma Khatun (Assistant)", "Md. Masud Rana (Assistant)", "Anita Rani (Assistant)", "Habib Ullah (Assistant)"] },
+    { id: 24, name: "Sahapur Govt. Primary School", teachers: ["Md. Zillur Rahman (Head Teacher)", "Mita Rani (Assistant)", "Abu Bakar Siddiq (Assistant)", "Ruma Begum (Assistant)", "Kishore Kumar (Assistant)"] },
+    { id: 25, name: "Chakpara Govt. Primary School", teachers: ["Nirmal Kumar Roy (Head Teacher)", "Sufia Begum (Assistant)", "Md. Emdadul Haque (Assistant)", "Lipi Rani (Assistant)", "Suman Ali (Assistant)"] }
 ];
 
-function getSchoolSerialId(name) {
-    const found = defaultSchools.find(s => s.name.trim().toLowerCase() === name.trim().toLowerCase());
+function getSafeSchoolId(schoolName) {
+    if (!schoolName) return 999;
+    const match = String(schoolName).match(/^(\d+)\./);
+    if (match) return parseInt(match[1]);
+
+    const clean = String(schoolName).toLowerCase().replace(/[^a-z0-9]/g, '');
+    const found = SCHOOLS.find(s => {
+        const sClean = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return clean.includes(sClean) || sClean.includes(clean);
+    });
     return found ? found.id : 999;
 }
 
-async function getDynamicSchoolsData() {
-    try {
-        const { data: dbTeachers } = await supabase.from('school_teachers_custom').select('*');
-        if (!dbTeachers || dbTeachers.length === 0) return defaultSchools;
+// ভিউ ইঞ্জিন ও স্ট্যাটিক ডিরেক্টরি সেটআপ
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-        return defaultSchools.map(sch => {
-            const customEntry = dbTeachers.find(t => t.school_id === sch.id);
-            if (customEntry && customEntry.teachers) {
-                return { ...sch, teachers: customEntry.teachers };
-            }
-            return sch;
-        });
-    } catch (e) {
-        return defaultSchools;
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
+
+// সরাসরি আইকন ও ম্যানিফেস্ট ডেলিভারি রাউট
+app.get('/icon-192.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'icon-192.png'));
+});
+
+app.get('/icon-512.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'icon-512.png'));
+});
+
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'icon-192.png'));
+});
+
+app.get('/manifest.json', (req, res) => {
+    res.sendFile(path.join(__dirname, 'manifest.json'));
+});
+
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(cookieParser());
+
+// Authentication Helpers
+const requireAEOAuth = (req, res, next) => {
+    if (req.cookies && req.cookies.admin_session === 'authenticated_aeo_2026') {
+        next();
+    } else {
+        res.redirect('/');
     }
-}
+};
 
-async function isSubmissionAllowed() {
-    try {
-        const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
-        if (setting && setting.value === 'true') return { allowed: true, reason: 'unlocked_by_aeo' };
-
-        const bdTimeStr = new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour12: false });
-        const [hours] = bdTimeStr.split(':').map(Number);
-        if (hours < 10) return { allowed: true, reason: 'regular_time' };
-        return { allowed: false, reason: 'time_expired' };
-    } catch (e) {
-        return { allowed: true, reason: 'fallback' };
+const requireSchoolAuth = (req, res, next) => {
+    const schoolSession = req.cookies ? req.cookies.school_session : null;
+    if (schoolSession && schoolSession.startsWith('school_')) {
+        req.schoolId = parseInt(schoolSession.split('_')[1]);
+        next();
+    } else {
+        res.redirect('/');
     }
-}
+};
 
-app.get('/', (req, res) => res.render('login', { error: null }));
-app.get('/login', (req, res) => res.render('login', { error: null }));
+// 1. Gateway & Login
+app.get('/', (req, res) => {
+    res.render('login', { error: null });
+});
 
-app.post('/login', (req, res) => {
-    const { role, password, schoolId } = req.body;
-    
-    if (role === 'admin') {
-        if (password === AEO_PASSWORD) {
-            return res.redirect('/admin');
-        } else {
-            return res.render('login', { error: 'Invalid AEO Password!' });
-        }
-    } else if (role === 'school') {
-        if (password === SCHOOL_PASSWORD) {
-            return res.redirect(`/index?schoolId=${schoolId}`);
-        } else {
-            return res.render('login', { error: 'Invalid School Password!' });
-        }
-    }
+app.get('/login', (req, res) => {
     res.redirect('/');
 });
 
-app.get('/index', async (req, res) => {
-    const schoolId = req.query.schoolId;
-    if (!schoolId) return res.redirect('/');
-    const schools = await getDynamicSchoolsData();
-    const school = schools.find(s => s.id == schoolId);
-    const status = await isSubmissionAllowed();
-    res.render('index', { school, isAllowed: status.allowed, lockReason: status.reason });
-});
+app.post('/login', (req, res) => {
+    try {
+        const { role, password, schoolId } = req.body;
+        const enteredPassword = String(password || '').trim();
 
-app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
-    const status = await isSubmissionAllowed();
-    if (!status.allowed) {
-        return res.json({ success: false, message: 'Time limit expired (After 10:00 AM). Attendance locked!' });
-    }
+        if (role === 'admin') {
+            if (enteredPassword === 'admin123') {
+                res.cookie('admin_session', 'authenticated_aeo_2026', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                return res.redirect('/admin');
+            } else {
+                return res.render('login', { error: 'Invalid AEO Password! Use: admin123' });
+            }
+        } else {
+            const targetSchoolId = parseInt(schoolId) || 1;
+            const isValidSchoolPass = (enteredPassword === 'School12345' || enteredPassword === `${targetSchoolId}@primary`);
 
-    const { schoolId, attendance, lat, lng } = req.body;
-    const schools = await getDynamicSchoolsData();
-    const school = schools.find(s => s.id == schoolId);
-    const schoolName = school ? school.name : 'Unknown School';
-    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-
-    const { data: existing } = await supabase
-        .from('attendance_records')
-        .select('id')
-        .eq('school_name', schoolName)
-        .eq('attendance_date', todayDate)
-        .maybeSingle();
-
-    if (existing) {
-        return res.json({ 
-            success: false, 
-            message: `Attendance for ${schoolName} has already been submitted for today!` 
-        });
-    }
-
-    let photoDataUrl = req.file ? `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}` : null;
-
-    const newRecord = {
-        school_name: schoolName,
-        attendance_date: todayDate,
-        attendance_data: JSON.parse(attendance),
-        photo_url: photoDataUrl,
-        latitude: lat,
-        longitude: lng,
-        created_at: new Date().toISOString()
-    };
-
-    const { error } = await supabase.from('attendance_records').insert([newRecord]);
-    if (error) return res.json({ success: false, message: 'Database error occurred!' });
-    res.json({ success: true, message: 'Attendance Submitted Successfully!' });
-});
-
-// Admin Route
-app.get('/admin', async (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-
-    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-    const viewType = req.query.viewType || 'daily';
-    const selectedDate = req.query.date || todayDate;
-    const selectedMonth = req.query.month || todayDate.substring(0, 7);
-    const selectedYear = req.query.year || todayDate.substring(0, 4);
-
-    let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
-
-    if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
-    else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-    else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-
-    const { data: records } = await query;
-    const { data: setting } = await supabase.from('system_settings').select('*').eq('key', 'aeo_override_unlock').single();
-    const isAeoUnlocked = (setting && setting.value === 'true');
-
-    const formattedRecords = (records || [])
-        .map(rec => ({
-            id: rec.id,
-            serialId: getSchoolSerialId(rec.school_name),
-            schoolName: rec.school_name,
-            date: rec.attendance_date,
-            attendance: rec.attendance_data,
-            location: { lat: rec.latitude, lng: rec.longitude },
-            timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
-        }))
-        .sort((a, b) => a.serialId - b.serialId);
-
-    res.render('admin', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
-});
-
-// List Route
-app.get('/admin/list', async (req, res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
-
-    const todayDate = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Dhaka' });
-    const viewType = req.query.viewType || 'daily';
-    const selectedDate = req.query.date || todayDate;
-    const selectedMonth = req.query.month || todayDate.substring(0, 7);
-    const selectedYear = req.query.year || todayDate.substring(0, 4);
-
-    let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
-
-    if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
-    else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-    else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-
-    const { data: records } = await query;
-
-    const formattedRecords = (records || [])
-        .map(rec => ({
-            id: rec.id,
-            serialId: getSchoolSerialId(rec.school_name),
-            schoolName: rec.school_name,
-            date: rec.attendance_date,
-            attendance: rec.attendance_data,
-            location: { lat: rec.latitude, lng: rec.longitude },
-            timestamp: new Date(rec.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' })
-        }))
-        .sort((a, b) => a.serialId - b.serialId);
-
-    res.render('admin-list', { records: formattedRecords, viewType, selectedDate, selectedMonth, selectedYear });
-});
-
-// Teacher Analytics
-app.get('/api/teacher-analytics', async (req, res) => {
-    const { teacher, mode, month, year } = req.query;
-    if (!teacher) return res.json({ success: false, stats: null });
-
-    let query = supabase
-        .from('attendance_records')
-        .select('school_name, attendance_date, attendance_data')
-        .order('attendance_date', { ascending: false })
-        .limit(100);
-
-    if (mode === 'monthly' && month) query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
-    else if (mode === 'yearly' && year) query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
-
-    const { data: allRecords } = await query;
-
-    let presentCount = 0;
-    let leaveCount = 0;
-    let absentCount = 0;
-    let history = [];
-    let schoolName = '';
-
-    (allRecords || []).forEach(rec => {
-        if (rec.attendance_data && Array.isArray(rec.attendance_data)) {
-            const found = rec.attendance_data.find(t => t.teacher.toLowerCase().trim() === teacher.toLowerCase().trim());
-            if (found) {
-                schoolName = rec.school_name;
-                if (found.status === 'Present') presentCount++;
-                else if (found.status === 'Leave') leaveCount++;
-                else if (found.status === 'Absent') absentCount++;
-
-                history.push({ date: rec.attendance_date, status: found.status, leaveType: found.leaveType || '' });
+            if (isValidSchoolPass) {
+                res.cookie('school_session', `school_${targetSchoolId}`, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                return res.redirect(`/index?schoolId=${targetSchoolId}`);
+            } else {
+                return res.render('login', { error: `Invalid password for School ID ${targetSchoolId}! Use: School12345` });
             }
         }
-    });
-
-    const totalDays = presentCount + leaveCount + absentCount;
-    const presentRate = totalDays > 0 ? ((presentCount / totalDays) * 100).toFixed(1) : "0.0";
-
-    res.json({
-        success: true,
-        teacherName: teacher,
-        schoolName,
-        stats: { totalDays, presentCount, leaveCount, absentCount, presentRate },
-        history: history.slice(0, 30)
-    });
-});
-
-app.get('/api/photos-payload', async (req, res) => {
-    const { viewType, date, month, year } = req.query;
-    let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
-
-    if (viewType === 'daily') query = query.eq('attendance_date', date);
-    else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
-    else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
-
-    const { data: records } = await query;
-    const photos = (records || [])
-        .filter(r => r.photo_url)
-        .map(r => ({
-            serialId: getSchoolSerialId(r.school_name),
-            schoolName: r.school_name,
-            date: r.attendance_date,
-            photo: r.photo_url
-        }))
-        .sort((a, b) => a.serialId - b.serialId);
-
-    res.json({ success: true, photos });
-});
-
-app.get('/admin/teachers', async (req, res) => {
-    const schools = await getDynamicSchoolsData();
-    res.render('admin-teachers', { schools });
-});
-
-app.post('/admin/teachers/update', async (req, res) => {
-    const { schoolId, teachers } = req.body;
-    const { error } = await supabase.from('school_teachers_custom').upsert([{ school_id: parseInt(schoolId), teachers: JSON.parse(teachers) }]);
-    if (error) return res.json({ success: false, message: 'Failed to update.' });
-    res.json({ success: true, message: 'Teachers updated successfully!' });
-});
-
-app.post('/admin/school/delete/:id', async (req, res) => {
-    const recordId = req.params.id;
-    const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
-    if (error) return res.json({ success: false, message: 'Failed to delete record.' });
-    res.json({ success: true, message: 'Record deleted successfully!' });
-});
-
-app.post('/admin/toggle-lock', async (req, res) => {
-    const { unlock } = req.body;
-    const { error } = await supabase.from('system_settings').upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
-    if (error) return res.json({ success: false, message: 'Failed to update lock.' });
-    res.json({ success: true, isUnlocked: unlock });
-});
-
-app.get('/admin/school/:id', async (req, res) => {
-    const recordId = req.params.id;
-    const { data, error } = await supabase.from('attendance_records').select('*').eq('id', recordId).single();
-    if (error || !data) return res.redirect('/admin');
-
-    const record = {
-        id: data.id,
-        schoolName: data.school_name,
-        date: data.attendance_date,
-        attendance: data.attendance_data,
-        photo: data.photo_url,
-        location: { lat: data.latitude, lng: data.longitude },
-        timestamp: new Date(data.created_at).toLocaleString()
-    };
-    res.render('edit-attendance', { record });
-});
-
-app.post('/admin/school/update/:id', async (req, res) => {
-    const recordId = req.params.id;
-    const { attendance } = req.body;
-    const { error } = await supabase.from('attendance_records').update({ attendance_data: JSON.parse(attendance) }).eq('id', recordId);
-    if (error) return res.json({ success: false, message: 'Failed to update.' });
-    res.json({ success: true, redirectUrl: '/admin' });
+    } catch (e) {
+        res.render('login', { error: 'Authentication Failed' });
+    }
 });
 
 app.get('/logout', (req, res) => {
+    res.clearCookie('admin_session');
+    res.clearCookie('school_session');
     res.redirect('/');
 });
 
-module.exports = app;
-if (require.main === module) {
-    app.listen(PORT, () => console.log(`Server running at http://localhost:${PORT}`));
+// 2. School Attendance Page
+app.get('/index', requireSchoolAuth, async (req, res) => {
+    try {
+        const schoolId = parseInt(req.query.schoolId) || req.schoolId || 1;
+        const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
+
+        const now = new Date();
+        const bdHours = (now.getUTCHours() + 6) % 24;
+        const isWithinTime = bdHours < 10;
+
+        let isAllowed = isWithinTime;
+        try {
+            const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
+            if (lockSetting && lockSetting.value === 'true') {
+                isAllowed = true;
+            }
+        } catch (e) {}
+
+        res.render('index', { school, isAllowed });
+    } catch (err) {
+        res.redirect('/');
+    }
+});
+
+// 3. Submit Attendance
+app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
+    try {
+        const { schoolId, lat, lng, attendance } = req.body;
+        const school = SCHOOLS.find(s => s.id === parseInt(schoolId));
+        if (!school) return res.status(400).json({ success: false, message: 'Invalid School' });
+
+        let photoUrl = '';
+        if (req.file) {
+            const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+            photoUrl = base64Image;
+        }
+
+        const now = new Date();
+        const bangladeshTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+        const todayDate = bangladeshTime.toISOString().split('T')[0];
+
+        const { error } = await supabase.from('attendance_records').insert([{
+            school_name: school.name,
+            attendance_date: todayDate,
+            attendance_data: JSON.parse(attendance),
+            photo_url: photoUrl,
+            latitude: lat,
+            longitude: lng,
+            created_at: new Date().toISOString()
+        }]);
+
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// 4. Admin Summary Dashboard
+app.get('/admin', requireAEOAuth, async (req, res) => {
+    try {
+        const viewType = req.query.viewType || 'daily';
+        const now = new Date();
+        const bdTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+        
+        const selectedDate = req.query.date || bdTime.toISOString().split('T')[0];
+        const selectedMonth = req.query.month || bdTime.toISOString().substring(0, 7);
+        const selectedYear = req.query.year || String(bdTime.getFullYear());
+
+        let query = supabase.from('attendance_records').select('*');
+
+        if (viewType === 'daily') {
+            query = query.eq('attendance_date', selectedDate);
+        } else if (viewType === 'monthly') {
+            query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+        } else if (viewType === 'yearly') {
+            query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+        }
+
+        const { data: rawRecords } = await query;
+        
+        let records = (rawRecords || []).map(r => ({
+            id: r.id,
+            schoolName: r.school_name || 'School',
+            date: r.attendance_date || '',
+            attendance: r.attendance_data || [],
+            photo: r.photo_url || '',
+            location: { lat: r.latitude || '', lng: r.longitude || '' },
+            timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
+        }));
+
+        records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
+
+        let isAeoUnlocked = false;
+        try {
+            const { data: lockSetting } = await supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').single();
+            isAeoUnlocked = lockSetting && lockSetting.value === 'true';
+        } catch(e) {}
+
+        res.render('admin', {
+            records,
+            viewType,
+            selectedDate,
+            selectedMonth,
+            selectedYear,
+            isAeoUnlocked
+        });
+    } catch (e) {
+        res.render('admin', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
+    }
+});
+
+// 5. Admin List View
+app.get('/admin/list', requireAEOAuth, async (req, res) => {
+    try {
+        const viewType = req.query.viewType || 'daily';
+        const now = new Date();
+        const bdTime = new Date(now.getTime() + (6 * 60 * 60 * 1000));
+
+        const selectedDate = req.query.date || bdTime.toISOString().split('T')[0];
+        const selectedMonth = req.query.month || bdTime.toISOString().substring(0, 7);
+        const selectedYear = req.query.year || String(bdTime.getFullYear());
+
+        let query = supabase.from('attendance_records').select('*');
+
+        if (viewType === 'daily') {
+            query = query.eq('attendance_date', selectedDate);
+        } else if (viewType === 'monthly') {
+            query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
+        } else if (viewType === 'yearly') {
+            query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
+        }
+
+        const { data: rawRecords } = await query;
+
+        let records = (rawRecords || []).map(r => ({
+            id: r.id,
+            schoolName: r.school_name || 'School',
+            date: r.attendance_date || '',
+            attendance: r.attendance_data || [],
+            timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
+        }));
+
+        records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
+
+        res.render('admin-list', {
+            records,
+            viewType,
+            selectedDate,
+            selectedMonth,
+            selectedYear
+        });
+    } catch (e) {
+        res.render('admin-list', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '' });
+    }
+});
+
+// 6. Teacher Management Page
+app.get('/admin/teachers', requireAEOAuth, (req, res) => {
+    res.render('admin-teachers', { schools: SCHOOLS });
+});
+
+app.post('/admin/teachers/update', requireAEOAuth, (req, res) => {
+    const { schoolId, teachers } = req.body;
+    const school = SCHOOLS.find(s => s.id === parseInt(schoolId));
+    if (school) {
+        school.teachers = teachers;
+        return res.json({ success: true });
+    }
+    res.status(400).json({ success: false, message: 'School not found' });
+});
+
+// 7. Verify & Edit Record
+app.get('/admin/school/:id', requireAEOAuth, async (req, res) => {
+    try {
+        const recordId = req.params.id;
+        const { data, error } = await supabase.from('attendance_records').select('*').eq('id', recordId).single();
+        if (error || !data) return res.redirect('/admin/list');
+
+        const record = {
+            id: data.id,
+            schoolName: data.school_name,
+            date: data.attendance_date,
+            attendance: data.attendance_data,
+            photo: data.photo_url,
+            location: { lat: data.latitude, lng: data.longitude },
+            timestamp: new Date(data.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })
+        };
+
+        res.render('edit-attendance', { record });
+    } catch (e) {
+        res.redirect('/admin/list');
+    }
+});
+
+app.post('/admin/school/update/:id', requireAEOAuth, async (req, res) => {
+    try {
+        const recordId = req.params.id;
+        const { attendance } = req.body;
+
+        const { error } = await supabase.from('attendance_records').update({
+            attendance_data: JSON.parse(attendance)
+        }).eq('id', recordId);
+
+        if (error) return res.json({ success: false, message: error.message });
+        res.json({ success: true });
+    } catch(e) {
+        res.json({ success: false, message: 'Update failed' });
+    }
+});
+
+app.post('/admin/school/delete/:id', requireAEOAuth, async (req, res) => {
+    try {
+        const recordId = req.params.id;
+        const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
+        if (error) return res.json({ success: false, message: 'Failed to delete.' });
+        res.json({ success: true });
+    } catch(e) {
+        res.json({ success: false, message: 'Delete failed' });
+    }
+});
+
+app.post('/admin/toggle-lock', requireAEOAuth, async (req, res) => {
+    try {
+        const { unlock } = req.body;
+        const { error } = await supabase.from('system_settings').upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
+        if (error) return res.json({ success: false, message: 'Failed to update lock' });
+        res.json({ success: true, isUnlocked: unlock });
+    } catch(e) {
+        res.json({ success: false, message: 'Toggle failed' });
+    }
+});
+
+// 8. APIs
+app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
+    try {
+        const { teacher, mode, month, year } = req.query;
+        let query = supabase.from('attendance_records').select('*');
+
+        if (mode === 'monthly') {
+            query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+        } else if (mode === 'yearly') {
+            query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+        }
+
+        const { data: rawRecords } = await query;
+        let history = [];
+        let schoolName = '';
+        let presentCount = 0, leaveCount = 0, absentCount = 0;
+
+        (rawRecords || []).forEach(r => {
+            if (r.attendance_data && Array.isArray(r.attendance_data)) {
+                const found = r.attendance_data.find(t => t.teacher.trim() === teacher.trim());
+                if (found) {
+                    schoolName = r.school_name;
+                    history.push({
+                        date: r.attendance_date,
+                        status: found.status,
+                        leaveType: found.leaveType || ''
+                    });
+
+                    if (found.status === 'Present') presentCount++;
+                    else if (found.status === 'Leave') leaveCount++;
+                    else if (found.status === 'Absent') absentCount++;
+                }
+            }
+        });
+
+        history.sort((a, b) => new Date(b.date) - new Date(a.date));
+        const total = presentCount + leaveCount + absentCount;
+        const presentRate = total > 0 ? ((presentCount / total) * 100).toFixed(1) : "0.0";
+
+        res.json({
+            success: true,
+            teacherName: teacher,
+            schoolName,
+            stats: { presentCount, leaveCount, absentCount, presentRate },
+            history
+        });
+    } catch(e) {
+        res.json({ success: false, message: 'Analytics failed' });
+    }
+});
+
+app.get('/api/photos-payload', requireAEOAuth, async (req, res) => {
+    try {
+        const { viewType, date, month, year } = req.query;
+        let query = supabase.from('attendance_records').select('school_name, attendance_date, photo_url');
+
+        if (viewType === 'daily') {
+            query = query.eq('attendance_date', date);
+        } else if (viewType === 'monthly') {
+            query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+        } else if (viewType === 'yearly') {
+            query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+        }
+
+        const { data } = await query;
+        const photos = (data || []).map(d => ({
+            schoolName: d.school_name,
+            date: d.attendance_date,
+            photo: d.photo_url
+        }));
+
+        res.json({ success: true, photos });
+    } catch(e) {
+        res.json({ success: false, photos: [] });
+    }
+});
+
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
 }
+
+module.exports = app;

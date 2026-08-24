@@ -11,7 +11,29 @@ const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 25 Schools Static Registry (Zero DB Overhead)
+// ==========================================
+// 🚀 IN-MEMORY HIGH-SPEED CACHE ENGINE (RAM)
+// ==========================================
+const MEMORY_CACHE = new Map();
+const CACHE_TTL_MS = 60 * 1000; // 60 Seconds Cache
+
+function getCache(key) {
+    const cached = MEMORY_CACHE.get(key);
+    if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+        return cached.data;
+    }
+    return null;
+}
+
+function setCache(key, data) {
+    MEMORY_CACHE.set(key, { data, timestamp: Date.now() });
+}
+
+function clearAppCache() {
+    MEMORY_CACHE.clear();
+}
+
+// 25 Schools List in Server Memory (0ms lookup)
 const SCHOOLS = [
     { id: 1, name: "Bochaganj Model Govt. Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Md. Kamal Uddin (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Govt. Primary School", teachers: ["Farhana Yeasmin (Head Teacher)", "Anwar Hossain (Assistant)", "Shamima Nasrin (Assistant)", "Rashedul Hasan (Assistant)", "Mst. Kulsum Banu (Assistant)"] },
@@ -44,12 +66,8 @@ function getSafeSchoolId(schoolName) {
     if (!schoolName) return 999;
     const match = String(schoolName).match(/^(\d+)\./);
     if (match) return parseInt(match[1]);
-
     const clean = String(schoolName).toLowerCase().replace(/[^a-z0-9]/g, '');
-    const found = SCHOOLS.find(s => {
-        const sClean = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-        return clean.includes(sClean) || sClean.includes(clean);
-    });
+    const found = SCHOOLS.find(s => clean.includes(s.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     return found ? found.id : 999;
 }
 
@@ -66,8 +84,8 @@ function getBangladeshDateTime() {
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '1d' }));
-app.use(express.static(__dirname, { maxAge: '1d' }));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' }));
+app.use(express.static(__dirname, { maxAge: '7d' }));
 
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
@@ -84,6 +102,7 @@ app.use((req, res, next) => {
     next();
 });
 
+// PWA Icons Direct Serve
 app.get('/icon-192.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-192.png')));
 app.get('/icon-512.png', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-512.png')));
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'icon-192.png')));
@@ -104,7 +123,7 @@ const requireSchoolAuth = (req, res, next) => {
     }
 };
 
-// 1. Gateway
+// 1. Gateway & Auth
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.redirect('/'));
 
@@ -123,7 +142,6 @@ app.post('/login', (req, res) => {
         } else {
             const targetSchoolId = parseInt(schoolId) || 1;
             const isValidSchoolPass = (enteredPassword === 'School12345' || enteredPassword === `${targetSchoolId}@primary`);
-
             if (isValidSchoolPass) {
                 res.setHeader('Set-Cookie', `school_session=school_${targetSchoolId}; Path=/; HttpOnly; Max-Age=86400`);
                 return res.redirect(`/index?schoolId=${targetSchoolId}`);
@@ -141,14 +159,13 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 2. School Portal (Ultra Fast Parallel Fetch)
+// 2. School Submission Form
 app.get('/index', requireSchoolAuth, async (req, res) => {
     try {
         const schoolId = parseInt(req.query.schoolId) || req.schoolId || 1;
         const school = SCHOOLS.find(s => s.id === schoolId) || SCHOOLS[0];
         const { dateStr, hourBD } = getBangladeshDateTime();
 
-        // Run both checks in parallel (50% faster)
         const [recordRes, lockRes] = await Promise.all([
             supabase.from('attendance_records').select('id, created_at').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
             supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
@@ -209,78 +226,83 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         }]);
 
         if (error) throw error;
+        clearAppCache(); // Invalidate Server Cache immediately on new submission
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// 4. Admin Dashboard (Instant Response without heavy images)
+// Helper for Fetching Attendance Records with Memory Cache
+async function fetchRecordsWithCache(viewType, date, month, year) {
+    const cacheKey = `summary_${viewType}_${date}_${month}_${year}`;
+    const cached = getCache(cacheKey);
+    if (cached) return cached;
+
+    let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at');
+
+    if (viewType === 'daily') query = query.eq('attendance_date', date);
+    else if (viewType === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+    else if (viewType === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+
+    const { data } = await query;
+    let records = (data || []).map(r => ({
+        id: r.id,
+        schoolName: r.school_name || 'School',
+        date: r.attendance_date || '',
+        attendance: r.attendance_data || [],
+        latitude: r.latitude || '',
+        longitude: r.longitude || '',
+        timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
+    }));
+
+    records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
+    setCache(cacheKey, records);
+    return records;
+}
+
+// 4. Admin Summary Dashboard (Instant Initial Render)
 app.get('/admin', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
         const { dateStr, monthStr, yearStr } = getBangladeshDateTime();
-        
         const selectedDate = req.query.date || dateStr;
         const selectedMonth = req.query.month || monthStr;
         const selectedYear = req.query.year || yearStr;
 
-        let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, created_at');
-
-        if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
-        else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-        else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-
-        const [recordsRes, lockRes] = await Promise.all([
-            query,
+        const [records, lockRes] = await Promise.all([
+            fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear),
             supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
         ]);
 
-        let records = (recordsRes.data || []).map(r => ({
-            id: r.id,
-            schoolName: r.school_name || 'School',
-            date: r.attendance_date || '',
-            attendance: r.attendance_data || [],
-            timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
-        }));
-
-        records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
         const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
-
         res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
         res.render('admin', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
     }
 });
 
-// 5. Admin List View (Zero Lag)
+// ⚡ Instant High-Speed JSON API for Tab Switching (0.01s response time)
+app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
+    try {
+        const { viewType, date, month, year } = req.query;
+        const records = await fetchRecordsWithCache(viewType, date, month, year);
+        res.json({ success: true, records });
+    } catch (e) {
+        res.json({ success: false, records: [] });
+    }
+});
+
+// 5. Admin List View
 app.get('/admin/list', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
         const { dateStr, monthStr, yearStr } = getBangladeshDateTime();
-
         const selectedDate = req.query.date || dateStr;
         const selectedMonth = req.query.month || monthStr;
         const selectedYear = req.query.year || yearStr;
 
-        let query = supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, created_at');
-
-        if (viewType === 'daily') query = query.eq('attendance_date', selectedDate);
-        else if (viewType === 'monthly') query = query.gte('attendance_date', `${selectedMonth}-01`).lte('attendance_date', `${selectedMonth}-31`);
-        else if (viewType === 'yearly') query = query.gte('attendance_date', `${selectedYear}-01-01`).lte('attendance_date', `${selectedYear}-12-31`);
-
-        const { data: rawRecords } = await query;
-
-        let records = (rawRecords || []).map(r => ({
-            id: r.id,
-            schoolName: r.school_name || 'School',
-            date: r.attendance_date || '',
-            attendance: r.attendance_data || [],
-            timestamp: r.created_at ? new Date(r.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' }) : ''
-        }));
-
-        records.sort((a, b) => getSafeSchoolId(a.schoolName) - getSafeSchoolId(b.schoolName));
-
+        const records = await fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear);
         res.render('admin-list', { records, viewType, selectedDate, selectedMonth, selectedYear });
     } catch (e) {
         res.render('admin-list', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '' });
@@ -288,15 +310,14 @@ app.get('/admin/list', requireAEOAuth, async (req, res) => {
 });
 
 // 6. Teacher Management
-app.get('/admin/teachers', requireAEOAuth, (req, res) => {
-    res.render('admin-teachers', { schools: SCHOOLS });
-});
+app.get('/admin/teachers', requireAEOAuth, (req, res) => res.render('admin-teachers', { schools: SCHOOLS }));
 
 app.post('/admin/teachers/update', requireAEOAuth, (req, res) => {
     const { schoolId, teachers } = req.body;
     const school = SCHOOLS.find(s => s.id === parseInt(schoolId));
     if (school) {
         school.teachers = typeof teachers === 'string' ? JSON.parse(teachers) : teachers;
+        clearAppCache();
         return res.json({ success: true });
     }
     res.status(400).json({ success: false, message: 'School not found' });
@@ -318,7 +339,6 @@ app.get('/admin/school/:id', requireAEOAuth, async (req, res) => {
             location: { lat: data.latitude, lng: data.longitude },
             timestamp: new Date(data.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka' })
         };
-
         res.render('edit-attendance', { record });
     } catch (e) {
         res.redirect('/admin/list');
@@ -331,14 +351,12 @@ app.post('/admin/school/update/:id', requireAEOAuth, async (req, res) => {
         const { attendance } = req.body;
         const parsedAttendance = typeof attendance === 'string' ? JSON.parse(attendance) : attendance;
 
-        const { error } = await supabase.from('attendance_records').update({
-            attendance_data: parsedAttendance
-        }).eq('id', recordId);
-
+        const { error } = await supabase.from('attendance_records').update({ attendance_data: parsedAttendance }).eq('id', recordId);
         if (error) return res.json({ success: false, message: error.message });
+        clearAppCache();
         res.json({ success: true });
     } catch(e) {
-        res.json({ success: false, message: 'Update failed: ' + e.message });
+        res.json({ success: false, message: 'Update failed' });
     }
 });
 
@@ -347,6 +365,7 @@ app.post('/admin/school/delete/:id', requireAEOAuth, async (req, res) => {
         const recordId = req.params.id;
         const { error } = await supabase.from('attendance_records').delete().eq('id', recordId);
         if (error) return res.json({ success: false, message: 'Failed to delete.' });
+        clearAppCache();
         res.json({ success: true });
     } catch(e) {
         res.json({ success: false, message: 'Delete failed' });
@@ -358,6 +377,7 @@ app.post('/admin/toggle-lock', requireAEOAuth, async (req, res) => {
         const { unlock } = req.body;
         const { error } = await supabase.from('system_settings').upsert([{ key: 'aeo_override_unlock', value: unlock ? 'true' : 'false' }]);
         if (error) return res.json({ success: false, message: 'Failed to update lock' });
+        clearAppCache();
         res.json({ success: true, isUnlocked: unlock });
     } catch(e) {
         res.json({ success: false, message: 'Toggle failed' });

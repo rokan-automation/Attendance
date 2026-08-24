@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=17">
+    <link rel="stylesheet" href="/css/style.css?v=20">
     
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -61,7 +61,7 @@
         }
         .btn-back-school:active { transform: scale(0.95); }
 
-        /* Already Submitted Card */
+        /* Already Submitted Card - 100% Pure English */
         .already-submitted-card {
             background: #f0fdf4;
             border: 2px solid #86efac;
@@ -119,7 +119,6 @@
             user-select: none;
         }
 
-        /* ইনলাইন ছুটির ধরন বাটন কনটেইনার (কোনো পপআপ আসবে না) */
         .leave-inline-container {
             margin-top: 6px;
             background: #fffbeb;
@@ -163,7 +162,6 @@
 
         .leave-chip:active { transform: scale(0.96); }
 
-        /* একটিভ ছুটির বাটন */
         .leave-chip.active {
             background: #d97706;
             color: #ffffff;
@@ -197,7 +195,6 @@
         }
         .btn-submit-daily:active { transform: scale(0.98); }
 
-        /* একক কাস্টম স্ট্যাটাস পপআপ */
         .single-modal-overlay {
             position: fixed;
             inset: 0;
@@ -240,31 +237,31 @@
         </header>
 
         <% if (alreadySubmitted) { %>
-            <!-- আজকের হাজিরা ইতিমধ্যে জমা হয়েছে -->
+            <!-- Clean English Confirmation Card -->
             <div class="already-submitted-card">
                 <span style="font-size: 40px; display: block; margin-bottom: 6px;">✅</span>
-                <h4 style="font-size: 16px; font-weight: 800; color: #166534; margin: 0 0 6px 0;">আজকের হাজিরা জমা হয়েছে!</h4>
+                <h4 style="font-size: 16px; font-weight: 800; color: #166534; margin: 0 0 6px 0;">Attendance Already Submitted!</h4>
                 <p style="font-size: 12.5px; color: #374151; line-height: 1.4; margin: 0 0 14px 0;">
-                    আপনার বিদ্যালয়ের আজকের (<strong><%= submissionDate %></strong>) দৈনিক হাজিরা <strong><%= submissionTime %></strong> মিনিটে সফলভাবে জমা হয়েছে।<br><br>
-                    <span style="color: #64748b; font-size: 11.5px;">(দিনে শুধুমাত্র একবারই ফরম সাবমিট করা যাবে। আগামীকাল রাত ১২:০০ টার পর ফরমটি আবার ওপেন হবে।)</span>
+                    Daily attendance for <strong><%= school.name %></strong> on <strong><%= submissionDate %></strong> was successfully submitted at <strong><%= submissionTime %></strong>.<br><br>
+                    <span style="color: #64748b; font-size: 11.5px;">(Submission is allowed only once per day. The portal will automatically reset after midnight 12:00 AM for the next day's attendance.)</span>
                 </p>
-                <a href="/logout" style="display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 8px 22px; border-radius: 8px; font-size: 13px; font-weight: 800;">লগআউট</a>
+                <a href="/logout" style="display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 8px 22px; border-radius: 8px; font-size: 13px; font-weight: 800;">Logout</a>
             </div>
 
         <% } else if (!isAllowed) { %>
-            <!-- সকাল ১০টার পর সাবমিশন বন্ধ -->
+            <!-- Submission Closed Card -->
             <div class="lock-notice-box">
                 <span style="font-size: 38px; display: block; margin-bottom: 6px;">🔒</span>
-                <h4 style="font-size: 15px; font-weight: 800; color: #be123c; margin: 0 0 6px 0;">হাজিরা সাবমিশন বন্ধ</h4>
+                <h4 style="font-size: 15px; font-weight: 800; color: #be123c; margin: 0 0 6px 0;">Submission Closed</h4>
                 <p style="font-size: 12px; color: #475569; line-height: 1.4; margin: 0 0 12px 0;">
-                    দৈনিক হাজিরা সাবমিশনের নির্ধারিত সময় সকাল <strong>১০:০০ টা</strong> পর্যন্ত।<br>
-                    নির্ধারিত সময় পার হওয়ায় সাবমিশন বন্ধ আছে। বিশেষ প্রয়োজনে <strong>সহকারী উপজেলা শিক্ষা অফিসারের (AEO)</strong> সাথে যোগাযোগ করুন।
+                    Daily attendance submission is open until <strong>10:00 AM</strong>.<br>
+                    Submission is currently locked. Please contact your <strong>Assistant Education Officer (AEO)</strong> to unlock permission.
                 </p>
-                <a href="/logout" style="display: inline-block; background: #dc2626; color: white; text-decoration: none; padding: 8px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 800;">লগআউট</a>
+                <a href="/logout" style="display: inline-block; background: #dc2626; color: white; text-decoration: none; padding: 8px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 800;">Logout</a>
             </div>
 
         <% } else { %>
-            <!-- ফ্রেশ সাবমিশন ফর্ম -->
+            <!-- Fresh Attendance Submission Form -->
             <form id="attendanceForm">
                 <input type="hidden" name="schoolId" id="schoolId" value="<%= school.id %>">
                 
@@ -288,15 +285,14 @@
                                 </label>
                             </div>
 
-                            <!-- কার্ডের ভেতরে ইনলাইন ছুটির অপশন (কোনো পপআপ ছাড়া) -->
                             <div id="leave_div_<%= index %>" class="leave-inline-container" style="display:none;">
-                                <span class="leave-inline-title">📝 ছুটির ধরন নির্বাচন করুন:</span>
+                                <span class="leave-inline-title">📝 Select Leave Type:</span>
                                 <div class="leave-chips-grid">
-                                    <button type="button" class="leave-chip active" onclick="setLeaveType(<%= index %>, 'Casual Leave', this)">নৈমিত্তিক (Casual)</button>
-                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Medical Leave', this)">চিকিৎসা (Medical)</button>
-                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Maternity Leave', this)">মাতৃত্বকালীন (Maternity)</button>
-                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Earned Leave', this)">অর্জিত (Earned)</button>
-                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Other Leave', this)">অন্যান্য (Other)</button>
+                                    <button type="button" class="leave-chip active" onclick="setLeaveType(<%= index %>, 'Casual Leave', this)">Casual Leave</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Medical Leave', this)">Medical Leave</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Maternity Leave', this)">Maternity Leave</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Earned Leave', this)">Earned Leave</button>
+                                    <button type="button" class="leave-chip" onclick="setLeaveType(<%= index %>, 'Other Leave', this)">Other Leave</button>
                                 </div>
                                 <input type="hidden" id="leaveInput_<%= index %>" value="Casual Leave">
                             </div>
@@ -317,7 +313,7 @@
         <% } %>
     </div>
 
-    <!-- একক কাস্টম সাবমিট স্ট্যাটাস পপআপ -->
+    <!-- Single Status Modal -->
     <div id="singleCustomModal" class="single-modal-overlay">
         <div class="single-modal-box">
             <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">✓</div>
@@ -353,7 +349,6 @@
             leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
         }
 
-        // ইনলাইন ছুটির ধরন বাটন ট্যাপ লজিক (০ পপআপ)
         function setLeaveType(index, leaveType, chipElement) {
             const container = chipElement.closest('.leave-chips-grid');
             container.querySelectorAll('.leave-chip').forEach(chip => chip.classList.remove('active'));
@@ -395,16 +390,16 @@
 
         function submitData() {
             if (!compressedBlob && !document.getElementById('registerPhoto').files[0]) {
-                showSingleModal('error', 'ছবি আবশ্যক', 'অনুগ্রহ করে হাজিরা খাতার ছবি তুলুন!');
+                showSingleModal('error', 'Photo Required', 'Please capture or upload the attendance register photo first!');
                 return;
             }
 
             const submitBtn = document.getElementById('submitBtnMain');
-            submitBtn.textContent = "📍 GPS লোকেশন নেওয়া হচ্ছে...";
+            submitBtn.textContent = "📍 Acquiring GPS Location...";
             submitBtn.disabled = true;
 
             const sendPayload = (lat, lng) => {
-                submitBtn.textContent = "⚡ জমা দেওয়া হচ্ছে...";
+                submitBtn.textContent = "⚡ Submitting Report...";
                 
                 let formData = new FormData();
                 formData.append('schoolId', document.getElementById('schoolId').value);
@@ -440,14 +435,14 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        showSingleModal('success', 'জমা হয়েছে!', 'দৈনিক হাজিরা সফলভাবে জমা নেওয়া হয়েছে!', true);
+                        showSingleModal('success', 'Submitted!', 'Daily attendance report submitted successfully!', true);
                     } else {
-                        showSingleModal('error', 'ব্যর্থ হয়েছে', data.message);
+                        showSingleModal('error', 'Submission Failed', data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }
                 }).catch(err => {
-                    showSingleModal('error', 'নেটওয়ার্ক সমস্যা', 'ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।');
+                    showSingleModal('error', 'Network Error', 'Please check your internet connection and try again.');
                     submitBtn.textContent = "Submit Daily Report";
                     submitBtn.disabled = false;
                 });

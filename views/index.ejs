@@ -5,8 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance - <%= school.id %>. <%= school.name %></title>
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=15">
+    <link rel="stylesheet" href="/css/style.css?v=16">
+    
     <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
             background-color: #f1f5f9;
             margin: 0;
@@ -26,6 +29,7 @@
             box-sizing: border-box;
         }
 
+        /* Top Header */
         .school-header-bar {
             display: flex;
             justify-content: space-between;
@@ -44,18 +48,20 @@
         }
 
         .btn-back-school {
-            background: #eef2ff;
-            color: #4f46e5;
-            padding: 6px 14px;
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 5px 14px;
             font-size: 12px;
             font-weight: 800;
             text-decoration: none;
             border-radius: 6px;
-            border: 1px solid #c7d2fe;
+            border: 1px solid #fca5a5;
             white-space: nowrap;
+            transition: transform 0.1s;
         }
+        .btn-back-school:active { transform: scale(0.95); }
 
-        /* Success Already Submitted Card */
+        /* Already Submitted Card */
         .already-submitted-card {
             background: #f0fdf4;
             border: 2px solid #86efac;
@@ -102,10 +108,10 @@
         .radio-pill-compact {
             display: inline-flex;
             align-items: center;
-            gap: 3px;
-            font-size: 11px;
+            gap: 4px;
+            font-size: 11.5px;
             font-weight: 700;
-            padding: 4px 8px;
+            padding: 4px 9px;
             border-radius: 6px;
             border: 1px solid #cbd5e1;
             cursor: pointer;
@@ -113,16 +119,43 @@
             user-select: none;
         }
 
-        .form-control-leave {
-            padding: 4px 8px;
-            font-size: 11px;
+        /* সুন্দর কালারফুল On Leave ড্রপডাউন বক্স */
+        .leave-select-container {
+            margin-top: 6px;
+            background: #fffbeb;
+            border: 1.5px solid #fde68a;
+            border-radius: 8px;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 1px 3px rgba(217, 119, 6, 0.08);
+            animation: fadeInDrop 0.15s ease-out;
+        }
+
+        @keyframes fadeInDrop {
+            from { opacity: 0; transform: translateY(-3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .leave-badge-lbl {
+            font-size: 11.5px;
+            font-weight: 800;
+            color: #b45309;
+            white-space: nowrap;
+        }
+
+        .leave-dropdown-colorful {
+            flex: 1;
+            padding: 5px 8px;
+            font-size: 11.5px;
+            font-weight: 700;
             border-radius: 6px;
-            border: 1px solid #cbd5e1;
-            width: 100%;
-            max-width: 180px;
-            margin-top: 3px;
-            outline: none;
+            border: 1px solid #fcd34d;
             background: #ffffff;
+            color: #92400e;
+            outline: none;
+            cursor: pointer;
         }
 
         .camera-capture-box {
@@ -147,28 +180,35 @@
             width: 100%;
             margin-top: 10px;
             box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25);
+            transition: transform 0.1s;
         }
+        .btn-submit-daily:active { transform: scale(0.98); }
 
-        /* Modal */
-        .custom-modal-overlay {
+        /* একক ও পরিচ্ছন্ন কাস্টম পপআপ (ডিফল্টভাবে সম্পূর্ণ হাইড থাকবে) */
+        .single-modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.6);
+            background: rgba(15, 23, 42, 0.65);
             backdrop-filter: blur(3px);
-            display: none;
+            display: none !important;
             align-items: center;
             justify-content: center;
             padding: 14px;
-            z-index: 9999;
+            z-index: 99999;
         }
-        .custom-modal-overlay.active { display: flex; }
-        .custom-modal-box {
+
+        .single-modal-overlay.active {
+            display: flex !important;
+        }
+
+        .single-modal-box {
             background: #ffffff;
             border-radius: 14px;
-            padding: 18px 16px;
+            padding: 20px 16px;
             width: 100%;
-            max-width: 340px;
+            max-width: 330px;
             text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.18);
         }
     </style>
 </head>
@@ -187,7 +227,7 @@
         </header>
 
         <% if (alreadySubmitted) { %>
-            <!-- অলরেডি সাবমিট করা হয়ে গেলে এই সুন্দর মেসেজ কার্ড দেখাবে -->
+            <!-- আজকের হাজিরা ইতিমধ্যে জমা হয়েছে -->
             <div class="already-submitted-card">
                 <span style="font-size: 40px; display: block; margin-bottom: 6px;">✅</span>
                 <h4 style="font-size: 16px; font-weight: 800; color: #166534; margin: 0 0 6px 0;">আজকের হাজিরা জমা হয়েছে!</h4>
@@ -195,17 +235,17 @@
                     আপনার বিদ্যালয়ের আজকের (<strong><%= submissionDate %></strong>) দৈনিক হাজিরা <strong><%= submissionTime %></strong> মিনিটে সফলভাবে জমা হয়েছে।<br><br>
                     <span style="color: #64748b; font-size: 11.5px;">(দিনে শুধুমাত্র একবারই ফরম সাবমিট করা যাবে। আগামীকাল রাত ১২:০০ টার পর ফরমটি আবার ওপেন হবে।)</span>
                 </p>
-                <a href="/logout" style="display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 8px 20px; border-radius: 8px; font-size: 13px; font-weight: 800;">ঠিক আছে</a>
+                <a href="/logout" style="display: inline-block; background: #16a34a; color: white; text-decoration: none; padding: 8px 22px; border-radius: 8px; font-size: 13px; font-weight: 800;">লগআউট</a>
             </div>
 
         <% } else if (!isAllowed) { %>
-            <!-- সকাল ১০টার পর বন্ধ থাকলে এই কার্ড দেখাবে -->
+            <!-- সকাল ১০টার পর সাবমিশন বন্ধ -->
             <div class="lock-notice-box">
                 <span style="font-size: 38px; display: block; margin-bottom: 6px;">🔒</span>
                 <h4 style="font-size: 15px; font-weight: 800; color: #be123c; margin: 0 0 6px 0;">হাজিরা সাবমিশন বন্ধ</h4>
                 <p style="font-size: 12px; color: #475569; line-height: 1.4; margin: 0 0 12px 0;">
                     দৈনিক হাজিরা সাবমিশনের নির্ধারিত সময় সকাল <strong>১০:০০ টা</strong> পর্যন্ত।<br>
-                    নির্ধারিত সময় পার হওয়ায় সাবমিশন লক করা হয়েছে। বিশেষ প্রয়োজনে <strong>সহকারী উপজেলা শিক্ষা অফিসারের (AEO)</strong> সাথে যোগাযোগ করুন।
+                    নির্ধারিত সময় পার হওয়ায় সাবমিশন বন্ধ আছে। বিশেষ প্রয়োজনে <strong>সহকারী উপজেলা শিক্ষা অফিসারের (AEO)</strong> সাথে যোগাযোগ করুন।
                 </p>
                 <a href="/logout" style="display: inline-block; background: #dc2626; color: white; text-decoration: none; padding: 8px 18px; border-radius: 8px; font-size: 12.5px; font-weight: 800;">লগআউট</a>
             </div>
@@ -235,13 +275,15 @@
                                 </label>
                             </div>
 
-                            <div id="leave_div_<%= index %>" style="display:none;">
-                                <select name="leaveType_<%= index %>" class="form-control-leave">
-                                    <option value="Casual Leave">Casual Leave (নৈমিত্তিক)</option>
-                                    <option value="Medical Leave">Medical Leave (চিকিৎসা)</option>
-                                    <option value="Maternity Leave">Maternity Leave (মাতৃত্বকালীন)</option>
-                                    <option value="Earned Leave">Earned Leave (অর্জিত)</option>
-                                    <option value="Other Leave">Other Leave (অন্যান্য)</option>
+                            <!-- কালারফুল On Leave ড্রপডাউন বক্স -->
+                            <div id="leave_div_<%= index %>" class="leave-select-container" style="display:none;">
+                                <span class="leave-badge-lbl">📝 ছুটির ধরন:</span>
+                                <select name="leaveType_<%= index %>" class="leave-dropdown-colorful">
+                                    <option value="Casual Leave">Casual Leave (নৈমিত্তিক ছুটি)</option>
+                                    <option value="Medical Leave">Medical Leave (চিকিৎসা ছুটি)</option>
+                                    <option value="Maternity Leave">Maternity Leave (মাতৃত্বকালীন ছুটি)</option>
+                                    <option value="Earned Leave">Earned Leave (অর্জিত ছুটি)</option>
+                                    <option value="Other Leave">Other Leave (অন্যান্য ছুটি)</option>
                                 </select>
                             </div>
                         </div>
@@ -261,32 +303,32 @@
         <% } %>
     </div>
 
-    <!-- Custom Modal -->
-    <div id="customModal" class="custom-modal-overlay">
-        <div class="custom-modal-box">
+    <!-- একক কাস্টম পপআপ (Single Popup Only) -->
+    <div id="singleCustomModal" class="single-modal-overlay">
+        <div class="single-modal-box">
             <div id="modalIcon" style="font-size: 32px; margin-bottom: 6px;">✓</div>
-            <h3 id="modalTitle" style="font-size: 16px; margin: 0 0 4px 0;">Status</h3>
-            <p id="modalMessage" style="font-size: 12.5px; color: #475569; margin: 0 0 12px 0;">Action message</p>
-            <button type="button" id="modalBtn" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; cursor: pointer;" onclick="closeCustomModal()">OK</button>
+            <h3 id="modalTitle" style="font-size: 16px; margin: 0 0 4px 0; font-weight: 800;">Status</h3>
+            <p id="modalMessage" style="font-size: 12.5px; color: #475569; margin: 0 0 14px 0; line-height: 1.4;">Message text</p>
+            <button type="button" id="modalOkBtn" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 10px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer;" onclick="closeSingleModal()">OK</button>
         </div>
     </div>
 
     <script>
         const teachersList = <%- JSON.stringify(school.teachers) %>;
-        let redirectOnClose = false;
+        let shouldReloadOnClose = false;
         let compressedBlob = null;
 
-        function showCustomModal(type, title, message, shouldRedirect = false) {
+        function showSingleModal(type, title, message, shouldReload = false) {
             document.getElementById('modalIcon').textContent = type === 'success' ? "✅" : "⚠️";
             document.getElementById('modalTitle').textContent = title;
             document.getElementById('modalMessage').textContent = message;
-            redirectOnClose = shouldRedirect;
-            document.getElementById('customModal').classList.add('active');
+            shouldReloadOnClose = shouldReload;
+            document.getElementById('singleCustomModal').classList.add('active');
         }
 
-        function closeCustomModal() {
-            document.getElementById('customModal').classList.remove('active');
-            if (redirectOnClose) window.location.reload();
+        function closeSingleModal() {
+            document.getElementById('singleCustomModal').classList.remove('active');
+            if (shouldReloadOnClose) window.location.reload();
         }
 
         function toggleLeaveType(index) {
@@ -294,7 +336,7 @@
             let leaveDiv = document.getElementById('leave_div_' + index);
             let selectedValue = '';
             for(let r of radios) { if(r.checked) selectedValue = r.value; }
-            leaveDiv.style.display = (selectedValue === 'Leave') ? 'block' : 'none';
+            leaveDiv.style.display = (selectedValue === 'Leave') ? 'flex' : 'none';
         }
 
         function handleImageSelection(input) {
@@ -331,16 +373,16 @@
 
         function submitData() {
             if (!compressedBlob && !document.getElementById('registerPhoto').files[0]) {
-                showCustomModal('error', 'Photo Required', 'অনুগ্রহ করে হাজিরা খাতার ছবি তুলুন!');
+                showSingleModal('error', 'ছবি আবশ্যক', 'অনুগ্রহ করে হাজিরা খাতার ছবি তুলুন!');
                 return;
             }
 
             const submitBtn = document.getElementById('submitBtnMain');
-            submitBtn.textContent = "📍 Acquiring GPS...";
+            submitBtn.textContent = "📍 GPS লোকেশন নেওয়া হচ্ছে...";
             submitBtn.disabled = true;
 
             const sendPayload = (lat, lng) => {
-                submitBtn.textContent = "⚡ Submitting Report...";
+                submitBtn.textContent = "⚡ জমা দেওয়া হচ্ছে...";
                 
                 let formData = new FormData();
                 formData.append('schoolId', document.getElementById('schoolId').value);
@@ -375,14 +417,14 @@
                 .then(res => res.json())
                 .then(data => {
                     if(data.success) {
-                        showCustomModal('success', 'জমা হয়েছে!', 'দৈনিক হাজিরা সফলভাবে জমা নেওয়া হয়েছে!', true);
+                        showSingleModal('success', 'জমা হয়েছে!', 'দৈনিক হাজিরা সফলভাবে জমা নেওয়া হয়েছে!', true);
                     } else {
-                        showCustomModal('error', 'ব্যর্থ হয়েছে', data.message);
+                        showSingleModal('error', 'ব্যর্থ হয়েছে', data.message);
                         submitBtn.textContent = "Submit Daily Report";
                         submitBtn.disabled = false;
                     }
                 }).catch(err => {
-                    showCustomModal('error', 'নেটওয়ার্ক সমস্যা', 'ইন্টারনেট কানেকশন চেক করুন।');
+                    showSingleModal('error', 'নেটওয়ার্ক সমস্যা', 'ইন্টারনেট কানেকশন চেক করে আবার চেষ্টা করুন।');
                     submitBtn.textContent = "Submit Daily Report";
                     submitBtn.disabled = false;
                 });

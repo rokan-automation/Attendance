@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const { createClient } = require('@supabase/supabase-js');
 
@@ -54,14 +53,26 @@ function getSafeSchoolId(schoolName) {
     return found ? found.id : 999;
 }
 
-// ভিউ ইঞ্জিন ও স্ট্যাটিক ডিরেক্টরি সেটআপ
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(__dirname));
 
-// সরাসরি আইকন ও ম্যানিফেস্ট ডেলিভারি রাউট
+// বিল্ট-ইন লাইটওয়েট কুকি পার্সার মিডলওয়্যার (জিরো ক্র্যাশ)
+app.use((req, res, next) => {
+    req.cookies = {};
+    const rc = req.headers.cookie;
+    if (rc) {
+        rc.split(';').forEach(cookie => {
+            const parts = cookie.split('=');
+            req.cookies[parts.shift().trim()] = decodeURI(parts.join('='));
+        });
+    }
+    next();
+});
+
+// আইকন ও ম্যানিফেস্ট সরাসরি সার্ভ
 app.get('/icon-192.png', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'icon-192.png'));
 });
@@ -80,7 +91,6 @@ app.get('/manifest.json', (req, res) => {
 
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
-app.use(cookieParser());
 
 // Authentication Helpers
 const requireAEOAuth = (req, res, next) => {
@@ -117,7 +127,7 @@ app.post('/login', (req, res) => {
 
         if (role === 'admin') {
             if (enteredPassword === 'admin123') {
-                res.cookie('admin_session', 'authenticated_aeo_2026', { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                res.setHeader('Set-Cookie', 'admin_session=authenticated_aeo_2026; Path=/; HttpOnly; Max-Age=86400');
                 return res.redirect('/admin');
             } else {
                 return res.render('login', { error: 'Invalid AEO Password! Use: admin123' });
@@ -127,7 +137,7 @@ app.post('/login', (req, res) => {
             const isValidSchoolPass = (enteredPassword === 'School12345' || enteredPassword === `${targetSchoolId}@primary`);
 
             if (isValidSchoolPass) {
-                res.cookie('school_session', `school_${targetSchoolId}`, { maxAge: 24 * 60 * 60 * 1000, httpOnly: true });
+                res.setHeader('Set-Cookie', `school_session=school_${targetSchoolId}; Path=/; HttpOnly; Max-Age=86400`);
                 return res.redirect(`/index?schoolId=${targetSchoolId}`);
             } else {
                 return res.render('login', { error: `Invalid password for School ID ${targetSchoolId}! Use: School12345` });
@@ -139,8 +149,7 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/logout', (req, res) => {
-    res.clearCookie('admin_session');
-    res.clearCookie('school_session');
+    res.setHeader('Set-Cookie', ['admin_session=; Path=/; Max-Age=0', 'school_session=; Path=/; Max-Age=0']);
     res.redirect('/');
 });
 

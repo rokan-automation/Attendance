@@ -3,606 +3,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, interactive-widget=resizes-content">
-    <title>Attendance Summary - Bochaganj</title>
-    <link rel="shortcut icon" href="/icon.png?v=13" type="image/png">
-    <link rel="icon" type="image/png" sizes="32x32" href="/icon.png?v=13">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon.png?v=13">
-    <link rel="apple-touch-icon" href="/icon.png?v=13">
+    <title>Attendance - Bochaganj</title>
+    
+    <!-- Android, iPhone ও ব্রাউজার ট্যাব আইকন -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+    <link rel="shortcut icon" href="/icon-192.png" type="image/png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192.png">
+    
+    <!-- PWA Manifest লিংক -->
     <link rel="manifest" href="/manifest.json">
-    <link rel="stylesheet" href="/css/style.css?v=13">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#4f46e5">
 
+    <link rel="stylesheet" href="/css/style.css?v=8">
     <style>
         html, body {
-            background-color: #f1f5f9;
+            background-color: #f3f4f6;
             margin: 0;
             padding: 0;
-            touch-action: manipulation;
-        }
-
-        .app-container-tight {
-            max-width: 500px;
-            margin: 0 auto;
-            padding: 8px;
-            box-sizing: border-box;
-            transform: translateZ(0);
-        }
-
-        /* Perfect Header with Right Aligned Logout */
-        .app-header-aligned {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1.5px solid #e2e8f0;
-            padding-bottom: 8px;
-            margin-bottom: 8px;
             width: 100%;
+            min-height: 100%;
+            touch-action: manipulation;
+            -webkit-overflow-scrolling: touch;
         }
 
-        .header-title-box h3 {
-            font-size: 15px;
-            font-weight: 800;
-            color: #0f172a;
-            margin: 0;
-            line-height: 1.2;
-        }
-
-        .summary-card-solid {
-            background: #ffffff;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 16px;
-            padding: 14px 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            margin-top: 4px;
-        }
-
-        .summary-header {
-            text-align: center;
-            border-bottom: 1.5px solid #f1f5f9;
-            padding-bottom: 8px;
-            margin-bottom: 10px;
-        }
-
-        .summary-header h3 {
-            font-size: 18px;
-            font-weight: 800;
-            color: #0f172a;
-            margin: 0 0 6px 0;
-        }
-
-        .filter-mode-tabs {
+        .auth-wrapper-solid {
+            width: 100%;
+            min-height: 100vh;
             display: flex;
             justify-content: center;
-            gap: 6px;
-            margin-bottom: 6px;
+            align-items: flex-start;
+            padding: 20px 14px;
+            box-sizing: border-box;
         }
 
-        .mode-tab-btn {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            color: #475569;
+        .gateway-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 82vh;
+            width: 100%;
+            max-width: 440px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        .gateway-header {
+            text-align: center;
+            margin-top: 45px;
+        }
+
+        .gateway-title {
+            font-size: 29px;
+            font-weight: 800;
+            color: #1e1b4b;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
+
+        .gateway-sub {
+            font-size: 15px;
+            color: #64748b;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+
+        .role-cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        .role-action-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px 22px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
             cursor: pointer;
-            text-decoration: none;
-            transition: transform 0.08s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            transition: all 0.15s ease;
         }
 
-        .mode-tab-btn:active {
-            transform: scale(0.96);
-        }
-
-        .mode-tab-btn.active {
-            background: #4f46e5;
-            color: #ffffff;
+        .role-action-card:active {
+            transform: scale(0.98);
             border-color: #4f46e5;
         }
 
-        .date-filter-bar {
+        .role-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            font-size: 26px;
+            flex-shrink: 0;
         }
 
-        .date-input-field {
-            padding: 4px 8px;
-            font-size: 12.5px;
-            font-weight: 700;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 6px;
-            background: #f8fafc;
+        .school-icon-bg { background: #e0e7ff; color: #4338ca; }
+        .aeo-icon-bg { background: #fef3c7; color: #d97706; }
+
+        .role-info-title {
+            font-size: 18.5px;
+            font-weight: 800;
             color: #1e293b;
-            outline: none;
-        }
-
-        .three-box-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-
-        .stat-box-large {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 2px;
-            text-align: center;
-        }
-
-        .stat-box-large .num {
             display: block;
-            font-size: 23px;
-            font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 2px;
         }
 
-        .stat-box-large .lbl {
-            font-size: 11.5px;
-            color: #475569;
-            font-weight: 700;
-        }
-
-        .four-box-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-
-        .stat-box-four {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 8px 2px;
-            text-align: center;
-        }
-
-        .stat-box-four .num {
+        .role-info-desc {
+            font-size: 13px;
+            color: #64748b;
             display: block;
+            margin-top: 2px;
+        }
+
+        .role-arrow {
+            margin-left: auto;
             font-size: 20px;
+            color: #94a3b8;
             font-weight: 800;
-            line-height: 1.1;
-            margin-bottom: 2px;
         }
 
-        .stat-box-four .lbl {
-            font-size: 10.5px;
-            color: #475569;
-            font-weight: 700;
-        }
-
-        .rates-box-large {
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 8px 2px;
+        .developer-footer {
             text-align: center;
+            padding: 10px 24px;
+            background: #ffffff;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
         }
 
-        .rates-box-large .title {
+        .dev-badge-title {
             display: block;
             font-size: 11px;
-            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #6366f1;
             font-weight: 700;
-            margin-bottom: 2px;
         }
 
-        .rates-box-large .value {
-            font-size: 21px;
+        .dev-badge-name {
+            font-size: 15.5px;
             font-weight: 800;
+            color: #0f172a;
         }
 
-        .tools-action-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-top: 12px;
+        .auth-card-large {
+            background: #ffffff;
+            width: 100%;
+            max-width: 440px;
+            padding: 24px 22px;
+            border-radius: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+            border: 1.5px solid #e2e8f0;
+            box-sizing: border-box;
+            position: relative;
+            margin-top: 20px;
         }
 
-        .btn-tool-solid {
-            padding: 10px 4px;
-            border-radius: 8px;
-            font-size: 11.5px;
-            font-weight: 700;
+        .btn-back-gateway {
+            background: #e0e7ff;
+            color: #4f46e5;
+            border: 1px solid #c7d2fe;
+            padding: 7px 16px;
+            font-size: 13.5px;
+            font-weight: 800;
             cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            display: inline-block;
+        }
+
+        .input-group-large {
+            margin-bottom: 16px;
+        }
+
+        .input-group-large label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .custom-select-trigger-large {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            background: #f8fafc;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        .trigger-text-large {
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .password-field-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .password-field-wrapper input {
+            width: 100%;
+            padding: 13px 44px 13px 14px !important;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            background: #f8fafc;
+            box-sizing: border-box;
+        }
+
+        .password-field-wrapper input:focus {
+            border-color: #4f46e5;
+            background: #ffffff;
+        }
+
+        .masked-password {
+            -webkit-text-security: disc;
+            text-security: disc;
+        }
+
+        .unmasked-password {
+            -webkit-text-security: none !important;
+            text-security: none !important;
+        }
+
+        .btn-toggle-eye {
+            position: absolute;
+            right: 10px;
+            background: none;
             border: none;
-            text-align: center;
-            text-decoration: none;
+            cursor: pointer;
+            font-size: 20px;
+            color: #64748b;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 3px;
-            transition: transform 0.08s ease;
+            padding: 6px;
         }
 
-        .btn-tool-solid:active {
-            transform: scale(0.96);
-        }
-
-        .btn-unlock-style {
-            background: <%= isAeoUnlocked ? '#fee2e2' : '#dcfce7' %>;
-            color: <%= isAeoUnlocked ? '#dc2626' : '#15803d' %>;
-            border: 1.5px solid <%= isAeoUnlocked ? '#fca5a5' : '#86efac' %>;
-        }
-
-        .btn-excel-style {
-            background: #e0e7ff;
-            color: #4338ca;
-            border: 1.5px solid #c7d2fe;
-        }
-
-        .btn-zip-style {
-            background: #fef3c7;
-            color: #b45309;
-            border: 1.5px solid #fde68a;
-        }
-
-        .btn-refresh-style {
-            background: #f1f5f9;
-            color: #334155;
-            border: 1.5px solid #cbd5e1;
-        }
-
-        .btn-goto-page2-large {
-            background: #4f46e5;
-            color: #ffffff;
-            padding: 13px 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 800;
-            text-align: center;
-            border: none;
-            cursor: pointer;
+        .btn-submit-large {
             width: 100%;
-            display: block;
-            box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
-            margin-top: 12px;
-            letter-spacing: 0.3px;
-            transition: transform 0.08s ease;
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            transition: 0.1s;
+            margin-top: 6px;
         }
 
-        .btn-goto-page2-large:active {
-            transform: scale(0.97);
+        .btn-submit-large:active {
+            transform: scale(0.98);
         }
 
-        /* Clean Right Aligned Logout Button */
-        .btn-logout-right {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 6px 14px;
+        .school-modal-card {
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            padding: 18px;
+            max-width: 400px;
+        }
+
+        .school-search-box input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14.5px;
+            outline: none;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        .school-list-container {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .school-item-btn {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 11px 12px;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .school-serial-tag {
+            background: #e2e8f0;
+            padding: 3px 8px;
+            border-radius: 6px;
             font-size: 12px;
             font-weight: 800;
-            text-decoration: none;
-            border-radius: 6px;
-            border: 1px solid #fca5a5;
-            white-space: nowrap;
         }
     </style>
 </head>
 <body>
-    <div class="app-container-tight">
+    <div class="auth-wrapper-solid">
         
-        <% 
-            const totalSchools = 25;
-            let submittedCount = records.length;
-            let pendingCount = totalSchools - submittedCount;
-
-            let totalPresent = 0;
-            let totalLeave = 0;
-            let totalAbsentWithoutLeave = 0;
-            let actualTotalTeachers = 0;
-
-            records.forEach(rec => {
-                if (rec.attendance && Array.isArray(rec.attendance)) {
-                    actualTotalTeachers += rec.attendance.length;
-                    rec.attendance.forEach(item => {
-                        if (item.status === 'Present') totalPresent++;
-                        else if (item.status === 'Leave') totalLeave++;
-                        else if (item.status === 'Absent') totalAbsentWithoutLeave++;
-                    });
-                }
-            });
-
-            let ratePresent = actualTotalTeachers > 0 ? ((totalPresent / actualTotalTeachers) * 100).toFixed(1) : "0.0";
-            let rateAbsent = actualTotalTeachers > 0 ? ((totalAbsentWithoutLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
-            let rateLeave = actualTotalTeachers > 0 ? ((totalLeave / actualTotalTeachers) * 100).toFixed(1) : "0.0";
-        %>
-
-        <!-- Header: Right-Aligned Logout -->
-        <header class="app-header-aligned">
-            <div class="header-title-box">
-                <h3>Bochaganj Upazila</h3>
-                <span class="badge">AEO Summary Report</span>
+        <!-- 1. Gateway Screen -->
+        <div id="gatewaySection" class="gateway-container">
+            <div class="gateway-header">
+                <h1 class="gateway-title">Attendance Portal</h1>
+                <p class="gateway-sub">Bochaganj Upazila Primary Education</p>
             </div>
-            <div>
-                <a href="/logout" class="btn-logout-right">Logout</a>
-            </div>
-        </header>
 
-        <!-- Summary Card -->
-        <div class="summary-card-solid">
-            <div class="summary-header">
-                <h3>Attendance Summary Report</h3>
-                
-                <div class="filter-mode-tabs">
-                    <button type="button" onclick="navigateFilter('daily')" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</button>
-                    <button type="button" onclick="navigateFilter('monthly')" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</button>
-                    <button type="button" onclick="navigateFilter('yearly')" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</button>
+            <div class="role-cards-grid">
+                <div class="role-action-card" onclick="openPortal('school')">
+                    <div class="role-icon-box school-icon-bg">🏫</div>
+                    <div>
+                        <span class="role-info-title">School Login</span>
+                        <span class="role-info-desc">Submit daily teacher attendance</span>
+                    </div>
+                    <span class="role-arrow">➔</span>
                 </div>
 
-                <div class="date-filter-bar">
-                    <% if (viewType === 'daily') { %>
-                        <span style="font-size: 11.5px; color: #475569;">Date:</span>
-                        <input type="date" class="date-input-field" value="<%= selectedDate %>" onchange="changeFilter('daily', this.value)">
-                    <% } else if (viewType === 'monthly') { %>
-                        <span style="font-size: 11.5px; color: #475569;">Month:</span>
-                        <input type="month" class="date-input-field" value="<%= selectedMonth %>" onchange="changeFilter('monthly', this.value)">
-                    <% } else if (viewType === 'yearly') { %>
-                        <span style="font-size: 11.5px; color: #475569;">Year:</span>
-                        <select class="date-input-field" onchange="changeFilter('yearly', this.value)">
-                            <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
-                            <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
-                        </select>
-                    <% } %>
+                <div class="role-action-card" onclick="openPortal('admin')">
+                    <div class="role-icon-box aeo-icon-bg">👨‍💼</div>
+                    <div>
+                        <span class="role-info-title">AEO Portal</span>
+                        <span class="role-info-desc">Executive summary & verify</span>
+                    </div>
+                    <span class="role-arrow">➔</span>
                 </div>
             </div>
 
-            <!-- Row 1: Total Schools, Submitted, Pending -->
-            <div class="three-box-grid">
-                <div class="stat-box-large">
-                    <span class="num" style="color: #4f46e5;"><%= totalSchools %></span>
-                    <span class="lbl">Total Schools</span>
-                </div>
-                <div class="stat-box-large">
-                    <span class="num" style="color: #2563eb;"><%= submittedCount %></span>
-                    <span class="lbl"><%= viewType === 'daily' ? 'Submitted' : 'Reports' %></span>
-                </div>
-                <div class="stat-box-large">
-                    <span class="num" style="color: #dc2626;"><%= viewType === 'daily' ? pendingCount : 0 %></span>
-                    <span class="lbl">Pending</span>
-                </div>
-            </div>
-
-            <!-- Row 2: Teachers Breakdown -->
-            <div class="four-box-grid">
-                <div class="stat-box-four">
-                    <span class="num" style="color: #1f2937;"><%= actualTotalTeachers %></span>
-                    <span class="lbl">Teachers</span>
-                </div>
-                <div class="stat-box-four">
-                    <span class="num" style="color: #10b981;"><%= totalPresent %></span>
-                    <span class="lbl">Present</span>
-                </div>
-                <div class="stat-box-four">
-                    <span class="num" style="color: #f59e0b;"><%= totalLeave %></span>
-                    <span class="lbl">On Leave</span>
-                </div>
-                <div class="stat-box-four">
-                    <span class="num" style="color: #ef4444;"><%= totalAbsentWithoutLeave %></span>
-                    <span class="lbl">Absent</span>
-                </div>
-            </div>
-
-            <!-- Three Rates Breakdown -->
-            <div class="three-box-grid">
-                <div class="rates-box-large">
-                    <span class="title">Present Rate</span>
-                    <span class="value" style="color: #10b981;"><%= ratePresent %>%</span>
-                </div>
-                <div class="rates-box-large">
-                    <span class="title">Absent Rate</span>
-                    <span class="value" style="color: #ef4444;"><%= rateAbsent %>%</span>
-                </div>
-                <div class="rates-box-large">
-                    <span class="title">Leave Rate</span>
-                    <span class="value" style="color: #f59e0b;"><%= rateLeave %>%</span>
-                </div>
-            </div>
-
-            <!-- 4 Action Buttons -->
-            <div class="tools-action-grid">
-                <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
-                    <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
-                </button>
-                <button type="button" class="btn-tool-solid btn-excel-style" onclick="exportToAutoFittedExcel()">
-                    📊 Export Excel
-                </button>
-                <button type="button" class="btn-tool-solid btn-zip-style" id="zipBtn" onclick="downloadAllPhotosZip()">
-                    📦 Photos (ZIP)
-                </button>
-                <button type="button" class="btn-tool-solid btn-refresh-style" onclick="window.location.reload()">
-                    🔄 Refresh
-                </button>
+            <div class="developer-footer">
+                <span class="dev-badge-title">Developed by</span>
+                <span class="dev-badge-name">Md. Rokanuzzaman Rokan</span>
             </div>
         </div>
 
-        <!-- 2nd Page Button -->
-        <a href="/admin/list?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2-large">
-            📋 View All Submitted Schools & Search ➔
-        </a>
+        <!-- 2. Form Card -->
+        <div class="auth-card-large" id="formCard" style="display: none;">
+            <button type="button" class="btn-back-gateway" onclick="backToGateway()">Back</button>
+            
+            <div class="brand-header">
+                <h2 id="formTitle" style="font-size: 22px; font-weight: 800; color: #1e1b4b; margin: 0 0 4px 0;">Attendance</h2>
+                <p id="formSub" style="font-size: 14px; color: #64748b; font-weight: 500; margin: 0 0 16px 0;">Bochaganj Primary Education</p>
+            </div>
+
+            <% if(typeof error !== 'undefined' && error) { %>
+                <div class="alert-error" style="font-size: 13.5px; padding: 10px; margin-bottom: 14px; color: #dc2626; background: #fee2e2; border-radius: 8px; font-weight: 700; text-align: center;"><%= error %></div>
+            <% } %>
+
+            <!-- School Form -->
+            <form action="/login" method="POST" id="schoolForm" autocomplete="off">
+                <input type="hidden" name="role" value="school">
+                <input type="hidden" name="schoolId" id="selectedSchoolId" value="1">
+
+                <div class="input-group-large">
+                    <label>Select Institution</label>
+                    <div class="custom-select-trigger-large" onclick="openSchoolModal()">
+                        <span class="trigger-text-large" id="selectedSchoolText">1. Bochaganj Model Govt. Primary School</span>
+                        <span style="color: #64748b; font-size: 12px;">▼</span>
+                    </div>
+                </div>
+
+                <div class="input-group-large">
+                    <label>School Access Password</label>
+                    <div class="password-field-wrapper">
+                        <input type="text" name="password" id="schoolPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter school password" required>
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('schoolPasswordInput', this)">👁️</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit-large">Access School Portal</button>
+            </form>
+
+            <!-- Admin Form -->
+            <form action="/login" method="POST" id="adminForm" style="display: none;" autocomplete="off">
+                <input type="hidden" name="role" value="admin">
+                <div class="input-group-large">
+                    <label>AEO Secure Password</label>
+                    <div class="password-field-wrapper">
+                        <input type="text" name="password" id="adminPasswordInput" class="masked-password" autocomplete="off" placeholder="Enter secure password" required>
+                        <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('adminPasswordInput', this)">👁️</button>
+                    </div>
+                </div>
+                <button type="submit" class="btn-submit-large">Access AEO Dashboard</button>
+            </form>
+        </div>
     </div>
 
-    <!-- Custom Modal -->
-    <div id="customModal" class="custom-modal-overlay">
-        <div class="custom-modal-box">
-            <div id="modalIcon" class="modal-icon-wrapper modal-icon-success">✓</div>
-            <h3 id="modalTitle">Status</h3>
-            <p id="modalMessage">Action completed successfully!</p>
-            <button type="button" id="modalBtn" class="modal-btn-confirm" onclick="closeCustomModal()">OK</button>
+    <!-- School Modal Popup -->
+    <div id="schoolModal" class="school-modal-overlay">
+        <div class="school-modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h4 style="font-size: 16px; font-weight: 800; color: #1e1b4b; margin: 0;">Select Primary School</h4>
+                <button type="button" onclick="closeSchoolModal()" style="background:none; border:none; font-size:18px; cursor:pointer; font-weight: bold;">✕</button>
+            </div>
+            <div class="school-search-box">
+                <input type="text" id="schoolSearchInput" placeholder="🔍 Search school name..." onkeyup="filterSchools()">
+            </div>
+            <div class="school-list-container" id="schoolList">
+                <button type="button" class="school-item-btn" onclick="selectSchool(1, '1. Bochaganj Model Govt. Primary School')"><span class="school-serial-tag">1</span><span>Bochaganj Model Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(2, '2. Setabganj Upashahar Govt. Primary School')"><span class="school-serial-tag">2</span><span>Setabganj Upashahar Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(3, '3. Bochaganj Central Govt. Primary School')"><span class="school-serial-tag">3</span><span>Bochaganj Central Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(4, '4. Muraripur Govt. Primary School')"><span class="school-serial-tag">4</span><span>Muraripur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(5, '5. Chawk Rampur Govt. Primary School')"><span class="school-serial-tag">5</span><span>Chawk Rampur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(6, '6. Bogula Govt. Primary School')"><span class="school-serial-tag">6</span><span>Bogula Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(7, '7. Chira Govt. Primary School')"><span class="school-serial-tag">7</span><span>Chira Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(8, '8. Gopalpur Govt. Primary School')"><span class="school-serial-tag">8</span><span>Gopalpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(9, '9. Ishania Govt. Primary School')"><span class="school-serial-tag">9</span><span>Ishania Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(10, '10. Nandigram Govt. Primary School')"><span class="school-serial-tag">10</span><span>Nandigram Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(11, '11. Shibpur Govt. Primary School')"><span class="school-serial-tag">11</span><span>Shibpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(12, '12. Ratanpur Govt. Primary School')"><span class="school-serial-tag">12</span><span>Ratanpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(13, '13. Chak Kalikapur Govt. Primary School')"><span class="school-serial-tag">13</span><span>Chak Kalikapur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(14, '14. Bara Maheshtpur Govt. Primary School')"><span class="school-serial-tag">14</span><span>Bara Maheshtpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(15, '15. Chatra Govt. Primary School')"><span class="school-serial-tag">15</span><span>Chatra Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(16, '16. Jagannathpur Govt. Primary School')"><span class="school-serial-tag">16</span><span>Jagannathpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(17, '17. Kashipur Govt. Primary School')"><span class="school-serial-tag">17</span><span>Kashipur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(18, '18. Ramnagar Govt. Primary School')"><span class="school-serial-tag">18</span><span>Ramnagar Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(19, '19. Kismat Bogula Govt. Primary School')"><span class="school-serial-tag">19</span><span>Kismat Bogula Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(20, '20. Bahadurpur Govt. Primary School')"><span class="school-serial-tag">20</span><span>Bahadurpur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(21, '21. Bhatgaon Govt. Primary School')"><span class="school-serial-tag">21</span><span>Bhatgaon Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(22, '22. Salandar Govt. Primary School')"><span class="school-serial-tag">22</span><span>Salandar Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(23, '23. Nayaghat Govt. Primary School')"><span class="school-serial-tag">23</span><span>Nayaghat Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(24, '24. Sahapur Govt. Primary School')"><span class="school-serial-tag">24</span><span>Sahapur Govt. Primary School</span></button>
+                <button type="button" class="school-item-btn" onclick="selectSchool(25, '25. Chakpara Govt. Primary School')"><span class="school-serial-tag">25</span><span>Chakpara Govt. Primary School</span></button>
+            </div>
         </div>
     </div>
 
     <script>
-        const submittedRecords = <%- JSON.stringify(records) %>;
-        const currentView = "<%= viewType %>";
-        const currentSelected = "<%= viewType === 'daily' ? selectedDate : (viewType === 'monthly' ? selectedMonth : selectedYear) %>";
-        let shouldReloadPage = false;
+        (function() {
+            window.history.pushState({ page: 'gateway' }, "", window.location.href);
 
-        window.history.pushState(null, "", window.location.href);
-        window.onpopstate = function () {
-            window.location.replace('/logout');
-        };
+            window.onpopstate = function (event) {
+                const formCard = document.getElementById('formCard');
+                const schoolModal = document.getElementById('schoolModal');
 
-        function navigateFilter(type) {
-            window.location.replace(`/admin?viewType=${type}`);
-        }
-
-        function changeFilter(type, value) {
-            if (value) {
-                if (type === 'daily') window.location.replace(`/admin?viewType=daily&date=${value}`);
-                else if (type === 'monthly') window.location.replace(`/admin?viewType=monthly&month=${value}`);
-                else if (type === 'yearly') window.location.replace(`/admin?viewType=yearly&year=${value}`);
-            }
-        }
-
-        function showCustomModal(type, title, message, reload = false) {
-            const modal = document.getElementById('customModal');
-            document.getElementById('modalIcon').className = type === 'success' ? "modal-icon-wrapper modal-icon-success" : "modal-icon-wrapper modal-icon-error";
-            document.getElementById('modalIcon').innerHTML = type === 'success' ? "✓" : "✕";
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalMessage').textContent = message;
-            shouldReloadPage = reload;
-            modal.classList.add('active');
-        }
-
-        function closeCustomModal() {
-            document.getElementById('customModal').classList.remove('active');
-            if (shouldReloadPage) window.location.reload();
-        }
-
-        function toggleEmergencyLock(unlockStatus) {
-            fetch('/admin/toggle-lock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ unlock: unlockStatus })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    showCustomModal('success', 'Permission Updated', unlockStatus ? 'Attendance submission UNLOCKED!' : 'Attendance submission LOCKED!', true);
-                } else {
-                    showCustomModal('error', 'Update Failed', 'Failed to change lock status.');
-                }
-            });
-        }
-
-        function loadScript(src) {
-            return new Promise((resolve, reject) => {
-                if (document.querySelector(`script[src="${src}"]`)) return resolve();
-                const script = document.createElement('script');
-                script.src = src;
-                script.onload = resolve;
-                script.onerror = reject;
-                document.head.appendChild(script);
-            });
-        }
-
-        async function exportToAutoFittedExcel() {
-            if (submittedRecords.length === 0) {
-                showCustomModal('error', 'No Data', 'No submitted data available to export!');
-                return;
-            }
-
-            await loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");
-
-            const excelRows = [
-                ["Date", "SL", "School Name", "Teacher Name", "Status", "Leave Type", "Submission Time", "Latitude", "Longitude"]
-            ];
-
-            submittedRecords.forEach(rec => {
-                const date = rec.date;
-                const sl = rec.serialId;
-                const school = rec.schoolName;
-                const time = rec.timestamp;
-                const lat = rec.location ? rec.location.lat : '';
-                const lng = rec.location ? rec.location.lng : '';
-
-                rec.attendance.forEach(item => {
-                    excelRows.push([
-                        date,
-                        sl,
-                        school,
-                        item.teacher,
-                        item.status,
-                        item.leaveType || '',
-                        time,
-                        lat,
-                        lng
-                    ]);
-                });
-            });
-
-            const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet(excelRows);
-
-            const colWidths = excelRows[0].map((col, colIdx) => {
-                let maxLen = col.length;
-                excelRows.forEach(row => {
-                    const cellVal = row[colIdx] ? String(row[colIdx]) : '';
-                    if (cellVal.length > maxLen) maxLen = cellVal.length;
-                });
-                return { wch: maxLen + 3 };
-            });
-
-            ws['!cols'] = colWidths;
-            XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
-            XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentSelected}.xlsx`);
-        }
-
-        async function downloadAllPhotosZip() {
-            const btn = document.getElementById('zipBtn');
-            const originalText = btn.textContent;
-
-            if (submittedRecords.length === 0) {
-                showCustomModal('error', 'No Photos', 'No submitted records available for this date!');
-                return;
-            }
-
-            btn.textContent = "⏳ Fetching...";
-            btn.disabled = true;
-
-            try {
-                await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js");
-                await loadScript("https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js");
-
-                const response = await fetch(`/api/photos-payload?viewType=${currentView}&date=${currentSelected}&month=${currentSelected}&year=${currentSelected}`);
-                const data = await response.json();
-
-                if (!data.success || !data.photos || data.photos.length === 0) {
-                    showCustomModal('error', 'No Photos', 'No register photos uploaded for this period.');
-                    btn.textContent = originalText;
-                    btn.disabled = false;
+                if (schoolModal && schoolModal.classList.contains('active')) {
+                    closeSchoolModal();
+                    window.history.pushState({ page: 'gateway' }, "", window.location.href);
                     return;
                 }
 
-                btn.textContent = "📦 Zipping...";
-                const zip = new JSZip();
-                const folderName = `Bochaganj_Registers_${currentSelected}`;
-                const imgFolder = zip.folder(folderName);
+                if (formCard && formCard.style.display === 'block') {
+                    backToGateway();
+                    window.history.pushState({ page: 'gateway' }, "", window.location.href);
+                    return;
+                }
 
-                data.photos.forEach((item) => {
-                    if (item.photo) {
-                        const base64Data = item.photo.split(',')[1];
-                        const sanitizedSchool = item.schoolName.replace(/[^a-zA-Z0-9]/g, '_');
-                        const fileName = `${item.serialId}_${sanitizedSchool}_${item.date}.jpg`;
-                        imgFolder.file(fileName, base64Data, { base64: true });
-                    }
-                });
+                window.close();
+                window.history.back();
+            };
+        })();
 
-                const content = await zip.generateAsync({ type: "blob" });
-                saveAs(content, `${folderName}.zip`);
-
-                showCustomModal('success', 'Download Complete', 'All register photos zipped and downloaded in serial order!');
-            } catch (err) {
-                showCustomModal('error', 'ZIP Failed', 'Could not create ZIP package.');
-            } finally {
-                btn.textContent = originalText;
-                btn.disabled = false;
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.classList.contains('masked-password')) {
+                input.classList.remove('masked-password');
+                input.classList.add('unmasked-password');
+                btn.textContent = '🙈';
+            } else {
+                input.classList.remove('unmasked-password');
+                input.classList.add('masked-password');
+                btn.textContent = '👁️';
             }
+        }
+
+        function openPortal(type) {
+            document.getElementById('gatewaySection').style.display = 'none';
+            document.getElementById('formCard').style.display = 'block';
+
+            const schoolForm = document.getElementById('schoolForm');
+            const adminForm = document.getElementById('adminForm');
+            const formTitle = document.getElementById('formTitle');
+
+            document.getElementById('schoolPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').value = '';
+
+            if(type === 'school') {
+                schoolForm.style.display = 'block';
+                adminForm.style.display = 'none';
+                formTitle.textContent = "School Login";
+            } else {
+                adminForm.style.display = 'block';
+                schoolForm.style.display = 'none';
+                formTitle.textContent = "AEO Portal";
+            }
+            window.history.pushState({ page: 'form' }, "", window.location.href);
+        }
+
+        function backToGateway() {
+            document.getElementById('schoolPasswordInput').value = '';
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('formCard').style.display = 'none';
+            document.getElementById('gatewaySection').style.display = 'flex';
+        }
+
+        function openSchoolModal() { document.getElementById('schoolModal').classList.add('active'); }
+        function closeSchoolModal() { document.getElementById('schoolModal').classList.remove('active'); }
+
+        function selectSchool(id, text) {
+            document.getElementById('selectedSchoolId').value = id;
+            document.getElementById('selectedSchoolText').textContent = text;
+            closeSchoolModal();
+        }
+
+        function filterSchools() {
+            const query = document.getElementById('schoolSearchInput').value.toLowerCase();
+            const items = document.querySelectorAll('.school-item-btn');
+            items.forEach(item => {
+                item.style.display = item.textContent.toLowerCase().includes(query) ? 'flex' : 'none';
+            });
         }
     </script>
 </body>

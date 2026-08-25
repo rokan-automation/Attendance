@@ -33,7 +33,7 @@ function clearAppCache() {
     MEMORY_CACHE.clear();
 }
 
-// 25 Schools Registry in Memory (0ms Lookup)
+// 25 Schools Static Registry in Server Memory (0ms lookup)
 const SCHOOLS = [
     { id: 1, name: "Bochaganj Model Govt. Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Md. Kamal Uddin (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Govt. Primary School", teachers: ["Farhana Yeasmin (Head Teacher)", "Anwar Hossain (Assistant)", "Shamima Nasrin (Assistant)", "Rashedul Hasan (Assistant)", "Mst. Kulsum Banu (Assistant)"] },
@@ -187,7 +187,7 @@ app.get('/index', requireSchoolAuth, async (req, res) => {
     }
 });
 
-// 3. Submit Attendance
+// 3. Submit Attendance (Single Submission + Auto-Lock Validation)
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     try {
         const { schoolId, lat, lng, attendance } = req.body;
@@ -226,14 +226,14 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         }]);
 
         if (error) throw error;
-        clearAppCache();
+        clearAppCache(); // Invalidate Cache Immediately
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// High-Speed Memory Cache Helper
+// High-Speed Memory Cache Query Helper
 async function fetchRecordsWithCache(viewType, date, month, year) {
     const cacheKey = `summary_${viewType}_${date}_${month}_${year}`;
     const cached = getCache(cacheKey);
@@ -261,7 +261,7 @@ async function fetchRecordsWithCache(viewType, date, month, year) {
     return records;
 }
 
-// 4. Admin Summary Dashboard
+// 4. Admin Summary Dashboard (Unified Fast Handler)
 app.get('/admin', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
@@ -282,18 +282,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     }
 });
 
-// ⚡ Instant Tab Switching API (0.01s response time)
-app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
-    try {
-        const { viewType, date, month, year } = req.query;
-        const records = await fetchRecordsWithCache(viewType, date, month, year);
-        res.json({ success: true, records });
-    } catch (e) {
-        res.json({ success: false, records: [] });
-    }
-});
-
-// 5. Admin List View (Zero Lag & 100% Safe)
+// 5. Admin List View (Points directly to unified high-speed renderer)
 app.get('/admin/list', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
@@ -302,10 +291,26 @@ app.get('/admin/list', requireAEOAuth, async (req, res) => {
         const selectedMonth = req.query.month || monthStr;
         const selectedYear = req.query.year || yearStr;
 
-        const records = await fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear);
-        res.render('admin-list', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked: false });
+        const [records, lockRes] = await Promise.all([
+            fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+        ]);
+
+        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
+        res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
-        res.render('admin-list', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
+        res.redirect('/admin');
+    }
+});
+
+// ⚡ Instant Tab Switching API (0.01s response time)
+app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
+    try {
+        const { viewType, date, month, year } = req.query;
+        const records = await fetchRecordsWithCache(viewType, date, month, year);
+        res.json({ success: true, records });
+    } catch (e) {
+        res.json({ success: false, records: [] });
     }
 });
 

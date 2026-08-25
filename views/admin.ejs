@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Attendance Summary - Bochaganj</title>
     <link rel="shortcut icon" href="/icon-192.png" type="image/png">
-    <link rel="stylesheet" href="/css/style.css?v=25">
+    <link rel="stylesheet" href="/css/style.css?v=22">
 
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -27,7 +27,7 @@
             contain: content;
         }
 
-        /* Top Header */
+        /* Top Header: Right Aligned Logout Button */
         .app-header-aligned {
             display: flex;
             justify-content: space-between;
@@ -40,7 +40,7 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.02);
         }
 
-        .btn-header-right {
+        .btn-logout-right {
             background: #fee2e2;
             color: #dc2626;
             padding: 6px 14px;
@@ -49,21 +49,9 @@
             text-decoration: none;
             border-radius: 6px;
             border: 1px solid #fca5a5;
-            cursor: pointer;
             transition: transform 0.1s;
         }
-        .btn-header-right:active { transform: scale(0.95); }
-
-        .btn-back-clean {
-            background: #eef2ff;
-            color: #4f46e5;
-            padding: 6px 16px;
-            font-size: 12.5px;
-            font-weight: 800;
-            border-radius: 8px;
-            border: 1px solid #c7d2fe;
-            cursor: pointer;
-        }
+        .btn-logout-right:active { transform: scale(0.95); }
 
         .summary-card-solid {
             background: #ffffff;
@@ -238,9 +226,23 @@
             border: 1.5px solid <%= isAeoUnlocked ? '#fca5a5' : '#86efac' %>;
         }
 
-        .btn-excel-style { background: #e0e7ff; color: #4338ca; border: 1.5px solid #c7d2fe; }
-        .btn-zip-style { background: #fef3c7; color: #b45309; border: 1.5px solid #fde68a; }
-        .btn-refresh-style { background: #f1f5f9; color: #334155; border: 1.5px solid #cbd5e1; }
+        .btn-excel-style {
+            background: #e0e7ff;
+            color: #4338ca;
+            border: 1.5px solid #c7d2fe;
+        }
+
+        .btn-zip-style {
+            background: #fef3c7;
+            color: #b45309;
+            border: 1.5px solid #fde68a;
+        }
+
+        .btn-refresh-style {
+            background: #f1f5f9;
+            color: #334155;
+            border: 1.5px solid #cbd5e1;
+        }
 
         .btn-goto-page2-large {
             background: #4f46e5;
@@ -250,9 +252,7 @@
             font-size: 13.5px;
             font-weight: 800;
             text-align: center;
-            border: none;
-            cursor: pointer;
-            width: 100%;
+            text-decoration: none;
             display: block;
             box-shadow: 0 4px 10px rgba(79, 70, 229, 0.25);
             margin-top: 10px;
@@ -260,352 +260,138 @@
         }
         .btn-goto-page2-large:active { transform: scale(0.97); }
 
-        /* VIEW 2 STYLES (School List & Search) */
-        .manage-teachers-btn {
-            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
-            color: #ffffff;
-            padding: 10px 14px;
-            min-height: 44px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-            box-shadow: 0 3px 8px rgba(2, 132, 199, 0.2);
-            text-decoration: none;
-        }
-
-        .search-school-input {
-            width: 100%;
-            height: 44px;
-            padding: 8px 12px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 13.5px;
-            outline: none;
-            background: #ffffff;
-            margin-bottom: 10px;
-        }
-
-        .school-list-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            padding: 12px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            margin-bottom: 10px;
-        }
-
-        .school-header-flex {
-            margin-bottom: 8px;
-            border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 6px;
-        }
-
-        .teacher-rows-list {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            margin: 8px 0 10px 0;
-        }
-
-        .teacher-row-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 10px;
-            min-height: 38px;
-            background: #f8fafc;
-            border-radius: 6px;
-            border: 1px solid #f1f5f9;
-            cursor: pointer;
-            transition: all 0.1s ease;
-        }
-        .teacher-row-item:active { background: #e2e8f0; }
-
-        .t-badge-status {
-            font-size: 11px;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        .t-present { background: #dcfce7; color: #16a34a; }
-        .t-absent { background: #fee2e2; color: #dc2626; }
-        .t-leave { background: #fef3c7; color: #d97706; }
-
-        .card-bottom-actions {
-            display: flex;
-            gap: 8px;
-            border-top: 1px solid #e2e8f0;
-            padding-top: 8px;
-        }
-
-        .btn-view-card {
-            flex: 1;
-            background: #eef2ff;
-            color: #4f46e5;
-            font-size: 12.5px;
-            font-weight: 800;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            text-decoration: none;
-        }
-
-        .btn-delete-card {
-            flex: 1;
-            background: #fee2e2;
-            color: #dc2626;
-            border: 1px solid #fca5a5;
-            font-size: 12.5px;
-            font-weight: 800;
-            padding: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        /* Modals */
+        /* Custom Modal */
         .custom-modal-overlay {
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.6);
             backdrop-filter: blur(3px);
-            display: none !important;
+            display: none;
             align-items: center;
             justify-content: center;
             padding: 14px;
-            z-index: 99999;
+            z-index: 9999;
         }
-        .custom-modal-overlay.active { display: flex !important; }
-
+        .custom-modal-overlay.active { display: flex; }
         .custom-modal-box {
             background: #ffffff;
             border-radius: 14px;
             padding: 18px 16px;
             width: 100%;
-            max-width: 360px;
+            max-width: 340px;
             text-align: center;
         }
-
-        .t-modal-tabs { display: flex; justify-content: center; gap: 6px; margin: 10px 0 6px 0; }
-        .t-tab-btn {
-            background: #f1f5f9; border: 1px solid #cbd5e1; padding: 4px 12px;
-            border-radius: 16px; font-size: 11.5px; font-weight: 700; color: #475569; cursor: pointer;
-        }
-        .t-tab-btn.active { background: #4f46e5; color: #ffffff; border-color: #4f46e5; }
-        .analytics-grid-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 10px 0; }
-        .analytics-stat-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 2px; text-align: center; }
-        .analytics-stat-item .num { display: block; font-size: 17px; font-weight: 800; }
-        .analytics-stat-item .lbl { font-size: 10px; color: #64748b; font-weight: 700; }
-        .history-list-box { max-height: 180px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 6px; text-align: left; margin-top: 6px; background: #fafafa; }
-        .history-item-row { display: flex; justify-content: space-between; padding: 6px 8px; font-size: 11.5px; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
     <div class="app-container-tight">
         
-        <!-- ============================================== -->
-        <!-- VIEW 1: SUMMARY DASHBOARD (0.000s INSTANT)    -->
-        <!-- ============================================== -->
-        <div id="viewPageSummary">
-            <header class="app-header-aligned">
-                <div>
-                    <h3 style="font-size: 14.5px; margin:0; font-weight: 800; color: #0f172a;">Bochaganj Upazila</h3>
-                    <span style="font-size: 11px; font-weight: 700; color: #4f46e5;">AEO Summary Report</span>
-                </div>
-                <div>
-                    <a href="/logout" class="btn-header-right">Logout</a>
-                </div>
-            </header>
+        <!-- Header: Right Aligned Logout Button -->
+        <header class="app-header-aligned">
+            <div>
+                <h3 style="font-size: 14.5px; margin:0; font-weight: 800; color: #0f172a;">Bochaganj Upazila</h3>
+                <span style="font-size: 11px; font-weight: 700; color: #4f46e5;">AEO Summary Report</span>
+            </div>
+            <div>
+                <a href="/logout" class="btn-logout-right">Logout</a>
+            </div>
+        </header>
 
-            <div class="summary-card-solid">
-                <div class="summary-header">
-                    <h3>Attendance Summary Report</h3>
-                    
-                    <div class="filter-mode-tabs">
-                        <button type="button" id="tabDaily" onclick="switchFilterInstant('daily')" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</button>
-                        <button type="button" id="tabMonthly" onclick="switchFilterInstant('monthly')" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</button>
-                        <button type="button" id="tabYearly" onclick="switchFilterInstant('yearly')" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</button>
-                    </div>
-
-                    <div class="date-filter-bar">
-                        <span id="dateLabel" style="font-size: 11.5px; color: #475569; font-weight:700;">Date:</span>
-                        <input type="date" id="inputDaily" class="date-input-field" value="<%= selectedDate %>" onchange="switchFilterInstant('daily', this.value)">
-                        <input type="month" id="inputMonthly" class="date-input-field" value="<%= selectedMonth %>" style="display:none;" onchange="switchFilterInstant('monthly', this.value)">
-                        <select id="inputYearly" class="date-input-field" style="display:none;" onchange="switchFilterInstant('yearly', this.value)">
-                            <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
-                            <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
-                        </select>
-                    </div>
+        <div class="summary-card-solid">
+            <div class="summary-header">
+                <h3>Attendance Summary Report</h3>
+                
+                <!-- Instant Zero-Reload Mode Tabs -->
+                <div class="filter-mode-tabs">
+                    <button type="button" id="tabDaily" onclick="switchFilterInstant('daily')" class="mode-tab-btn <%= viewType === 'daily' ? 'active' : '' %>">Daily</button>
+                    <button type="button" id="tabMonthly" onclick="switchFilterInstant('monthly')" class="mode-tab-btn <%= viewType === 'monthly' ? 'active' : '' %>">Monthly</button>
+                    <button type="button" id="tabYearly" onclick="switchFilterInstant('yearly')" class="mode-tab-btn <%= viewType === 'yearly' ? 'active' : '' %>">Yearly</button>
                 </div>
 
-                <div class="three-box-grid">
-                    <div class="stat-box-large">
-                        <span class="num" style="color: #4f46e5;">25</span>
-                        <span class="lbl">Total Schools</span>
-                    </div>
-                    <div class="stat-box-large">
-                        <span class="num" id="statSubmitted" style="color: #2563eb;">0</span>
-                        <span class="lbl" id="lblSubmitted">Submitted</span>
-                    </div>
-                    <div class="stat-box-large">
-                        <span class="num" id="statPending" style="color: #dc2626;">25</span>
-                        <span class="lbl">Pending</span>
-                    </div>
-                </div>
-
-                <div class="four-box-grid">
-                    <div class="stat-box-four">
-                        <span class="num" id="statTeachers" style="color: #1f2937;">0</span>
-                        <span class="lbl">Teachers</span>
-                    </div>
-                    <div class="stat-box-four">
-                        <span class="num" id="statPresent" style="color: #10b981;">0</span>
-                        <span class="lbl">Present</span>
-                    </div>
-                    <div class="stat-box-four">
-                        <span class="num" id="statLeave" style="color: #f59e0b;">0</span>
-                        <span class="lbl">On Leave</span>
-                    </div>
-                    <div class="stat-box-four">
-                        <span class="num" id="statAbsent" style="color: #ef4444;">0</span>
-                        <span class="lbl">Absent</span>
-                    </div>
-                </div>
-
-                <div class="three-box-grid">
-                    <div class="rates-box-large">
-                        <span class="title">Present Rate</span>
-                        <span class="value" id="ratePresent" style="color: #10b981;">0.0%</span>
-                    </div>
-                    <div class="rates-box-large">
-                        <span class="title">Absent Rate</span>
-                        <span class="value" id="rateAbsent" style="color: #ef4444;">0.0%</span>
-                    </div>
-                    <div class="rates-box-large">
-                        <span class="title">Leave Rate</span>
-                        <span class="value" id="rateLeave" style="color: #f59e0b;">0.0%</span>
-                    </div>
-                </div>
-
-                <div class="tools-action-grid">
-                    <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
-                        <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
-                    </button>
-                    <button type="button" class="btn-tool-solid btn-excel-style" id="exportBtn" onclick="exportToAutoFittedExcel()">
-                        📊 Export Report
-                    </button>
-                    <button type="button" class="btn-tool-solid btn-zip-style" id="zipBtn" onclick="downloadAllPhotosZip()">
-                        📦 Photos (ZIP)
-                    </button>
-                    <button type="button" class="btn-tool-solid btn-refresh-style" onclick="refreshCurrentView()">
-                        🔄 Refresh
-                    </button>
+                <!-- Instant Date Selector -->
+                <div class="date-filter-bar" id="dateFilterContainer">
+                    <span id="dateLabel" style="font-size: 11.5px; color: #475569; font-weight:700;">Date:</span>
+                    <input type="date" id="inputDaily" class="date-input-field" value="<%= selectedDate %>" onchange="switchFilterInstant('daily', this.value)">
+                    <input type="month" id="inputMonthly" class="date-input-field" value="<%= selectedMonth %>" style="display:none;" onchange="switchFilterInstant('monthly', this.value)">
+                    <select id="inputYearly" class="date-input-field" style="display:none;" onchange="switchFilterInstant('yearly', this.value)">
+                        <option value="2026" <%= selectedYear === '2026' ? 'selected' : '' %>>2026</option>
+                        <option value="2025" <%= selectedYear === '2025' ? 'selected' : '' %>>2025</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- Instant 0ms View Toggle Button -->
-            <button type="button" onclick="toggleViewMode('list')" class="btn-goto-page2-large">
-                📋 View All Submitted Schools & Search ➔
-            </button>
-        </div>
-
-        <!-- ============================================== -->
-        <!-- VIEW 2: SUBMITTED SCHOOLS LIST (0.000s INSTANT)-->
-        <!-- ============================================== -->
-        <div id="viewPageList" style="display: none;">
-            <header class="app-header-aligned">
-                <div>
-                    <h3 style="font-size: 14.5px; font-weight:800; margin:0; color:#0f172a;">Submitted Schools List</h3>
-                    <span id="badgeCurrentMode" style="font-size: 11px; font-weight:700; color:#4f46e5;"><%= viewType.toUpperCase() %> Mode</span>
+            <!-- Instant Hydrated Statistics Grid -->
+            <div class="three-box-grid">
+                <div class="stat-box-large">
+                    <span class="num" id="statTotalSchools" style="color: #4f46e5;">25</span>
+                    <span class="lbl">Total Schools</span>
                 </div>
-                <div>
-                    <button type="button" onclick="toggleViewMode('summary')" class="btn-back-clean">Back</button>
+                <div class="stat-box-large">
+                    <span class="num" id="statSubmitted" style="color: #2563eb;">0</span>
+                    <span class="lbl" id="lblSubmitted">Submitted</span>
                 </div>
-            </header>
-
-            <a href="/admin/teachers" class="manage-teachers-btn">
-                👨‍🏫 Manage Teachers & Staff (Add / Remove) ➔
-            </a>
-
-            <input type="text" id="searchKeyword" class="search-school-input" placeholder="🔍 Type Teacher Name or School Name..." oninput="handleSearchInput()">
-
-            <h4 id="submittedListTitle" style="font-size: 12.5px; font-weight: 800; margin: 4px 0 8px 2px; color: #64748b; text-transform: uppercase;">
-                Submitted Reports List (0)
-            </h4>
-
-            <div id="schoolListContainer">
-                <!-- Dynamically Hydrated in 0.001s -->
-            </div>
-        </div>
-
-    </div>
-
-    <!-- Teacher Analytics Modal -->
-    <div id="teacherAnalyticsModal" class="custom-modal-overlay" onclick="handleBackdropClick(event, 'teacherAnalyticsModal')">
-        <div class="custom-modal-box">
-            <div style="font-size: 26px; margin-bottom: 2px;">👨‍🏫</div>
-            <h3 id="modalTeacherName" style="font-size: 15px; margin: 0 0 2px 0; font-weight: 800;">Teacher Profile</h3>
-            <p id="modalSchoolName" style="font-size: 11.5px; color: #64748b; margin: 0 0 4px 0;"></p>
-
-            <div class="t-modal-tabs">
-                <button type="button" id="tabAll" class="t-tab-btn active" onclick="switchTeacherAnalyticsMode('all')">All Time</button>
-                <button type="button" id="tabMonthly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('monthly')">This Month</button>
-                <button type="button" id="tabYearly" class="t-tab-btn" onclick="switchTeacherAnalyticsMode('yearly')">This Year</button>
+                <div class="stat-box-large">
+                    <span class="num" id="statPending" style="color: #dc2626;">25</span>
+                    <span class="lbl">Pending</span>
+                </div>
             </div>
 
-            <div class="analytics-grid-row">
-                <div class="analytics-stat-item">
-                    <span class="num" id="statTModalPresent" style="color: #16a34a;">0</span>
+            <div class="four-box-grid">
+                <div class="stat-box-four">
+                    <span class="num" id="statTeachers" style="color: #1f2937;">0</span>
+                    <span class="lbl">Teachers</span>
+                </div>
+                <div class="stat-box-four">
+                    <span class="num" id="statPresent" style="color: #10b981;">0</span>
                     <span class="lbl">Present</span>
                 </div>
-                <div class="analytics-stat-item">
-                    <span class="num" id="statTModalLeave" style="color: #d97706;">0</span>
-                    <span class="lbl">Leave</span>
+                <div class="stat-box-four">
+                    <span class="num" id="statLeave" style="color: #f59e0b;">0</span>
+                    <span class="lbl">On Leave</span>
                 </div>
-                <div class="analytics-stat-item">
-                    <span class="num" id="statTModalAbsent" style="color: #dc2626;">0</span>
+                <div class="stat-box-four">
+                    <span class="num" id="statAbsent" style="color: #ef4444;">0</span>
                     <span class="lbl">Absent</span>
                 </div>
-                <div class="analytics-stat-item">
-                    <span class="num" id="statTModalRate" style="color: #2563eb;">0%</span>
-                    <span class="lbl">Rate</span>
+            </div>
+
+            <div class="three-box-grid">
+                <div class="rates-box-large">
+                    <span class="title">Present Rate</span>
+                    <span class="value" id="ratePresent" style="color: #10b981;">0.0%</span>
+                </div>
+                <div class="rates-box-large">
+                    <span class="title">Absent Rate</span>
+                    <span class="value" id="rateAbsent" style="color: #ef4444;">0.0%</span>
+                </div>
+                <div class="rates-box-large">
+                    <span class="title">Leave Rate</span>
+                    <span class="value" id="rateLeave" style="color: #f59e0b;">0.0%</span>
                 </div>
             </div>
 
-            <p style="font-size: 11.5px; font-weight: 700; text-align: left; margin: 6px 0 4px 2px; color: #334155;">Attendance Log History:</p>
-            <div class="history-list-box" id="modalHistoryList"></div>
-
-            <button type="button" style="width: 100%; background: #4f46e5; color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 10px;" onclick="closeTeacherAnalyticsModal()">Close</button>
-        </div>
-    </div>
-
-    <!-- Delete Confirmation Modal -->
-    <div id="deleteConfirmModal" class="custom-modal-overlay" onclick="handleBackdropClick(event, 'deleteConfirmModal')">
-        <div class="custom-modal-box" style="max-width: 320px;">
-            <div style="font-size: 26px; margin-bottom: 4px;">🗑️</div>
-            <h3 style="font-size: 15px; margin: 0 0 4px 0;">Confirm Delete</h3>
-            <p id="deleteModalMessage" style="font-size: 12px; color: #475569; margin: 0 0 12px 0;">Are you sure you want to delete this record?</p>
-            <div style="display: flex; gap: 8px;">
-                <button type="button" style="flex:1; background:#e2e8f0; color:#334155; border:none; padding:8px; border-radius:6px; font-weight:700; font-size:12px;" onclick="closeDeleteConfirmModal()">Cancel</button>
-                <button type="button" style="flex:1; background:#dc2626; color:#fff; border:none; padding:8px; border-radius:6px; font-weight:700; font-size:12px;" onclick="executeDelete()">Delete</button>
+            <div class="tools-action-grid">
+                <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
+                    <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
+                </button>
+                <button type="button" class="btn-tool-solid btn-excel-style" id="exportBtn" onclick="exportToAutoFittedExcel()">
+                    📊 Export Report
+                </button>
+                <button type="button" class="btn-tool-solid btn-zip-style" id="zipBtn" onclick="downloadAllPhotosZip()">
+                    📦 Photos (ZIP)
+                </button>
+                <button type="button" class="btn-tool-solid btn-refresh-style" onclick="refreshCurrentView()">
+                    🔄 Refresh
+                </button>
             </div>
         </div>
+
+        <a id="btnGoToList" href="/admin/list?viewType=<%= viewType %>&date=<%= selectedDate %>&month=<%= selectedMonth %>&year=<%= selectedYear %>" class="btn-goto-page2-large">
+            📋 View All Submitted Schools & Search ➔
+        </a>
     </div>
 
-    <!-- Status Modal -->
+    <!-- Custom Modal -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div id="modalIcon" style="font-size: 28px; margin-bottom: 4px;">✓</div>
@@ -621,40 +407,10 @@
         let currentDate = "<%= selectedDate %>";
         let currentMonth = "<%= selectedMonth %>";
         let currentYear = "<%= selectedYear %>";
-        let selectedRecordIdToDelete = null;
-        let currentActiveTeacher = '';
-        let searchDebounceTimer = null;
         let shouldReloadPage = false;
 
-        // ⚡ INSTANT 0.000s VIEW TOGGLE (No Internet Reload)
-        function toggleViewMode(targetMode) {
-            const pageSummary = document.getElementById('viewPageSummary');
-            const pageList = document.getElementById('viewPageList');
-
-            if (targetMode === 'list') {
-                pageSummary.style.display = 'none';
-                pageList.style.display = 'block';
-                document.getElementById('badgeCurrentMode').textContent = `${currentView.toUpperCase()} Mode`;
-                window.scrollTo(0, 0);
-                history.pushState({ view: 'list' }, '', `/admin/list?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`);
-            } else {
-                pageList.style.display = 'none';
-                pageSummary.style.display = 'block';
-                window.scrollTo(0, 0);
-                history.pushState({ view: 'summary' }, '', `/admin?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`);
-            }
-        }
-
-        // Mobile Hardware Back Button Support
-        window.onpopstate = function (event) {
-            if (document.getElementById('viewPageList').style.display === 'block') {
-                document.getElementById('viewPageList').style.display = 'none';
-                document.getElementById('viewPageSummary').style.display = 'block';
-            }
-        };
-
-        // Render Statistics and School Cards Simultaneously
-        function renderAllData(records) {
+        // Instant In-Memory Statistics Re-calculator (0.001s calculation)
+        function renderStatistics(records) {
             currentRecords = records;
             const totalSchools = 25;
             const submittedCount = records.length;
@@ -688,51 +444,10 @@
             document.getElementById('rateAbsent').textContent = `${rateA}%`;
             document.getElementById('rateLeave').textContent = `${rateL}%`;
 
-            // Render School List Cards in 0.001s
-            document.getElementById('submittedListTitle').textContent = `Submitted Reports List (${records.length})`;
-            const container = document.getElementById('schoolListContainer');
-            container.innerHTML = '';
-
-            if (records.length === 0) {
-                container.innerHTML = '<div style="font-size: 12.5px; color: #64748b; text-align: center; padding: 24px; background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;">No attendance records found for this period.</div>';
-                return;
-            }
-
-            const fragment = document.createDocumentFragment();
-            records.forEach((rec, rIdx) => {
-                const card = document.createElement('div');
-                card.className = 'school-list-card';
-                card.id = `card_${rIdx}`;
-
-                let teacherRowsHtml = '';
-                (rec.attendance || []).forEach(t => {
-                    const statusClass = t.status === 'Present' ? 't-present' : ((t.status === 'Leave' || t.status === 'On Leave') ? 't-leave' : 't-absent');
-                    const cleanName = (t.teacher || '').split('(')[0];
-                    teacherRowsHtml += `
-                        <div class="teacher-row-item" onclick="openTeacherAnalytics('${t.teacher}')">
-                            <span style="font-size: 12.5px; font-weight: 700; color: #334155;">${cleanName}</span>
-                            <span class="t-badge-status ${statusClass}">${t.status} 📊</span>
-                        </div>
-                    `;
-                });
-
-                card.innerHTML = `
-                    <div class="school-header-flex">
-                        <div style="font-size: 14px; font-weight: 800; color: #1e293b;">🏫 ${rec.schoolName}</div>
-                        <span style="font-size: 11px; color: #64748b;">📅 ${rec.date} | ⏰ ${rec.timestamp}</span>
-                    </div>
-                    <div class="teacher-rows-list">${teacherRowsHtml}</div>
-                    <div class="card-bottom-actions">
-                        <a href="/admin/school/${rec.id}" class="btn-view-card">View & Edit</a>
-                        <button type="button" onclick="openDeleteConfirmModal(${rec.id}, '${rec.schoolName}')" class="btn-delete-card">🗑️ Delete</button>
-                    </div>
-                `;
-                fragment.appendChild(card);
-            });
-            container.appendChild(fragment);
+            document.getElementById('btnGoToList').href = `/admin/list?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`;
         }
 
-        // ⚡ Ultra-Fast Tab Switching (0.01s Fetch from RAM)
+        // ⚡ Ultra-Fast Tab Switching (No full page reload)
         async function switchFilterInstant(type, customVal = null) {
             currentView = type;
             document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
@@ -763,118 +478,23 @@
                 if (customVal) currentYear = customVal;
             }
 
+            // Sync URL silently without reloading
+            const newUrl = `/admin?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`;
+            window.history.replaceState({}, '', newUrl);
+
             try {
                 const res = await fetch(`/api/admin-summary?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`);
                 const data = await res.json();
                 if (data.success) {
-                    renderAllData(data.records);
+                    renderStatistics(data.records);
                 }
             } catch (err) {
                 console.error(err);
             }
         }
 
-        function refreshCurrentView() { switchFilterInstant(currentView); }
-
-        function handleSearchInput() {
-            clearTimeout(searchDebounceTimer);
-            searchDebounceTimer = setTimeout(performDeepSearch, 80);
-        }
-
-        function performDeepSearch() {
-            const query = document.getElementById('searchKeyword').value.toLowerCase().trim();
-            currentRecords.forEach((rec, index) => {
-                const card = document.getElementById(`card_${index}`);
-                if (!card) return;
-                if (query === "") { card.style.display = "block"; return; }
-
-                let isMatch = false;
-                if (rec.schoolName && rec.schoolName.toLowerCase().includes(query)) isMatch = true;
-                if (rec.attendance && Array.isArray(rec.attendance)) {
-                    for (let i = 0; i < rec.attendance.length; i++) {
-                        if (rec.attendance[i].teacher && rec.attendance[i].teacher.toLowerCase().includes(query)) {
-                            isMatch = true;
-                            break;
-                        }
-                    }
-                }
-                card.style.display = isMatch ? "block" : "none";
-            });
-        }
-
-        // Teacher Profile Analytics Modal
-        async function openTeacherAnalytics(teacherFullName) {
-            currentActiveTeacher = teacherFullName;
-            switchTeacherAnalyticsMode('all');
-            document.getElementById('teacherAnalyticsModal').classList.add('active');
-        }
-
-        async function switchTeacherAnalyticsMode(mode) {
-            document.querySelectorAll('.t-tab-btn').forEach(b => b.classList.remove('active'));
-            if (mode === 'all') document.getElementById('tabAll').classList.add('active');
-            else if (mode === 'monthly') document.getElementById('tabMonthly').classList.add('active');
-            else if (mode === 'yearly') document.getElementById('tabYearly').classList.add('active');
-
-            const now = new Date();
-            const month = now.toISOString().substring(0, 7);
-            const year = now.getFullYear();
-
-            try {
-                const res = await fetch(`/api/teacher-analytics?teacher=${encodeURIComponent(currentActiveTeacher)}&mode=${mode}&month=${month}&year=${year}`);
-                const data = await res.json();
-                if (!data.success || !data.stats) return;
-
-                document.getElementById('modalTeacherName').textContent = data.teacherName;
-                document.getElementById('modalSchoolName').textContent = `🏫 ${data.schoolName}`;
-                document.getElementById('statTModalPresent').textContent = data.stats.presentCount;
-                document.getElementById('statTModalLeave').textContent = data.stats.leaveCount;
-                document.getElementById('statTModalAbsent').textContent = data.stats.absentCount;
-                document.getElementById('statTModalRate').textContent = `${data.stats.presentRate}%`;
-
-                const historyBox = document.getElementById('modalHistoryList');
-                historyBox.innerHTML = '';
-
-                if (!data.history || data.history.length === 0) {
-                    historyBox.innerHTML = '<p style="font-size:11.5px; color:#94a3b8; text-align:center; padding:10px 0;">No attendance records found.</p>';
-                } else {
-                    const fragment = document.createDocumentFragment();
-                    data.history.forEach(h => {
-                        const statusColor = h.status === 'Present' ? '#16a34a' : ((h.status === 'Leave' || h.status === 'On Leave') ? '#d97706' : '#dc2626');
-                        const row = document.createElement('div');
-                        row.className = 'history-item-row';
-                        row.innerHTML = `<span>📅 ${h.date}</span><span style="font-weight:700; color:${statusColor};">${h.status} ${h.leaveType ? `(${h.leaveType})` : ''}</span>`;
-                        fragment.appendChild(row);
-                    });
-                    historyBox.appendChild(fragment);
-                }
-            } catch (err) { console.error(err); }
-        }
-
-        function closeTeacherAnalyticsModal() { document.getElementById('teacherAnalyticsModal').classList.remove('active'); }
-
-        function openDeleteConfirmModal(recordId, schoolName) {
-            selectedRecordIdToDelete = recordId;
-            document.getElementById('deleteModalMessage').textContent = `Delete attendance record of "${schoolName}"?`;
-            document.getElementById('deleteConfirmModal').classList.add('active');
-        }
-
-        function closeDeleteConfirmModal() {
-            selectedRecordIdToDelete = null;
-            document.getElementById('deleteConfirmModal').classList.remove('active');
-        }
-
-        function executeDelete() {
-            if (!selectedRecordIdToDelete) return;
-            fetch('/admin/school/delete/' + selectedRecordIdToDelete, { method: 'POST' })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) refreshCurrentView();
-            });
-            closeDeleteConfirmModal();
-        }
-
-        function handleBackdropClick(event, modalId) {
-            if (event.target.id === modalId) document.getElementById(modalId).classList.remove('active');
+        function refreshCurrentView() {
+            switchFilterInstant(currentView);
         }
 
         function showCustomModal(title, message, reload = false) {
@@ -899,6 +519,8 @@
             .then(data => {
                 if (data.success) {
                     showCustomModal('Permission Updated', unlockStatus ? 'Attendance submission UNLOCKED!' : 'Attendance submission LOCKED!', true);
+                } else {
+                    showCustomModal('Update Failed', 'Failed to change lock status.');
                 }
             });
         }
@@ -914,6 +536,7 @@
             });
         }
 
+        // Guaranteed 100% Auto-Fitted Professional Report Generator
         async function exportToAutoFittedExcel() {
             if (currentRecords.length === 0) {
                 showCustomModal('No Data', 'No submitted data available to export!');
@@ -921,14 +544,18 @@
             }
 
             const btn = document.getElementById('exportBtn');
-            const orig = btn.innerHTML;
+            const originalText = btn.innerHTML;
             btn.innerHTML = "⏳ Generating...";
             btn.disabled = true;
 
             try {
                 await loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");
 
-                const headers = ["SL", "Date", "School ID", "School Name", "Teacher Name", "Designation", "Status", "Leave Reason", "Submission Time", "Latitude", "Longitude", "Location Map Link"];
+                const headers = [
+                    "SL", "Date", "School ID", "School Name", "Teacher Name", "Designation", 
+                    "Status", "Leave Reason", "Submission Time", "Latitude", "Longitude", "Location Map Link"
+                ];
+
                 const excelRows = [headers];
                 let rowCount = 1;
 
@@ -947,9 +574,18 @@
                         const designation = match && match[2] ? match[2].replace(/[()]/g, '').trim() : 'Teacher';
 
                         excelRows.push([
-                            rowCount++, rec.date || '', schoolId, schoolNameClean, name, designation,
-                            item.status || 'Present', (item.status === 'Leave' || item.status === 'On Leave') ? (item.leaveType || 'Casual Leave') : '',
-                            rec.timestamp || '', lat, lng, mapLink
+                            rowCount++,
+                            rec.date || '',
+                            schoolId,
+                            schoolNameClean,
+                            name,
+                            designation,
+                            item.status || 'Present',
+                            (item.status === 'Leave' || item.status === 'On Leave') ? (item.leaveType || 'Casual Leave') : '',
+                            rec.timestamp || '',
+                            lat,
+                            lng,
+                            mapLink
                         ]);
                     });
                 });
@@ -957,11 +593,14 @@
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.aoa_to_sheet(excelRows);
 
+                // Precise Character-Based Auto-Fitting Algorithm
                 const colWidths = headers.map((header, colIdx) => {
                     let maxChars = header.length;
                     excelRows.forEach(row => {
                         const cellVal = row[colIdx] != null ? String(row[colIdx]) : '';
-                        if (cellVal.length > maxChars) maxChars = cellVal.length;
+                        if (cellVal.length > maxChars) {
+                            maxChars = cellVal.length;
+                        }
                     });
                     return { wch: Math.min(Math.max(maxChars + 3, 10), 50) };
                 });
@@ -972,15 +611,19 @@
             } catch (e) {
                 showCustomModal('Export Failed', 'Could not generate report file.');
             } finally {
-                btn.innerHTML = orig;
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         }
 
         async function downloadAllPhotosZip() {
             const btn = document.getElementById('zipBtn');
-            const orig = btn.textContent;
-            if (currentRecords.length === 0) { showCustomModal('No Photos', 'No submitted records available!'); return; }
+            const originalText = btn.textContent;
+
+            if (currentRecords.length === 0) {
+                showCustomModal('No Photos', 'No submitted records available!');
+                return;
+            }
 
             btn.textContent = "⏳ Fetching...";
             btn.disabled = true;
@@ -994,7 +637,7 @@
 
                 if (!data.success || !data.photos || data.photos.length === 0) {
                     showCustomModal('No Photos', 'No register photos uploaded for this period.');
-                    btn.textContent = orig;
+                    btn.textContent = originalText;
                     btn.disabled = false;
                     return;
                 }
@@ -1018,18 +661,13 @@
             } catch (err) {
                 showCustomModal('ZIP Failed', 'Could not create ZIP package.');
             } finally {
-                btn.textContent = orig;
+                btn.textContent = originalText;
                 btn.disabled = false;
             }
         }
 
-        // Initialize All Data in 0.001s
-        renderAllData(currentRecords);
-
-        // Check if loaded with /admin/list directly
-        if (window.location.pathname.includes('/admin/list')) {
-            toggleViewMode('list');
-        }
+        // Initialize Stats on Page Load
+        renderStatistics(currentRecords);
     </script>
 </body>
 </html>

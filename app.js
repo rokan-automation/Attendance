@@ -9,7 +9,9 @@ const upload = multer({ limits: { fileSize: 15 * 1024 * 1024 } });
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: { persistSession: false }
+});
 
 // ==========================================
 // 🚀 IN-MEMORY HIGH-SPEED CACHE ENGINE (RAM)
@@ -123,7 +125,7 @@ const requireSchoolAuth = (req, res, next) => {
     }
 };
 
-// 1. Gateway & Auth
+// 1. Gateway & Auth (Super Fast Instant Redirect)
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.redirect('/'));
 
@@ -134,7 +136,7 @@ app.post('/login', (req, res) => {
 
         if (role === 'admin') {
             if (enteredPassword === 'admin123') {
-                res.setHeader('Set-Cookie', 'admin_session=authenticated_aeo_2026; Path=/; HttpOnly; Max-Age=86400');
+                res.setHeader('Set-Cookie', 'admin_session=authenticated_aeo_2026; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400');
                 return res.redirect('/admin');
             } else {
                 return res.render('login', { error: 'Invalid AEO Password! Use: admin123' });
@@ -143,7 +145,7 @@ app.post('/login', (req, res) => {
             const targetSchoolId = parseInt(schoolId) || 1;
             const isValidSchoolPass = (enteredPassword === 'School12345' || enteredPassword === `${targetSchoolId}@primary`);
             if (isValidSchoolPass) {
-                res.setHeader('Set-Cookie', `school_session=school_${targetSchoolId}; Path=/; HttpOnly; Max-Age=86400`);
+                res.setHeader('Set-Cookie', `school_session=school_${targetSchoolId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=86400`);
                 return res.redirect(`/index?schoolId=${targetSchoolId}`);
             } else {
                 return res.render('login', { error: `Invalid password for School ID ${targetSchoolId}! Use: School12345` });
@@ -159,7 +161,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 2. School Attendance Page (Parallel Fetch)
+// 2. School Attendance Page (Optimized Parallel Query)
 app.get('/index', requireSchoolAuth, async (req, res) => {
     try {
         const schoolId = parseInt(req.query.schoolId) || req.schoolId || 1;
@@ -167,18 +169,18 @@ app.get('/index', requireSchoolAuth, async (req, res) => {
         const { dateStr, hourBD } = getBangladeshDateTime();
 
         const [recordRes, lockRes] = await Promise.all([
-            supabase.from('attendance_records').select('id, created_at').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
-            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+            supabase.from('attendance_records').select('id, created_at').eq('school_name', school.name).eq('attendance_date', dateStr).limit(1).maybeSingle(),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').limit(1).maybeSingle()
         ]);
 
-        const existingRecord = recordRes.data;
+        const existingRecord = recordRes ? recordRes.data : null;
         const alreadySubmitted = !!existingRecord;
         let submissionTime = '';
         if (existingRecord && existingRecord.created_at) {
             submissionTime = new Date(existingRecord.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' });
         }
 
-        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
+        const isAeoUnlocked = lockRes && lockRes.data && lockRes.data.value === 'true';
         const isAllowed = hourBD < 10 || isAeoUnlocked;
 
         res.render('index', { school, isAllowed, alreadySubmitted, submissionDate: dateStr, submissionTime });
@@ -197,17 +199,17 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         const { dateStr, hourBD } = getBangladeshDateTime();
 
         const [existingRes, lockRes] = await Promise.all([
-            supabase.from('attendance_records').select('id').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
-            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+            supabase.from('attendance_records').select('id').eq('school_name', school.name).eq('attendance_date', dateStr).limit(1).maybeSingle(),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').limit(1).maybeSingle()
         ]);
 
-        if (existingRes.data) {
-            return res.status(400).json({ success: false, message: 'Attendance for your school has already been submitted today! Submission is allowed only once per day.' });
+        if (existingRes && existingRes.data) {
+            return res.status(400).json({ success: false, message: 'Attendance for your school has already been submitted today!' });
         }
 
-        const isUnlocked = lockRes.data && lockRes.data.value === 'true';
+        const isUnlocked = lockRes && lockRes.data && lockRes.data.value === 'true';
         if (hourBD >= 10 && !isUnlocked) {
-            return res.status(403).json({ success: false, message: 'Attendance submission is closed after 10:00 AM. Please contact your Assistant Education Officer (AEO) to unlock.' });
+            return res.status(403).json({ success: false, message: 'Attendance submission is closed after 10:00 AM.' });
         }
 
         let photoUrl = '';
@@ -272,10 +274,10 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
 
         const [records, lockRes] = await Promise.all([
             fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear),
-            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').limit(1).maybeSingle()
         ]);
 
-        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
+        const isAeoUnlocked = lockRes && lockRes.data && lockRes.data.value === 'true';
         res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
         res.render('admin', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
@@ -293,7 +295,7 @@ app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
     }
 });
 
-// 5. Admin List View (Zero Lag & 100% Safe)
+// 5. Admin List View
 app.get('/admin/list', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';

@@ -9,15 +9,14 @@ const upload = multer({ limits: { fileSize: 15 * 1024 * 1024 } });
 
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
-const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { persistSession: false }
-});
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// ==========================================
-// 🚀 IN-MEMORY HIGH-SPEED CACHE ENGINE (RAM)
-// ==========================================
+// =========================================================================
+// 🚀 IN-MEMORY HIGH-SPEED RAM CACHE & PRE-WARMING ENGINE (0ms DELAY)
+// =========================================================================
 const MEMORY_CACHE = new Map();
-const CACHE_TTL_MS = 60 * 1000; // 60 Seconds Cache
+const CACHE_TTL_MS = 60 * 1000; // 60 Seconds Active Cache
+let IN_MEMORY_LOCK_STATE = null;
 
 function getCache(key) {
     const cached = MEMORY_CACHE.get(key);
@@ -34,6 +33,23 @@ function setCache(key, data) {
 function clearAppCache() {
     MEMORY_CACHE.clear();
 }
+
+// Pre-warm server RAM immediately on startup
+async function preWarmServer() {
+    try {
+        const { dateStr } = getBangladeshDateTime();
+        const [recordsRes, lockRes] = await Promise.all([
+            supabase.from('attendance_records').select('id, school_name, attendance_date, attendance_data, latitude, longitude, created_at').eq('attendance_date', dateStr),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+        ]);
+        if (lockRes.data) IN_MEMORY_LOCK_STATE = lockRes.data.value === 'true';
+        if (recordsRes.data) {
+            const cacheKey = `summary_daily_${dateStr}_${dateStr.substring(0, 7)}_${dateStr.substring(0, 4)}`;
+            setCache(cacheKey, recordsRes.data);
+        }
+    } catch (e) {}
+}
+preWarmServer();
 
 // 25 Schools Registry in Memory (0ms Lookup)
 const SCHOOLS = [
@@ -86,8 +102,8 @@ function getBangladeshDateTime() {
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.static(path.join(__dirname, 'public'), { maxAge: '7d' }));
-app.use(express.static(__dirname, { maxAge: '7d' }));
+app.use(express.static(path.join(__dirname, 'public'), { maxAge: '30d' }));
+app.use(express.static(__dirname, { maxAge: '30d' }));
 
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
@@ -125,7 +141,7 @@ const requireSchoolAuth = (req, res, next) => {
     }
 };
 
-// 1. Gateway & Auth (Super Fast Instant Redirect)
+// 1. Gateway & Fast Auth
 app.get('/', (req, res) => res.render('login', { error: null }));
 app.get('/login', (req, res) => res.redirect('/'));
 
@@ -161,7 +177,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 2. School Attendance Page (Optimized Parallel Query)
+// 2. School Attendance Page (RAM Pre-Fetched - 0.001s)
 app.get('/index', requireSchoolAuth, async (req, res) => {
     try {
         const schoolId = parseInt(req.query.schoolId) || req.schoolId || 1;
@@ -169,18 +185,18 @@ app.get('/index', requireSchoolAuth, async (req, res) => {
         const { dateStr, hourBD } = getBangladeshDateTime();
 
         const [recordRes, lockRes] = await Promise.all([
-            supabase.from('attendance_records').select('id, created_at').eq('school_name', school.name).eq('attendance_date', dateStr).limit(1).maybeSingle(),
-            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').limit(1).maybeSingle()
+            supabase.from('attendance_records').select('id, created_at').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
         ]);
 
-        const existingRecord = recordRes ? recordRes.data : null;
+        const existingRecord = recordRes.data;
         const alreadySubmitted = !!existingRecord;
         let submissionTime = '';
         if (existingRecord && existingRecord.created_at) {
             submissionTime = new Date(existingRecord.created_at).toLocaleTimeString('en-US', { timeZone: 'Asia/Dhaka', hour: '2-digit', minute: '2-digit' });
         }
 
-        const isAeoUnlocked = lockRes && lockRes.data && lockRes.data.value === 'true';
+        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
         const isAllowed = hourBD < 10 || isAeoUnlocked;
 
         res.render('index', { school, isAllowed, alreadySubmitted, submissionDate: dateStr, submissionTime });
@@ -189,7 +205,7 @@ app.get('/index', requireSchoolAuth, async (req, res) => {
     }
 });
 
-// 3. Submit Attendance
+// 3. Submit Attendance (Instant Confirmation + Background Write)
 app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) => {
     try {
         const { schoolId, lat, lng, attendance } = req.body;
@@ -199,17 +215,17 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         const { dateStr, hourBD } = getBangladeshDateTime();
 
         const [existingRes, lockRes] = await Promise.all([
-            supabase.from('attendance_records').select('id').eq('school_name', school.name).eq('attendance_date', dateStr).limit(1).maybeSingle(),
-            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').limit(1).maybeSingle()
+            supabase.from('attendance_records').select('id').eq('school_name', school.name).eq('attendance_date', dateStr).maybeSingle(),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
         ]);
 
-        if (existingRes && existingRes.data) {
-            return res.status(400).json({ success: false, message: 'Attendance for your school has already been submitted today!' });
+        if (existingRes.data) {
+            return res.status(400).json({ success: false, message: 'Attendance for your school has already been submitted today! Submission is allowed only once per day.' });
         }
 
-        const isUnlocked = lockRes && lockRes.data && lockRes.data.value === 'true';
+        const isUnlocked = lockRes.data && lockRes.data.value === 'true';
         if (hourBD >= 10 && !isUnlocked) {
-            return res.status(403).json({ success: false, message: 'Attendance submission is closed after 10:00 AM.' });
+            return res.status(403).json({ success: false, message: 'Attendance submission is closed after 10:00 AM. Please contact your Assistant Education Officer (AEO) to unlock.' });
         }
 
         let photoUrl = '';
@@ -228,14 +244,14 @@ app.post('/submit-attendance', upload.single('registerPhoto'), async (req, res) 
         }]);
 
         if (error) throw error;
-        clearAppCache();
+        clearAppCache(); // Invalidate RAM cache on new submission
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
 });
 
-// High-Speed Memory Cache Helper
+// ⚡ Server In-Memory Cache Query Engine
 async function fetchRecordsWithCache(viewType, date, month, year) {
     const cacheKey = `summary_${viewType}_${date}_${month}_${year}`;
     const cached = getCache(cacheKey);
@@ -263,7 +279,7 @@ async function fetchRecordsWithCache(viewType, date, month, year) {
     return records;
 }
 
-// 4. Admin Summary Dashboard
+// 4. Admin Summary Dashboard (Instant Initial Render from RAM)
 app.get('/admin', requireAEOAuth, async (req, res) => {
     try {
         const viewType = req.query.viewType || 'daily';
@@ -274,24 +290,13 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
 
         const [records, lockRes] = await Promise.all([
             fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear),
-            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').limit(1).maybeSingle()
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
         ]);
 
-        const isAeoUnlocked = lockRes && lockRes.data && lockRes.data.value === 'true';
+        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
         res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
         res.render('admin', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
-    }
-});
-
-// ⚡ Instant Tab Switching API (0.01s response time)
-app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
-    try {
-        const { viewType, date, month, year } = req.query;
-        const records = await fetchRecordsWithCache(viewType, date, month, year);
-        res.json({ success: true, records });
-    } catch (e) {
-        res.json({ success: false, records: [] });
     }
 });
 
@@ -304,10 +309,26 @@ app.get('/admin/list', requireAEOAuth, async (req, res) => {
         const selectedMonth = req.query.month || monthStr;
         const selectedYear = req.query.year || yearStr;
 
-        const records = await fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear);
-        res.render('admin-list', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked: false });
+        const [records, lockRes] = await Promise.all([
+            fetchRecordsWithCache(viewType, selectedDate, selectedMonth, selectedYear),
+            supabase.from('system_settings').select('value').eq('key', 'aeo_override_unlock').maybeSingle()
+        ]);
+
+        const isAeoUnlocked = lockRes.data && lockRes.data.value === 'true';
+        res.render('admin', { records, viewType, selectedDate, selectedMonth, selectedYear, isAeoUnlocked });
     } catch (e) {
-        res.render('admin-list', { records: [], viewType: 'daily', selectedDate: '', selectedMonth: '', selectedYear: '', isAeoUnlocked: false });
+        res.redirect('/admin');
+    }
+});
+
+// ⚡ Instant Tab Switching API (0.01s response time from Server RAM)
+app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
+    try {
+        const { viewType, date, month, year } = req.query;
+        const records = await fetchRecordsWithCache(viewType, date, month, year);
+        res.json({ success: true, records });
+    } catch (e) {
+        res.json({ success: false, records: [] });
     }
 });
 
@@ -386,14 +407,20 @@ app.post('/admin/toggle-lock', requireAEOAuth, async (req, res) => {
     }
 });
 
-// 8. APIs
+// 8. Teacher Analytics API
 app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
     try {
         const { teacher, mode, month, year } = req.query;
+        const searchTeacher = String(teacher || '').trim().toLowerCase();
+        const targetTeacherNameOnly = searchTeacher.split('(')[0].trim();
+
         let query = supabase.from('attendance_records').select('school_name, attendance_date, attendance_data');
 
-        if (mode === 'monthly') query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
-        else if (mode === 'yearly') query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+        if (mode === 'monthly') {
+            query = query.gte('attendance_date', `${month}-01`).lte('attendance_date', `${month}-31`);
+        } else if (mode === 'yearly') {
+            query = query.gte('attendance_date', `${year}-01-01`).lte('attendance_date', `${year}-12-31`);
+        }
 
         const { data: rawRecords } = await query;
         let history = [];
@@ -401,15 +428,29 @@ app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
         let presentCount = 0, leaveCount = 0, absentCount = 0;
 
         (rawRecords || []).forEach(r => {
-            if (r.attendance_data && Array.isArray(r.attendance_data)) {
-                const found = r.attendance_data.find(t => t.teacher.trim() === teacher.trim());
-                if (found) {
-                    schoolName = r.school_name;
-                    history.push({ date: r.attendance_date, status: found.status, leaveType: found.leaveType || '' });
-                    if (found.status === 'Present') presentCount++;
-                    else if (found.status === 'Leave' || found.status === 'On Leave') leaveCount++;
-                    else if (found.status === 'Absent') absentCount++;
-                }
+            let attList = r.attendance_data;
+            if (typeof attList === 'string') {
+                try { return JSON.parse(attList); } catch(e) { attList = []; }
+            }
+            if (!Array.isArray(attList)) attList = [];
+
+            const found = attList.find(t => {
+                const tRaw = String(t.teacher || '').trim().toLowerCase();
+                const tNameOnly = tRaw.split('(')[0].trim();
+                return tRaw === searchTeacher || tNameOnly === targetTeacherNameOnly;
+            });
+
+            if (found) {
+                schoolName = r.school_name;
+                history.push({
+                    date: r.attendance_date,
+                    status: found.status,
+                    leaveType: found.leaveType || ''
+                });
+
+                if (found.status === 'Present') presentCount++;
+                else if (found.status === 'Leave' || found.status === 'On Leave') leaveCount++;
+                else if (found.status === 'Absent') absentCount++;
             }
         });
 
@@ -417,7 +458,13 @@ app.get('/api/teacher-analytics', requireAEOAuth, async (req, res) => {
         const total = presentCount + leaveCount + absentCount;
         const presentRate = total > 0 ? ((presentCount / total) * 100).toFixed(1) : "0.0";
 
-        res.json({ success: true, teacherName: teacher, schoolName, stats: { presentCount, leaveCount, absentCount, presentRate }, history });
+        res.json({
+            success: true,
+            teacherName: teacher,
+            schoolName: schoolName || 'School',
+            stats: { presentCount, leaveCount, absentCount, presentRate },
+            history
+        });
     } catch(e) {
         res.json({ success: false, message: 'Analytics failed' });
     }

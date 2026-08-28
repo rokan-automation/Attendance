@@ -7,18 +7,19 @@ const { createClient } = require('@supabase/supabase-js');
 const app = express();
 const upload = multer({ limits: { fileSize: 15 * 1024 * 1024 } });
 
-// ⚡ Persistent Supabase Engine
+// ⚡ Super Fast Persistent Connection Engine
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
 const supabase = createClient(supabaseUrl, supabaseKey, {
-    auth: { persistSession: false, autoRefreshToken: false }
+    auth: { persistSession: false, autoRefreshToken: false },
+    db: { schema: 'public' }
 });
 
 // ========================================================
-// 🚀 ULTRA-FAST IN-MEMORY CACHE & AUTO-PREFETCH ENGINE
+// 🚀 IN-MEMORY HIGH-SPEED CACHE & AUTO-PREFETCH ENGINE
 // ========================================================
 const MEMORY_CACHE = new Map();
-const CACHE_TTL_MS = 3 * 60 * 1000; // ৩ মিনিট পর্যন্ত মেমোরিতে থাকবে
+const CACHE_TTL_MS = 3 * 60 * 1000;
 
 function getCache(key) {
     const cached = MEMORY_CACHE.get(key);
@@ -36,7 +37,7 @@ function clearAppCache() {
     MEMORY_CACHE.clear();
 }
 
-// 25 Schools List (RAM - 0ms Lookup)
+// 25 Schools Registry (RAM 0ms Lookup)
 const SCHOOLS = [
     { id: 1, name: "Bochaganj Model Govt. Primary School", teachers: ["Md. Abdul Karim (Head Teacher)", "Nazma Akhter (Assistant)", "Rafiqul Islam (Assistant)", "Salma Begum (Assistant)", "Md. Kamal Uddin (Assistant)"] },
     { id: 2, name: "Setabganj Upashahar Govt. Primary School", teachers: ["Farhana Yeasmin (Head Teacher)", "Anwar Hossain (Assistant)", "Shamima Nasrin (Assistant)", "Rashedul Hasan (Assistant)", "Mst. Kulsum Banu (Assistant)"] },
@@ -85,7 +86,6 @@ function getBangladeshDateTime() {
     };
 }
 
-// 🚀 Pre-fetch Helper: সার্ভারে ডাটা আগে থেকেই ক্যাশ করে রাখবে
 async function prefetchDailyRecords() {
     try {
         const { dateStr } = getBangladeshDateTime();
@@ -106,17 +106,13 @@ async function prefetchDailyRecords() {
                 setCache(cacheKey, records);
             }
         }
-    } catch (e) {
-        // Silent fail to prevent crash
-    }
+    } catch (e) {}
 }
-// ব্যাকগ্রাউন্ডে প্রি-ফেচ চালানো
 setTimeout(prefetchDailyRecords, 1000);
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// High-speed static caching (1 Year Browser Cache)
 const staticOptions = { maxAge: '365d', immutable: true };
 app.use(express.static(path.join(__dirname, 'public'), staticOptions));
 app.use(express.static(__dirname, staticOptions));
@@ -193,7 +189,7 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-// 2. School Attendance Page (Instant Pre-fetch Checked)
+// 2. School Attendance Page
 app.get('/index', requireSchoolAuth, async (req, res) => {
     try {
         const schoolId = parseInt(req.query.schoolId, 10) || req.schoolId || 1;
@@ -316,7 +312,7 @@ app.get('/admin', requireAEOAuth, async (req, res) => {
     }
 });
 
-// ⚡ Instant Tab Switching API (0.001s response time)
+// ⚡ Instant Tab Switching API
 app.get('/api/admin-summary', requireAEOAuth, async (req, res) => {
     try {
         const { viewType, date, month, year } = req.query;

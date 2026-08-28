@@ -280,6 +280,12 @@
             width: 100%;
             max-width: 340px;
             text-align: center;
+            animation: popIn 0.2s ease-out;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -371,16 +377,16 @@
             </div>
 
             <div class="tools-action-grid">
-                <button type="button" class="btn-tool-solid btn-unlock-style" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
+                <button type="button" class="btn-tool-solid btn-unlock-style" id="lockBtn" onclick="toggleEmergencyLock(<%= !isAeoUnlocked %>)">
                     <%= isAeoUnlocked ? '🔒 Re-lock' : '🔓 Unlock' %>
                 </button>
-                <button type="button" class="btn-tool-solid btn-excel-style" id="exportBtn" onclick="exportToAutoFittedExcel()">
+                <button type="button" class="btn-tool-solid btn-excel-style" id="exportBtn" onclick="openCustomExportModal()">
                     📊 Export Report
                 </button>
                 <button type="button" class="btn-tool-solid btn-zip-style" id="zipBtn" onclick="downloadAllPhotosZip()">
                     📦 Photos (ZIP)
                 </button>
-                <button type="button" class="btn-tool-solid btn-refresh-style" onclick="refreshCurrentView()">
+                <button type="button" class="btn-tool-solid btn-refresh-style" id="refreshBtn" onclick="refreshCurrentView()">
                     🔄 Refresh
                 </button>
             </div>
@@ -391,7 +397,27 @@
         </a>
     </div>
 
-    <!-- Custom Modal -->
+    <!-- 📊 Custom Export Modal (Mobile Friendly) -->
+    <div id="customExportModal" class="custom-modal-overlay">
+        <div class="custom-modal-box">
+            <div style="width:48px; height:48px; background:#e0e7ff; color:#4f46e5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 10px auto;">
+                📊
+            </div>
+            <h3 style="font-size: 16px; font-weight: 800; color:#1e1b4b; margin:0 0 4px 0;">Export Attendance Report</h3>
+            <p style="font-size: 12.5px; color:#64748b; margin:0 0 16px 0;">Download auto-fitted excel report for selected period.</p>
+            
+            <div style="display:flex; flex-direction:column; gap:8px;">
+                <button type="button" onclick="confirmExportAction()" style="width:100%; background:#10b981; color:white; border:none; padding:11px; border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                    📥 Download Excel (.xlsx)
+                </button>
+                <button type="button" onclick="closeCustomExportModal()" style="width:100%; background:#f1f5f9; color:#475569; border:none; padding:9px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
     <div id="customModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div id="modalIcon" style="font-size: 28px; margin-bottom: 4px;">✓</div>
@@ -409,7 +435,32 @@
         let currentYear = "<%= selectedYear %>";
         let shouldReloadPage = false;
 
-        // Instant In-Memory Statistics Re-calculator (0.001s calculation)
+        // 🔊 Instant Audio Engine for Click Sound
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playClickSound() {
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            } catch(e) {}
+        }
+
+        // Attach click sound to buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            const btns = document.querySelectorAll('.btn-tool-solid, .mode-tab-btn, .btn-goto-page2-large, .btn-logout-right');
+            btns.forEach(b => b.addEventListener('click', playClickSound));
+        });
+
+        // Instant In-Memory Statistics Re-calculator
         function renderStatistics(records) {
             currentRecords = records;
             const totalSchools = 25;
@@ -447,7 +498,7 @@
             document.getElementById('btnGoToList').href = `/admin/list?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`;
         }
 
-        // ⚡ Ultra-Fast Tab Switching (No full page reload)
+        // ⚡ Ultra-Fast Tab Switching
         async function switchFilterInstant(type, customVal = null) {
             currentView = type;
             document.querySelectorAll('.mode-tab-btn').forEach(b => b.classList.remove('active'));
@@ -478,7 +529,6 @@
                 if (customVal) currentYear = customVal;
             }
 
-            // Sync URL silently without reloading
             const newUrl = `/admin?viewType=${currentView}&date=${currentDate}&month=${currentMonth}&year=${currentYear}`;
             window.history.replaceState({}, '', newUrl);
 
@@ -495,6 +545,20 @@
 
         function refreshCurrentView() {
             switchFilterInstant(currentView);
+        }
+
+        // Modal Functions
+        function openCustomExportModal() {
+            document.getElementById('customExportModal').classList.add('active');
+        }
+
+        function closeCustomExportModal() {
+            document.getElementById('customExportModal').classList.remove('active');
+        }
+
+        function confirmExportAction() {
+            closeCustomExportModal();
+            exportToAutoFittedExcel();
         }
 
         function showCustomModal(title, message, reload = false) {
@@ -536,7 +600,7 @@
             });
         }
 
-        // Guaranteed 100% Auto-Fitted Professional Report Generator
+        // Auto-Fitted Professional Report Generator
         async function exportToAutoFittedExcel() {
             if (currentRecords.length === 0) {
                 showCustomModal('No Data', 'No submitted data available to export!');
@@ -593,7 +657,6 @@
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.aoa_to_sheet(excelRows);
 
-                // Precise Character-Based Auto-Fitting Algorithm
                 const colWidths = headers.map((header, colIdx) => {
                     let maxChars = header.length;
                     excelRows.forEach(row => {

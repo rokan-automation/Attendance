@@ -265,7 +265,7 @@
             position: fixed;
             inset: 0;
             background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(3px);
+            backdrop-filter: blur(4px);
             display: none;
             align-items: center;
             justify-content: center;
@@ -275,16 +275,17 @@
         .custom-modal-overlay.active { display: flex; }
         .custom-modal-box {
             background: #ffffff;
-            border-radius: 14px;
-            padding: 18px 16px;
+            border-radius: 16px;
+            padding: 20px 16px;
             width: 100%;
-            max-width: 340px;
+            max-width: 330px;
             text-align: center;
-            animation: popIn 0.2s ease-out;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15);
+            animation: popIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
+            0% { transform: scale(0.85); opacity: 0; }
             100% { transform: scale(1); opacity: 1; }
         }
     </style>
@@ -397,20 +398,20 @@
         </a>
     </div>
 
-    <!-- 📊 Custom Export Modal (Mobile Friendly) -->
+    <!-- 📊 Premium Custom Export Modal -->
     <div id="customExportModal" class="custom-modal-overlay">
         <div class="custom-modal-box">
             <div style="width:48px; height:48px; background:#e0e7ff; color:#4f46e5; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 10px auto;">
                 📊
             </div>
-            <h3 style="font-size: 16px; font-weight: 800; color:#1e1b4b; margin:0 0 4px 0;">Export Attendance Report</h3>
+            <h3 style="font-size: 16.5px; font-weight: 800; color:#1e1b4b; margin:0 0 4px 0;">Export Attendance Report</h3>
             <p style="font-size: 12.5px; color:#64748b; margin:0 0 16px 0;">Download auto-fitted excel report for selected period.</p>
             
             <div style="display:flex; flex-direction:column; gap:8px;">
-                <button type="button" onclick="confirmExportAction()" style="width:100%; background:#10b981; color:white; border:none; padding:11px; border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;">
+                <button type="button" onclick="confirmExportAction()" style="width:100%; background:#10b981; color:white; border:none; padding:12px; border-radius:10px; font-weight:700; font-size:14px; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);">
                     📥 Download Excel (.xlsx)
                 </button>
-                <button type="button" onclick="closeCustomExportModal()" style="width:100%; background:#f1f5f9; color:#475569; border:none; padding:9px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer;">
+                <button type="button" onclick="closeCustomExportModal()" style="width:100%; background:#f1f5f9; color:#475569; border:none; padding:10px; border-radius:10px; font-weight:700; font-size:13px; cursor:pointer;">
                     Cancel
                 </button>
             </div>
@@ -435,26 +436,64 @@
         let currentYear = "<%= selectedYear %>";
         let shouldReloadPage = false;
 
-        // 🔊 Instant Audio Engine for Click Sound
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 🎵 Premium Multi-Tone Sound Engine (Bubble Pop & Soft Chime)
+        let audioCtx = null;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Unique Bubble Click Sound (iOS Style)
         function playClickSound() {
             try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.04);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+
                 osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.05);
+                gain.connect(ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.08);
             } catch(e) {}
         }
 
-        // Attach click sound to buttons
+        // Success Chime Sound (For Downloads and Actions)
+        function playSuccessSound() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                
+                [523.25, 659.25, 783.99].forEach((freq, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + (i * 0.05));
+                    gain.gain.setValueAtTime(0.18, now + (i * 0.05));
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + (i * 0.05) + 0.15);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now + (i * 0.05));
+                    osc.stop(now + (i * 0.05) + 0.15);
+                });
+            } catch(e) {}
+        }
+
+        // Attach click sound to buttons automatically
         document.addEventListener('DOMContentLoaded', () => {
             const btns = document.querySelectorAll('.btn-tool-solid, .mode-tab-btn, .btn-goto-page2-large, .btn-logout-right');
             btns.forEach(b => b.addEventListener('click', playClickSound));
@@ -549,14 +588,17 @@
 
         // Modal Functions
         function openCustomExportModal() {
+            playClickSound();
             document.getElementById('customExportModal').classList.add('active');
         }
 
         function closeCustomExportModal() {
+            playClickSound();
             document.getElementById('customExportModal').classList.remove('active');
         }
 
         function confirmExportAction() {
+            playSuccessSound();
             closeCustomExportModal();
             exportToAutoFittedExcel();
         }
@@ -569,6 +611,7 @@
         }
 
         function closeCustomModal() {
+            playClickSound();
             document.getElementById('customModal').classList.remove('active');
             if (shouldReloadPage) window.location.reload();
         }
@@ -582,6 +625,7 @@
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
+                    playSuccessSound();
                     showCustomModal('Permission Updated', unlockStatus ? 'Attendance submission UNLOCKED!' : 'Attendance submission LOCKED!', true);
                 } else {
                     showCustomModal('Update Failed', 'Failed to change lock status.');
@@ -600,7 +644,7 @@
             });
         }
 
-        // Auto-Fitted Professional Report Generator
+        // Auto-Fitted Professional Report Generator (With Unique Timestamp To Prevent Mobile Download Popup)
         async function exportToAutoFittedExcel() {
             if (currentRecords.length === 0) {
                 showCustomModal('No Data', 'No submitted data available to export!');
@@ -670,7 +714,10 @@
 
                 ws['!cols'] = colWidths;
                 XLSX.utils.book_append_sheet(wb, ws, "Attendance Report");
-                XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentDate}.xlsx`);
+                
+                // 💡 Unique Time Stamp so Android/Chrome NEVER shows "Download file again?"
+                const timeSuffix = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+                XLSX.writeFile(wb, `Attendance_Report_Bochaganj_${currentView}_${currentDate}_${timeSuffix}.xlsx`);
             } catch (e) {
                 showCustomModal('Export Failed', 'Could not generate report file.');
             } finally {
@@ -707,7 +754,8 @@
 
                 btn.textContent = "📦 Zipping...";
                 const zip = new JSZip();
-                const folderName = `Bochaganj_Registers_${currentDate}`;
+                const timeSuffix = new Date().toTimeString().split(' ')[0].replace(/:/g, '-');
+                const folderName = `Bochaganj_Registers_${currentDate}_${timeSuffix}`;
                 const imgFolder = zip.folder(folderName);
 
                 data.photos.forEach((item, i) => {
@@ -720,6 +768,7 @@
 
                 const content = await zip.generateAsync({ type: "blob" });
                 saveAs(content, `${folderName}.zip`);
+                playSuccessSound();
                 showCustomModal('Success', 'All register photos downloaded successfully!');
             } catch (err) {
                 showCustomModal('ZIP Failed', 'Could not create ZIP package.');
